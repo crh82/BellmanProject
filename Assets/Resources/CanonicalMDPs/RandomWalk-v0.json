@@ -1,0 +1,326 @@
+{
+    "name": "RandomWalk-v0",
+    "dimX": 7,
+    "dimY": 1,
+    "States": [
+        {
+            "State": 0,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        0,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 0,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        0,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 0,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "State": 1,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        1,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 0,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 2,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        1,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 2,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 0,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "State": 2,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        2,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 1,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 3,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        2,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 3,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 1,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "State": 3,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        3,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 2,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 4,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        3,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 4,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 2,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "State": 4,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        4,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 3,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 5,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        4,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 5,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 3,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "State": 5,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        5,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 4,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 6,
+                            "Reward": 1.0,
+                            "isTerminal": true
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        5,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 6,
+                            "Reward": 1.0,
+                            "isTerminal": true
+                        },
+                        {
+                            "Probability": 0.5,
+                            "SuccessorState": 4,
+                            "Reward": 0.0,
+                            "isTerminal": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "State": 6,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        6,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 6,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        6,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 6,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

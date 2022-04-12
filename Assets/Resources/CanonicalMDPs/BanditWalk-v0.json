@@ -1,0 +1,118 @@
+{
+    "name": "BanditWalk-v0",
+    "dimX": 3,
+    "dimY": 1,
+    "States": [
+        {
+            "State": 0,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        0,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 0,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        0,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 0,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "State": 1,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        1,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 0,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        1,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 2,
+                            "Reward": 1.0,
+                            "isTerminal": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "State": 2,
+            "ApplicableActions": [
+                {
+                    "Action": "LEFT",
+                    "ActionID": 0,
+                    "StateAction": [
+                        2,
+                        0
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 2,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                },
+                {
+                    "Action": "RIGHT",
+                    "ActionID": 1,
+                    "StateAction": [
+                        2,
+                        1
+                    ],
+                    "Transitions": [
+                        {
+                            "Probability": 1.0,
+                            "SuccessorState": 2,
+                            "Reward": 0.0,
+                            "isTerminal": true
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
