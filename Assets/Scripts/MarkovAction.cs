@@ -9,6 +9,6 @@ public class MarkovAction
     public string Action;
     public int ActionID;
     public int[] StateAction;
-    public List<Transition> Transitions;
+    public List<MarkovTransition> Transitions;
 
 }

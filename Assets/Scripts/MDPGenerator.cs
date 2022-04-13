@@ -37,30 +37,19 @@ public class MDPGenerator : MonoBehaviour
 
     public TextAsset mdpFileToLoad;
 
-    
+
 
     // Start is called before the first frame update
     void Start()
     {
         mdp = JsonUtility.FromJson<MDP>(mdpFileToLoad.text);
-        // var jsonFile = Resources.Load<TextAsset>("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld-v0");
-        //Todo Fix this shit
-        // string fileName = File.ReadAllText("/Users/christopherhowell/UnityCreateWithCode/BellmanV0/Assets/CanonicalMDPs/RussellNorvigGridworld-v0.json");
-        // Console.WriteLine();
-        // _mdp = JsonUtility.FromJson<MDP>(fileName);
-        // _mdp = MDP.CreateFromJSON(jsonFile.ToString());
-        // Debug.Log($"State probability is : {_mdp.TransitionFunction[0][0][0].Probability}");
-        // _offsetToCenterGridX = -mdpGridWorldDimensions.x / 2 + 0.5f;
-        // _offsetToCenterGridY = -mdpGridWorldDimensions.y / 2 + 0.5f;
-        
+
         _offsetToCenterVector = new Vector2((-mdp.dimX / 2), (-mdp.dimY / 2));
+        
         if (mdp.dimY > 1)
         {
             _offsetToCenterVector += _2Doffset;
         }
-
-        Vector2 testLocation = new Vector2(2, 2);
-        testLocation += Vector2.down;
         
         // _offsetToCenterGridX = (-mdp.dimX / 2) + 0.5f;
         // _offsetToCenterGridY = (-mdp.dimY / 2) + 0.5f;

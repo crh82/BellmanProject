@@ -12,6 +12,8 @@ public class MDP
     public int dimY;
     public List<MarkovState> States;
 
+    public int[] obstacleStates;
+
     // public List<Transition> P(int state, int action)
     // {
     //     // return TransitionFunction[state][action];
