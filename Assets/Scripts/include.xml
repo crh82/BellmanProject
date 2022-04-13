@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<docs>
+    <members name="mdpmanager">
+        <MDPManager>
+            <summary>
+                Class to manage the creation of the underlying MDP data and functions. In other words, this creates the model of the
+                environment.
+            </summary>
+            <remarks>
+                <para>For the handling the generation of the in game MDP object see: <see cref="MDPGenerator"/></para>
+            </remarks>
+        </MDPManager>
+        <ExecuteAction>
+            <summary>
+                Uses the index (<c>int</c>) representation of the state and an action to calculate the successor state (again
+                represented as by its index) for the model representation of the environment.
+            </summary>
+            <param name="state"><c>int</c> representing the state index, rather than the state itself</param>
+            <param name="action"><c>GridAction</c> representing the action taken</param>
+            <returns><c>int</c> representing the index of the successor state</returns>
+        </ExecuteAction>
+    </members>
+</docs>

@@ -9,10 +9,10 @@ using UnityEditor.Timeline;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-/// <summary>
-/// Class to manage the creation of the underlying MDP data and functions. For the handling the generation of the 
-/// in game MDP object see: <see cref="MDPGenerator"/>.
-/// </summary>
+
+
+// Creates the model of the environment — the underlying MDP data rather than the physical/visual MDP.
+/// <include file='include.xml' path='docs/members[@name="mdpmanager"]/MDPManager/*'/>
 public class MDPManager : MonoBehaviour
 {
     public MDP mdp;
@@ -53,6 +53,8 @@ public class MDPManager : MonoBehaviour
         return transitions;
     }
 
+    // Generates the successor state, given a state and action in the modelling of the environment.
+    /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/ExecuteAction/*'/>
     public int ExecuteAction(int state, GridAction action)
     {
         int destination = state + GetEffectOfAction(action);
