@@ -20,25 +20,20 @@ public class MDPManager : MonoBehaviour
     public TextAsset mdpFileToLoad;
 
     public Vector2 dimensions = Vector2.one;
-    
-    // private List<Vector2> _actions = new List<Vector2> {Vector2.left, Vector2.down, Vector2.right, Vector2.up};
 
     private GridAction[] _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
     
     private List<Vector2> _states;
     
     
-    public static MDP CreateFromJSON(string jsonString)
+    public static MDP CreateFromJson(string jsonString)
     {
         return JsonUtility.FromJson<MDP>(jsonString);
     }
 
     public void Awake()
     {
-        mdp = CreateFromJSON(mdpFileToLoad.text);
-
-        mdp.obstacleStates = new int[] {5};// Todo remove hackish test code
-        Debug.Log("Loaded");       // Todo remove hackish test code
+        mdp = CreateFromJson(mdpFileToLoad.text);
     }
 
     public List<MarkovTransition> CalculateTransitions(string transitionProbabilityRules)
@@ -63,10 +58,10 @@ public class MDPManager : MonoBehaviour
 
     public bool DestinationOutOfBounds(int origin, int destination, GridAction action)
     {
-        bool outOfBoundsTop             = destination > (mdp.States.Count) - 1;
+        bool outOfBoundsTop             = destination > mdp.States.Count - 1;
         bool outOfBoundsBottom          = destination < 0;
-        bool outOfBoundsLeft            = origin % mdp.dimX == 0 && action == GridAction.Left;
-        bool outOfBoundsRight           = origin % mdp.dimX == 1 && action == GridAction.Right;
+        bool outOfBoundsLeft            = origin       % mdp.dimX == 0 && action == GridAction.Left;
+        bool outOfBoundsRight           = (origin + 1) % mdp.dimX == 0 && action == GridAction.Right;
         bool hitObstacle = mdp.obstacleStates.Contains(destination);
 
         return (outOfBoundsLeft   | 
@@ -86,9 +81,9 @@ public class MDPManager : MonoBehaviour
         return action switch
         {
             GridAction.Left => -1,
-            GridAction.Down => -mdp.dimY,
+            GridAction.Down => -mdp.dimX,
             GridAction.Right => 1,
-            GridAction.Up => mdp.dimY,
+            GridAction.Up => mdp.dimX,
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
     }
