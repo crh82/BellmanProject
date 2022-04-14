@@ -7,17 +7,23 @@ public static class MdpAdmin
     /// Uses the index (<c>int</c>) representation of the state and an action to calculate the successor state (again
     /// represented as by its index) during the generation of the model of the environment — in this case the gridworld.
     /// </summary>
-    /// <param name="state"><c>int</c> representing the state index, rather than the state itself</param>
-    /// <param name="action"><c>GridAction</c> representing the action taken</param>
-    /// <returns><c>int</c> representing the index of the successor state</returns>
+    /// <param name="state">
+    /// <c>int</c> representing the state index, rather than the state itself
+    /// </param>
+    /// <param name="action">
+    /// <c>GridAction</c> representing the action taken
+    /// </param>
+    /// <returns>
+    /// <c>int</c> representing the index of the successor state
+    /// </returns>
     public static int GenerateSuccessorStateFromAction(MDP mdp, int state, GridAction action)
     {
-        int destination = state + ArithmeticEffectOfAction(mdp, action);
-        return DestinationOutOfBounds(mdp, state, destination, action) ? state : destination;
+        int successorState = state + ArithmeticEffectOfAction(mdp, action);
+        return SuccessorStateOutOfBounds(mdp, state, successorState, action) ? state : successorState;
     }
 
     // Checks whether taking action ( a ) in state ( s ) goes out of bounds or into an obstacle. 
-    public static bool DestinationOutOfBounds(MDP mdp, int state, int successorState, GridAction action)
+    public static bool SuccessorStateOutOfBounds(MDP mdp, int state, int successorState, GridAction action)
     {
         bool outOfBoundsTop             = successorState > mdp.States.Count - 1;
         bool outOfBoundsBottom          = successorState < 0;

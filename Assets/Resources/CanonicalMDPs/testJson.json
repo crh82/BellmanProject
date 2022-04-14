@@ -1,0 +1,8 @@
+{
+  "state":0,
+  "action":2,
+  "probability":0.5400000214576721,
+  "successorState":1,
+  "reward":12.34000015258789,
+  "isTerminal":false
+}
