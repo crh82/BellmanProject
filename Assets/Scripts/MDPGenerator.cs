@@ -44,9 +44,9 @@ public class MDPGenerator : MonoBehaviour
     {
         mdp = JsonUtility.FromJson<MDP>(mdpFileToLoad.text);
 
-        _offsetToCenterVector = new Vector2((-mdp.dimX / 2), (-mdp.dimY / 2));
+        _offsetToCenterVector = new Vector2((-mdp.Width / 2f), (-mdp.Height / 2f));
         
-        if (mdp.dimY > 1)
+        if (mdp.Height > 1)
         {
             _offsetToCenterVector += _2Doffset;
         }
@@ -75,9 +75,9 @@ public class MDPGenerator : MonoBehaviour
         
         // for (int y = 0; y < mdpGridWorldDimensions.y; y++)
         // for (int x = 0; x < mdpGridWorldDimensions.x; x++)
-        for (int y = 0; y < mdp.dimY; y++)
+        for (int y = 0; y < mdp.Height; y++)
         {
-            for (int x = 0; x < mdp.dimX; x++)
+            for (int x = 0; x < mdp.Width; x++)
             {
                 Vector3 scale = new Vector3(
                     (1 - gapBetweenStates),

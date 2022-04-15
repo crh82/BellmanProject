@@ -7,7 +7,7 @@ using UnityEngine.Serialization;
 [Serializable]
 public class MarkovTransition
 {
-    
+     
     // Old code, currently kept as a touchstone.
     // public float Probability;
     // public int SuccessorState;
@@ -26,7 +26,7 @@ public class MarkovTransition
     [SerializeField] private float      probability;
     [SerializeField] private int        successorState;
     [SerializeField] private float      reward;
-    [SerializeField] private bool       isTerminal;
+    // [SerializeField] private bool       isTerminal;
 
     public int State
     {
@@ -58,11 +58,11 @@ public class MarkovTransition
         set => reward = value;
     }
 
-    public bool IsTerminal
-    {
-        get => isTerminal;
-        set => isTerminal = value;
-    }
+    // public bool IsTerminal
+    // {
+    //     get => isTerminal;
+    //     set => isTerminal = value;
+    // }
 }
 
 

@@ -60,9 +60,9 @@ public class MDPManager : MonoBehaviour
     {
         bool outOfBoundsTop             = destination > mdp.States.Count - 1;
         bool outOfBoundsBottom          = destination < 0;
-        bool outOfBoundsLeft            = origin       % mdp.dimX == 0 && action == GridAction.Left;
-        bool outOfBoundsRight           = (origin + 1) % mdp.dimX == 0 && action == GridAction.Right;
-        bool hitObstacle = mdp.obstacleStates.Contains(destination);
+        bool outOfBoundsLeft            = origin       % mdp.Width == 0 && action == GridAction.Left;
+        bool outOfBoundsRight           = (origin + 1) % mdp.Width == 0 && action == GridAction.Right;
+        bool hitObstacle = mdp.ObstacleStates.Contains(destination);
 
         return (outOfBoundsLeft   | 
                 outOfBoundsBottom | 
@@ -81,9 +81,9 @@ public class MDPManager : MonoBehaviour
         return action switch
         {
             GridAction.Left => -1,
-            GridAction.Down => -mdp.dimX,
+            GridAction.Down => -mdp.Width,
             GridAction.Right => 1,
-            GridAction.Up => mdp.dimX,
+            GridAction.Up => mdp.Width,
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
     }
