@@ -1,0 +1,2050 @@
+{
+  "name": "FrozenLake4x4",
+  "width": 4,
+  "height": 4,
+  "states": [
+    {
+      "stateIndex": 0,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            0,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 0,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 0,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 0,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            0,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 0,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 0,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 0,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            0,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 0,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 0,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 0,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            0,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 0,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 0,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 0,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 0
+    },
+    {
+      "stateIndex": 1,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            1,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 1,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 1,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 1,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            1,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 1,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 1,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 1,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            1,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 1,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            },
+            {
+              "state": 1,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 1,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            1,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 1,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            },
+            {
+              "state": 1,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 1,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 2,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            2,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 2,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 2,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            },
+            {
+              "state": 2,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            2,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 2,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            },
+            {
+              "state": 2,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 2,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            2,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 2,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 2,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            },
+            {
+              "state": 2,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            2,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 2,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            },
+            {
+              "state": 2,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 2,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 3,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            3,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 3,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 3,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 3,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            3,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 3,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 3,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 3,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            3,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 3,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 3,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 3,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            3,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 3,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 3,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            },
+            {
+              "state": 3,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 3,
+              "reward": 1.0
+            }
+          ]
+        }
+      ],
+      "reward": 1.0,
+      "typeOfState": 2
+    },
+    {
+      "stateIndex": 4,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            4,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 4,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 4,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 4,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            4,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 4,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 4,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 4,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            4,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 4,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            },
+            {
+              "state": 4,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 0,
+              "reward": 0.0
+            },
+            {
+              "state": 4,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            4,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 4,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            },
+            {
+              "state": 4,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 4,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 5,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            5,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 5,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 5,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 5,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            5,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 5,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 5,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 5,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            5,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 5,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            },
+            {
+              "state": 5,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 1,
+              "reward": 0.0
+            },
+            {
+              "state": 5,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            5,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 5,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 5,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 5,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 6,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            6,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 6,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            },
+            {
+              "state": 6,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            },
+            {
+              "state": 6,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 10,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            6,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 6,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            },
+            {
+              "state": 6,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            },
+            {
+              "state": 6,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            6,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 6,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 6,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 2,
+              "reward": 0.0
+            },
+            {
+              "state": 6,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 10,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            6,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 6,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 10,
+              "reward": 0.0
+            },
+            {
+              "state": 6,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 5,
+              "reward": 0.0
+            },
+            {
+              "state": 6,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 7,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            7,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 7,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 7,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 7,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            7,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 7,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 7,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 7,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            7,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 7,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 7,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 7,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            7,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 7,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 7,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            },
+            {
+              "state": 7,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 7,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 0
+    },
+    {
+      "stateIndex": 8,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            8,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 8,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            },
+            {
+              "state": 8,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 8,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            8,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 8,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 8,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            },
+            {
+              "state": 8,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            8,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 8,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 8,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 4,
+              "reward": 0.0
+            },
+            {
+              "state": 8,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            8,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 8,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            },
+            {
+              "state": 8,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            },
+            {
+              "state": 8,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 9,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            9,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 9,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 9,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 9,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            9,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 9,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 9,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 9,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            9,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 9,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 9,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 9,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            9,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 9,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 9,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 9,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 0
+    },
+    {
+      "stateIndex": 10,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            10,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 10,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 10,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            },
+            {
+              "state": 10,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            10,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 10,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            },
+            {
+              "state": 10,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 10,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            10,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 10,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 10,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 6,
+              "reward": 0.0
+            },
+            {
+              "state": 10,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            10,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 10,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            },
+            {
+              "state": 10,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 10,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 11,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            11,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 11,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 11,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 11,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            11,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 11,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 11,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 11,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            11,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 11,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 11,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 11,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            11,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 11,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 11,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 11,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 0
+    },
+    {
+      "stateIndex": 12,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            12,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 12,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            },
+            {
+              "state": 12,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            },
+            {
+              "state": 12,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            12,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 12,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            },
+            {
+              "state": 12,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            },
+            {
+              "state": 12,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            12,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 12,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            },
+            {
+              "state": 12,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 8,
+              "reward": 0.0
+            },
+            {
+              "state": 12,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            12,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 12,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            },
+            {
+              "state": 12,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            },
+            {
+              "state": 12,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 13,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            13,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 13,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            },
+            {
+              "state": 13,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 13,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            13,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 13,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 13,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            },
+            {
+              "state": 13,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            13,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 13,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            },
+            {
+              "state": 13,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 9,
+              "reward": 0.0
+            },
+            {
+              "state": 13,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            13,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 13,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            },
+            {
+              "state": 13,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 12,
+              "reward": 0.0
+            },
+            {
+              "state": 13,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 14,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            14,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 14,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            },
+            {
+              "state": 14,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 10,
+              "reward": 0.0
+            },
+            {
+              "state": 14,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            14,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 14,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 10,
+              "reward": 0.0
+            },
+            {
+              "state": 14,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            },
+            {
+              "state": 14,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            14,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 14,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            },
+            {
+              "state": 14,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 10,
+              "reward": 0.0
+            },
+            {
+              "state": 14,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            14,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 14,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            },
+            {
+              "state": 14,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 13,
+              "reward": 0.0
+            },
+            {
+              "state": 14,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    },
+    {
+      "stateIndex": 15,
+      "applicableActions": [
+        {
+          "action": 0,
+          "stateAction": [
+            15,
+            0
+          ],
+          "transitions": [
+            {
+              "state": 15,
+              "actionTaken": 0,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            },
+            {
+              "state": 15,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 15,
+              "actionTaken": 0,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 1,
+          "stateAction": [
+            15,
+            1
+          ],
+          "transitions": [
+            {
+              "state": 15,
+              "actionTaken": 1,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 15,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            },
+            {
+              "state": 15,
+              "actionTaken": 1,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 2,
+          "stateAction": [
+            15,
+            2
+          ],
+          "transitions": [
+            {
+              "state": 15,
+              "actionTaken": 2,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            },
+            {
+              "state": 15,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 11,
+              "reward": 0.0
+            },
+            {
+              "state": 15,
+              "actionTaken": 2,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            }
+          ]
+        },
+        {
+          "action": 3,
+          "stateAction": [
+            15,
+            3
+          ],
+          "transitions": [
+            {
+              "state": 15,
+              "actionTaken": 3,
+              "probability": 0.33333998918533325,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            },
+            {
+              "state": 15,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 14,
+              "reward": 0.0
+            },
+            {
+              "state": 15,
+              "actionTaken": 3,
+              "probability": 0.3333300054073334,
+              "successorStateIndex": 15,
+              "reward": 0.0
+            }
+          ]
+        }
+      ],
+      "reward": 0.0,
+      "typeOfState": 3
+    }
+  ],
+  "mdpRules": 3,
+  "obstacleStates": [],
+  "terminalStates": [
+    0,
+    7,
+    9,
+    11
+  ],
+  "goalStates": [
+    3
+  ]
+}

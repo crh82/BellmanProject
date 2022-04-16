@@ -25,7 +25,8 @@ public class MDP
     [SerializeField] private int[] terminalStates;
     [SerializeField] private int[] goalStates;
 
-    // NOTE: Don't know if it's better to use dictionaries here 
+    // NOTE: Don't know if it's better to use dictionaries here...
+    // noting that Unity can't serialize and deserialize dictionaries.
     private Dictionary<int[], float> _transitionProbabilities;
     private Dictionary<int, float> _rewards;
 

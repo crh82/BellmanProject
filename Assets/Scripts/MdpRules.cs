@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using UnityEditor.Animations;
 using UnityEngine.Assertions;
 using Random = UnityEngine.Random;
 
@@ -55,13 +57,17 @@ public static class RuleProbabilityDistributor
             case MdpRules.DrunkBonanza:
                 // ¯¯\_(ツ)_/¯¯
                 float bloodAlcoholReading = Random.Range(0f, 1f);
-                float effectOne   =           0 + bloodAlcoholReading;
-                float effectTwo   =   effectOne + Random.Range(effectOne, 1f);
-                float effectThree =   effectTwo + Random.Range(effectTwo, 1f);
-                float effectFour  = effectThree + Random.Range(effectThree, 1f);
-                transitions = new[] {effectOne, effectTwo, effectThree, effectFour};
+                float effectOne   = 0 + bloodAlcoholReading;
+                float effectTwo   = Random.Range(0f, 1f);
+                float effectThree = Random.Range(0f, 1f);
+                float effectFour  = Random.Range(0f, 1f);
+                float[] drunkTransitions = {effectOne, effectTwo, effectThree, effectFour};
+                float total = drunkTransitions.Sum();
+                transitions = new[] {effectOne / total, effectTwo / total, effectThree / total, effectFour / total};
                 break;
             case MdpRules.GrastiensWindFromTheNorth:
+                transitions = new[] {1.0f, 1.0f, 1.0f, 1.0f};
+                break;
             case MdpRules.Deterministic:
             default:
                 // Corresponds to case Rules.Deterministic

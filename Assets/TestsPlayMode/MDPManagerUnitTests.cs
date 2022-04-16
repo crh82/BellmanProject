@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -29,78 +30,78 @@ namespace TestsPlayMode
         private const GridAction Up    = GridAction.Up;
         
 
-        // [Test]
-        // public void LeftAction()
-        // {
-        //     // Action performed as intended
-        //     _testMdp.ObstacleStates = new[ ]{5};
-        //     Assert.That(2, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 3, Left)));
-        //     Assert.That(9, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 10, Left)));
-        //     Assert.That(0, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 1, Left)));
-        //
-        //     // Hitting the left boundary
-        //     Assert.That(8, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 8, Left)));
-        //     Assert.That(4, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 4, Left)));
-        //     Assert.That(0, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 0, Left)));
-        // }
-        //
-        //
-        // [Test]
-        // public void DownAction()
-        // {
-        //     // Action performed as intended
-        //     _testMdp.ObstacleStates = new[ ]{5};
-        //     Assert.That(0, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 4, Down)));
-        //     Assert.That(6, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 10, Down)));
-        //     Assert.That(4, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 8, Down)));
-        //
-        //     // Hitting the bottom boundary
-        //     Assert.That(0, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 0, Down)));
-        //     Assert.That(1, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 1, Down)));
-        //     Assert.That(3, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 3, Down)));
-        // }
+        [Test]
+        public void LeftAction()
+        {
+            // Action performed as intended
+            _testMdp.ObstacleStates = new[ ]{5};
+            Assert.That(2, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[3], Left)));
+            Assert.That(9, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[10], Left)));
+            Assert.That(0, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[1], Left)));
+        
+            // Hitting the left boundary
+            Assert.That(8, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[8], Left)));
+            Assert.That(4, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[4], Left)));
+            Assert.That(0, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[0], Left)));
+        }
+        
+        
+        [Test]
+        public void DownAction()
+        {
+            // Action performed as intended
+            _testMdp.ObstacleStates = new[ ]{5};
+            Assert.That(0, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[4], Down)));
+            Assert.That(6, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[10], Down)));
+            Assert.That(4, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[8], Down)));
+        
+            // Hitting the bottom boundary
+            Assert.That(0, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[0], Down)));
+            Assert.That(1, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[1], Down)));
+            Assert.That(3, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[3], Down)));
+        }
     
-        //
-        // [Test]
-        // public void RightAction()
-        // {
-        //     // Action performed as intended
-        //     _testMdp.ObstacleStates = new[ ]{5};
-        //     Assert.That(3,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 2, Right)));
-        //     Assert.That(1,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 0, Right)));
-        //     Assert.That(10, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 9, Right)));
-        //
-        //     // Hitting the right boundary
-        //     Assert.That(11, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 11, Right)));
-        //     Assert.That(7,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 7, Right)));
-        //     Assert.That(3,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 3, Right)));
-        // }
-        //
-        //
-        // [Test]
-        // public void UpAction()
-        // {
-        //     // Action performed as intended
-        //     _testMdp.ObstacleStates = new[ ]{5};
-        //     Assert.That(4,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 0, Up)));
-        //     Assert.That(10, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 6, Up)));
-        //     Assert.That(8,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 4, Up)));
-        //
-        //     // Hitting the top boundary
-        //     Assert.That(8,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 8, Up)));
-        //     Assert.That(9,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 9, Up)));
-        //     Assert.That(11, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 11, Up)));
-        // }
-        //
-        // [Test]
-        // public void HitsObstacleReturnsState()
-        // {
-        //     _testMdp.ObstacleStates = new[ ]{5};
-        //     Assert.That(6, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 6, Left)));
-        //     Assert.That(9, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 9, Down)));
-        //     Assert.That(4, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 4, Right)));
-        //     Assert.That(1, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, 1, Up)));
-        // }
+        
+        [Test]
+        public void RightAction()
+        {
+            // Action performed as intended
+            _testMdp.ObstacleStates = new[ ]{5};
+            Assert.That(3,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[2], Right)));
+            Assert.That(1,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[0], Right)));
+            Assert.That(10, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[9], Right)));
+        
+            // Hitting the right boundary
+            Assert.That(11, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[11], Right)));
+            Assert.That(7,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[7], Right)));
+            Assert.That(3,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[3], Right)));
+        }
+        
+        
+        [Test]
+        public void UpAction()
+        {
+            // Action performed as intended
+            _testMdp.ObstacleStates = new[ ]{5};
+            Assert.That(4,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[0], Up)));
+            Assert.That(10, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[6], Up)));
+            Assert.That(8,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[4], Up)));
+        
+            // Hitting the top boundary
+            Assert.That(8,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[8], Up)));
+            Assert.That(9,  Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[9], Up)));
+            Assert.That(11, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[11], Up)));
+        }
+        
+        [Test]
+        public void HitsObstacleReturnsState()
+        {
+            _testMdp.ObstacleStates = new[ ]{5};
+            Assert.That(6, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[6], Left)));
+            Assert.That(9, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[9], Down)));
+            Assert.That(4, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[4], Right)));
+            Assert.That(1, Is.EqualTo(MdpAdmin.GenerateSuccessorStateFromAction(_testMdp, _testMdp.States[1], Up)));
+        }
 
         [Test]
         public void InverseActionsTests()
@@ -140,18 +141,18 @@ namespace TestsPlayMode
         private MarkovTransition _t1 = new MarkovTransition
         {
             State = 0,
-            Action = GridAction.Right,
+            ActionTaken = GridAction.Right,
             Probability = 1.0f,
-            SuccessorState = 1,
+            SuccessorStateIndex = 1,
             Reward = 15.75f,
             // IsTerminal = false
         };
         private MarkovTransition _t2 = new MarkovTransition
         {
             State = 1,
-            Action = GridAction.Left,
+            ActionTaken = GridAction.Left,
             Probability = 1.0f,
-            SuccessorState = 2,
+            SuccessorStateIndex = 2,
             Reward = 15.75f,
             // IsTerminal = false
         };
@@ -164,43 +165,160 @@ namespace TestsPlayMode
             Assert.That(_s3.IsTerminal, Is.True);
         }
 
-        [Test]
-        public void SerialisingStates()
-        {
-            
-        }
+       
 
     }
     
     public class MdpGenerationTests
     {
-
-        private readonly MDP _testMdp = MdpAdmin.GenerateMdp(
-            name:"RussellNorvigTest", 
+        private const GridAction Left  = GridAction.Left;
+        private const GridAction Down  = GridAction.Down;
+        private const GridAction Right = GridAction.Right;
+        private const GridAction Up    = GridAction.Up;
+        
+        private readonly MDP _russellNorvigMdp = MdpAdmin.GenerateMdp(
+            "RussellNorvigGridworld", 
             MdpRules.RussellAndNorvig,
-            dimensions: new[] {4, 3},
+            new[] {4, 3},
             new[] {5},
             new[] {7},
             new[] {11},
             -0.04f,
             -1f,
             1f);
-
-        // obstacleStates:
-        // terminalStates:
-        // goalStates:
-        // standard
-        [Test]
-        public void MdpNotNull()
-        {
-            
-        }
+        
+        private readonly MDP _frozenLake4 = MdpAdmin.GenerateMdp(
+            "FrozenLake4x4", 
+            MdpRules.FrozenLake,
+            new[] {4, 4},
+            new int[] {},
+            new[] {0,7,9,11},
+            new[] {3});
+        
+        private readonly MDP _drunkBonanza = MdpAdmin.GenerateMdp(
+            name:"DrunkBonanza4x4", 
+            MdpRules.DrunkBonanza,
+            dimensions: new[] {4, 4},
+            new int[] {},
+            new[] {0,7,9,11},
+            new[] {3},
+            -0.04f,
+            -1f,
+            10f);
 
         [Test]
         public void TestGridWorldRules()
         {
             Assert.That(new[]{0.5f, 0.33333f, 0.16667f}, Is.EquivalentTo(MdpRules.SlipperyWalk.GetProbabilityDistributionOfActionOutcomes()));
+            Assert.That((MdpRules.DrunkBonanza.GetProbabilityDistributionOfActionOutcomes().Sum()), Is.InRange(0.99f, 1.001f));
         }
-    
+
+        [Test]
+        public void MdpInitialization()
+        {
+            Assert.That(_russellNorvigMdp.MdpRules, Is.EqualTo(MdpRules.RussellAndNorvig));
+            Assert.That(_russellNorvigMdp.States.Count, Is.EqualTo(12));
+            Assert.That(_russellNorvigMdp.States[2].ApplicableActions.Count, Is.EqualTo(4));
+            // Assert.That(_russellNorvigMdp.Rewards[11], Is.EqualTo(1f));
+            
+        }
+        
+        [Test]
+        public void SerialisingStates()
+        {
+            MdpAdmin.SaveMdpToFile(_russellNorvigMdp, "Assets/Resources/CanonicalMDPs");
+            MdpAdmin.SaveMdpToFile(_frozenLake4, "Assets/Resources/CanonicalMDPs");
+            MdpAdmin.SaveMdpToFile(_drunkBonanza, "Assets/Resources/CanonicalMDPs");
+        }
+
+        [Test]
+        public void DeserialisationTests()
+        {
+            string jsonStringFromJsonFile = File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json");
+            MDP russellAndNorvig = MdpAdmin.LoadMdp(jsonStringFromJsonFile);
+            
+            Assert.That(russellAndNorvig.ObstacleStates, Has.Member(5));
+            Assert.That(russellAndNorvig.GoalStates,     Has.Member(11));
+            Assert.That(russellAndNorvig.TerminalStates, Has.Member(7));
+            Assert.That(russellAndNorvig
+                .States[3]
+                .ApplicableActions[(int) Up]
+                .Transitions[0]
+                .SuccessorStateIndex, Is.EqualTo(7));
+           
+            Assert.That(russellAndNorvig
+                .States[3]
+                .ApplicableActions[(int) Left]
+                .Transitions[1]
+                .Probability, Is.InRange(0.09f, 0.11f));
+            
+            Assert.That(russellAndNorvig
+                .States[10]
+                .ApplicableActions[(int) Right]
+                .Transitions[0]
+                .SuccessorStateIndex, Is.EqualTo(11));
+            
+            Assert.That(russellAndNorvig
+                .States[8]
+                .ApplicableActions[(int) Down]
+                .Transitions[2]
+                .Probability, Is.InRange(0.09f, 0.11f));
+            
+            Assert.That(russellAndNorvig
+                .States[4]
+                .ApplicableActions[(int) Left]
+                .Transitions[0]
+                .SuccessorStateIndex, Is.EqualTo(4));
+            
+            Assert.That(russellAndNorvig
+                .States[10]
+                .ApplicableActions[(int) Right]
+                .Transitions[0]
+                .Reward, Is.InRange(0.9f, 1.1f));
+            
+            jsonStringFromJsonFile = File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json");
+            MDP frozenLake4b4 = MdpAdmin.LoadMdp(jsonStringFromJsonFile);
+            
+            Assert.That(frozenLake4b4.TerminalStates, Has.Member(11));
+            Assert.That(frozenLake4b4.GoalStates,     Has.Member(3));
+            Assert.That(frozenLake4b4.TerminalStates, Has.Member(7));
+            Assert.That(frozenLake4b4
+                .States[3]
+                .ApplicableActions[(int) Up]
+                .Transitions[0]
+                .SuccessorStateIndex, Is.EqualTo(3));
+           
+            Assert.That(frozenLake4b4
+                .States[2]
+                .ApplicableActions[(int) Right]
+                .Transitions[0]
+                .Reward, Is.InRange(0.9f, 1.1f));
+            
+            Assert.That(frozenLake4b4
+                .States[10]
+                .ApplicableActions[(int) Down]
+                .Transitions[0]
+                .SuccessorStateIndex, Is.EqualTo(6));
+            
+            Assert.That(frozenLake4b4
+                .States[8]
+                .ApplicableActions[(int) Down]
+                .Transitions[0]
+                .Probability, Is.InRange(0.32f, 0.34f));
+            
+            Assert.That(frozenLake4b4
+                .States[9]
+                .ApplicableActions[(int) Left]
+                .Transitions[0]
+                .SuccessorStateIndex, Is.EqualTo(9));
+            
+            Assert.That(frozenLake4b4
+                .States[14]
+                .ApplicableActions[(int) Right]
+                .Transitions[0]
+                .Reward, Is.InRange(0.0f, 0.01f));
+            
+        }
+
     }
 }

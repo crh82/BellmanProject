@@ -1,14 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Assertions;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
-public class MdpAdmin
+
+/// <summary>
+/// The <c>MdpAdmin</c> creates the Canonical MDPs for serialization and persistent storage as JSON files.
+/// <remarks>
+/// <para>
+/// In its current state it is decidedly inefficient and its outrageous complexity is the product of trying to
+/// reconcile the constraints of Unity — which doesn't seem to handle serializing and deserializing nested arrays; but
+/// also whether visualisation requirements are being taken into account. 
+/// </para>
+/// <para>
+/// I was in a dark place here, a dark dark place. 
+/// </para>
+/// </remarks>
+/// </summary>
+public static class MdpAdmin
 {
     private const GridAction Left  = GridAction.Left;
     private const GridAction Down  = GridAction.Down;
@@ -18,6 +34,23 @@ public class MdpAdmin
     private const int SeedValue = 5;
     // public static Random RandomValueGenerator = new Random(SeedValue);
     
+    
+    /// <summary>
+    /// Todo Deal with the problems that could arise form the obstacle, terminal, and goal arrays
+    ///
+    /// 
+    /// </summary>
+    /// <param name="name"><c>string</c>
+    /// </param>
+    /// <param name="gridworldMdpRules"></param>
+    /// <param name="dimensions"></param>
+    /// <param name="obstacleStates"></param>
+    /// <param name="terminalStates"></param>
+    /// <param name="goalStates"></param>
+    /// <param name="standardReward"></param>
+    /// <param name="terminalReward"></param>
+    /// <param name="goalReward"></param>
+    /// <returns></returns>
     public static MDP GenerateMdp( 
         string   name,
         MdpRules gridworldMdpRules,
@@ -27,7 +60,7 @@ public class MdpAdmin
         int[]    goalStates,
         float    standardReward = 0,
         float    terminalReward = 0,
-        float    goalReward = 1
+        float    goalReward     = 1
     )
     {
         
@@ -103,6 +136,8 @@ public class MdpAdmin
             {
                 int[] stateActionPair = {markovState.StateIndex, (int) action};
 
+                Debug.Log($"S_{markovState.StateIndex} A_{action.ToString()}");
+                
                 var actionToAdd = new MarkovAction
                 {
                     Action = action,
@@ -175,7 +210,9 @@ public class MdpAdmin
                 transitions = FullTransitionsEffects(mdp, mState, probabilityDistribution);
                 break;
 
-            case MdpRules.GrastiensWindFromTheNorth: // Todo Include
+            case MdpRules.GrastiensWindFromTheNorth:
+                // transitions = GrastiensRules(mdp, mState, probabilityDistribution);
+                // break;
             case MdpRules.Deterministic:
             default:
                 transitions = FullTransitionsEffects(mdp, mState, probabilityDistribution);
@@ -185,6 +222,11 @@ public class MdpAdmin
         Assert.IsNotNull(transitions);
         return transitions;
     }
+
+    // private static List<MarkovTransition> GrastiensRules()
+    // {
+    //     
+    // }
 
     private static List<MarkovTransition> FullTransitionsEffects(
         MDP mdp, 
@@ -275,15 +317,11 @@ public class MdpAdmin
     public static int GenerateSuccessorStateFromAction(MDP mdp, MarkovState state, GridAction action)
     {
         int successorIndex = state.StateIndex + ArithmeticEffectOfAction(mdp, action);
-        
-        if (SuccessorStateOutOfBounds(mdp, state.StateIndex, successorIndex, action))
-        {
-            return state.StateIndex;
-        }
-        if (mdp.States[successorIndex].IsObstacle())
-        {
-            return state.StateIndex;
-        }
+        if (state.IsGoal())     return state.StateIndex;
+        if (state.IsTerminal()) return state.StateIndex;
+        if (state.IsObstacle()) return state.StateIndex;
+        if (SuccessorStateOutOfBounds(mdp, state.StateIndex, successorIndex, action)) return state.StateIndex;
+        if (mdp.States[successorIndex].IsObstacle()) return state.StateIndex;
         return successorIndex;
     }
     
