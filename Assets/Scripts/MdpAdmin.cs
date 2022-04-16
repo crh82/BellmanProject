@@ -18,7 +18,7 @@ public class MdpAdmin
     private const int SeedValue = 5;
     // public static Random RandomValueGenerator = new Random(SeedValue);
     
-    public static MDP GenerateMdp(
+    public static MDP GenerateMdp( 
         string   name,
         MdpRules gridworldMdpRules,
         int[]    dimensions,
@@ -43,21 +43,25 @@ public class MdpAdmin
             GoalStates     = goalStates
         };
         
-        AssignStateTypesAndRewards(newMdp, standardReward, terminalReward, goalReward);
+        InitializeStateObjects(newMdp, standardReward, terminalReward, goalReward);
         
-        InitializeTransitions(newMdp);
+        InitializeActionsAndTransitions(newMdp);
         
         return newMdp;
     }
 
 
-    private static void AssignStateTypesAndRewards(MDP newMdp, float standardReward, float terminalReward, float goalReward)
+    private static void InitializeStateObjects(MDP newMdp, float standardReward, float terminalReward, float goalReward)
     {
         int numberOfStates = newMdp.Width * newMdp.Height;
 
         for (var stateIndex = 0; stateIndex < numberOfStates; stateIndex++)
         {
-            var stateToAdd = new MarkovState {StateIndex = stateIndex};
+            var stateToAdd = new MarkovState
+            {
+                StateIndex = stateIndex,
+                ApplicableActions = new List<MarkovAction>()
+            };
 
             // Obstacle state
             if (newMdp.ObstacleStates.Contains(stateIndex))
@@ -91,13 +95,13 @@ public class MdpAdmin
         }
     }
 
-    private static void InitializeTransitions(MDP newMdp)
+    private static void InitializeActionsAndTransitions(MDP newMdp)
     {
-        foreach (var state in newMdp.States)
+        foreach (MarkovState markovState in newMdp.States)
         {
             foreach (GridAction action in Enum.GetValues(typeof(GridAction)))
             {
-                int[] stateActionPair = {state.StateIndex, (int) action};
+                int[] stateActionPair = {markovState.StateIndex, (int) action};
 
                 var actionToAdd = new MarkovAction
                 {
@@ -105,9 +109,9 @@ public class MdpAdmin
                     StateAction = stateActionPair
                 };
 
-                actionToAdd.Transitions = GenerateTransitions(newMdp, state, actionToAdd);
+                actionToAdd.Transitions = GenerateTransitions(newMdp, markovState, actionToAdd);
 
-                state.ApplicableActions.Add(actionToAdd);
+                markovState.ApplicableActions.Add(actionToAdd);
             }
         }
     }
@@ -125,29 +129,32 @@ public class MdpAdmin
                 var intended = new MarkovTransition
                 {
                     State = mState.StateIndex,
-                    Action = mAction.Action,
+                    ActionTaken = mAction.Action,
                     Probability = probabilityDistribution[0],
-                    SuccessorState = GenerateSuccessorStateFromAction(mdp, mState, mAction.Action)
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(mdp, mState, mAction.Action)
                 };
+                intended.Reward = mdp.States[intended.SuccessorStateIndex].Reward;
 
                 var noEffect = new MarkovTransition
                 {
                     State = mState.StateIndex, 
-                    Action = mAction.Action,
+                    ActionTaken = mAction.Action,
                     Probability = probabilityDistribution[1],
-                    SuccessorState = mState.StateIndex
+                    SuccessorStateIndex = mState.StateIndex
                 };
-
+                noEffect.Reward = mdp.States[noEffect.SuccessorStateIndex].Reward;
+                
                 var inverseEffect = new MarkovTransition
                 {
                     State = mState.StateIndex,
-                    Action = mAction.Action,
+                    ActionTaken = mAction.Action,
                     Probability = probabilityDistribution[2],
-                    SuccessorState = GenerateSuccessorStateFromAction(
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(
                         mdp, 
                         mState, 
                         mAction.Action.GetInverseEffectOfAction())
                 };
+                inverseEffect.Reward = mdp.States[inverseEffect.SuccessorStateIndex].Reward;
 
                 transitions = new List<MarkovTransition> {intended, noEffect, inverseEffect};
                 break;
@@ -187,13 +194,16 @@ public class MdpAdmin
         var transitions = new List<MarkovTransition>();
         for (int i = 0; i < 4; i++)
         {
-            transitions.Add(new MarkovTransition
+            var newTransition = new MarkovTransition
             {
                 State = mState.StateIndex,
-                Action = (GridAction) i,
+                ActionTaken = (GridAction) i,
                 Probability = probabilityDistribution[i],
-                SuccessorState = GenerateSuccessorStateFromAction(mdp, mState, (GridAction) i)
-            });
+                SuccessorStateIndex = GenerateSuccessorStateFromAction(mdp, mState, (GridAction) i)
+            };
+            newTransition.Reward = mdp.States[newTransition.SuccessorStateIndex].Reward;
+            
+            transitions.Add(newTransition);
         }
 
         return transitions;
@@ -205,41 +215,43 @@ public class MdpAdmin
         MarkovAction mAction,
         float[] probabilityDistribution)
     {
-        List<MarkovTransition> transitions;
-        
         var intended = new MarkovTransition
         {
             State = mState.StateIndex,
-            Action = mAction.Action,
+            ActionTaken = mAction.Action,
             Probability = probabilityDistribution[0],
-            SuccessorState = GenerateSuccessorStateFromAction(mdp, mState, mAction.Action)
+            SuccessorStateIndex = GenerateSuccessorStateFromAction(mdp, mState, mAction.Action)
         };
-
+        
+        intended.Reward = mdp.States[intended.SuccessorStateIndex].Reward;
+        
         var effects = mAction.Action.GetOrthogonalEffects();
         
         var orthogonalEffect = new MarkovTransition
         {
             State = mState.StateIndex,
-            Action = mAction.Action,
+            ActionTaken = mAction.Action,
             Probability = probabilityDistribution[1],
-            SuccessorState = GenerateSuccessorStateFromAction(
+            SuccessorStateIndex = GenerateSuccessorStateFromAction(
                 mdp,
                 mState,
                 effects[0])
         };
+        orthogonalEffect.Reward = mdp.States[orthogonalEffect.SuccessorStateIndex].Reward;
 
         var otherOrthogonalEffect = new MarkovTransition
         {
             State = mState.StateIndex,
-            Action = mAction.Action,
+            ActionTaken = mAction.Action,
             Probability = probabilityDistribution[2],
-            SuccessorState = GenerateSuccessorStateFromAction(
+            SuccessorStateIndex = GenerateSuccessorStateFromAction(
                 mdp,
                 mState,
                 effects[1])
         };
+        otherOrthogonalEffect.Reward = mdp.States[otherOrthogonalEffect.SuccessorStateIndex].Reward;
 
-        transitions = new List<MarkovTransition> {intended, orthogonalEffect, otherOrthogonalEffect};
+        var transitions = new List<MarkovTransition> {intended, orthogonalEffect, otherOrthogonalEffect};
         return transitions;
     }
 
@@ -373,10 +385,14 @@ public class MdpAdmin
         return JsonUtility.FromJson<MDP>(jsonString);
     }
     
-    public static void SaveMdpToFile(MDP mdp)
+    public static void SaveMdpToFile(MDP mdp, string filePath = null)
     {
-        string jsonRepresentationOfMdp = JsonUtility.ToJson(mdp);
         string saveFilePath = Application.persistentDataPath + $"/{mdp.Name}.json";
+        if (filePath != null)
+        {
+            saveFilePath = $"{filePath}/{mdp.Name}.json";
+        }
+        string jsonRepresentationOfMdp = JsonUtility.ToJson(mdp);
         File.WriteAllText(saveFilePath, jsonRepresentationOfMdp);
     }
 }

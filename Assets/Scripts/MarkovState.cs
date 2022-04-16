@@ -16,15 +16,15 @@ public class MarkovState
     // public int State;
     // public List<MarkovAction> ApplicableActions;
 
-    [SerializeField] private int stateIndexIndex;
+    [FormerlySerializedAs("stateIndexIndex")] [SerializeField] private int stateIndex;
     [SerializeField] private List<MarkovAction> applicableActions;
     [SerializeField] private float reward;
     [SerializeField] private StateType typeOfState;
 
     public int StateIndex
     {
-        get => stateIndexIndex;
-        set => stateIndexIndex = value;
+        get => stateIndex;
+        set => stateIndex = value;
     }
 
     public List<MarkovAction> ApplicableActions

@@ -22,9 +22,9 @@ public class MarkovTransition
     // }
     
     [SerializeField] private int        state;
-    [SerializeField] private GridAction action;
+    [SerializeField] private GridAction actionTaken;
     [SerializeField] private float      probability;
-    [SerializeField] private int        successorState;
+    [SerializeField] private int        successorStateIndex;
     [SerializeField] private float      reward;
     // [SerializeField] private bool       isTerminal;
 
@@ -34,10 +34,10 @@ public class MarkovTransition
         set => state = value;
     }
 
-    public GridAction Action
+    public GridAction ActionTaken
     {
-        get => action;
-        set => action = value;
+        get => actionTaken;
+        set => actionTaken = value;
     }
 
     public float Probability
@@ -46,10 +46,10 @@ public class MarkovTransition
         set => probability = value;
     }
 
-    public int SuccessorState
+    public int SuccessorStateIndex
     {
-        get => successorState;
-        set => successorState = value;
+        get => successorStateIndex;
+        set => successorStateIndex = value;
     }
 
     public float Reward
