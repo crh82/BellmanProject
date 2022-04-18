@@ -44,16 +44,22 @@ public class Algorithms : MonoBehaviour
         {
             foreach (var state in mdp.States)
             {
-                if (state.IsTerminal() | state.IsGoal() | state.IsObstacle()) continue;
+                // if (state.IsTerminal() || state.IsGoal() || state.IsObstacle()) continue;
+                if (state.IsObstacle()) continue;
                 
                 foreach (var transition in P(state, Pi(state)))
                 {
                     int currentState = state.StateIndex;
+                    var  actionTaken = transition.ActionTaken;
+                    
                     float       prob = transition.Probability;
                     int    nextState = transition.SuccessorStateIndex;
                     float     reward = transition.Reward;
+                    float    vSprime = previousStateValue[nextState];
+                    float zeroIfTerm = ZeroIfTerminal(nextState);
+                    float bellmanBackup = BellmanBackup(prob, reward, vSprime, zeroIfTerm);
                         
-                    stateValue[currentState] += prob * (reward + gamma * previousStateValue[nextState] * ZeroIfTerminal(nextState));
+                    stateValue[currentState] += bellmanBackup;
                 }
             }
 
@@ -64,10 +70,19 @@ public class Algorithms : MonoBehaviour
         }
     }
 
+    private float BellmanBackup(float prob, float reward, float vSprime, float zeroIfTerm)
+    {
+        return prob * (reward + gamma * vSprime * zeroIfTerm);
+    }
+
     public float ZeroIfTerminal(int stateIndex)
     {
+        
         MarkovState state = mdp.States[stateIndex];
-        return state.IsTerminal() ? 0 : 1;
+        bool terminal = state.IsTerminal();
+        bool goal = state.IsGoal();
+        float outcome = (state.IsTerminal() || state.IsGoal()) ? 0 : 1;
+        return outcome;
     }
 
     public static float MaxAbsoluteDifference(float[] prevValue, float[] value)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -277,42 +278,42 @@ namespace TestsPlayMode
                 .Reward, Is.InRange(0.9f, 1.1f));
             
             jsonStringFromJsonFile = File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json");
-            MDP frozenLake4b4 = MdpAdmin.LoadMdp(jsonStringFromJsonFile);
+            MDP frozenLake4B4 = MdpAdmin.LoadMdp(jsonStringFromJsonFile);
             
-            Assert.That(frozenLake4b4.TerminalStates, Has.Member(11));
-            Assert.That(frozenLake4b4.GoalStates,     Has.Member(3));
-            Assert.That(frozenLake4b4.TerminalStates, Has.Member(7));
-            Assert.That(frozenLake4b4
+            Assert.That(frozenLake4B4.TerminalStates, Has.Member(11));
+            Assert.That(frozenLake4B4.GoalStates,     Has.Member(3));
+            Assert.That(frozenLake4B4.TerminalStates, Has.Member(7));
+            Assert.That(frozenLake4B4
                 .States[3]
                 .ApplicableActions[(int) Up]
                 .Transitions[0]
                 .SuccessorStateIndex, Is.EqualTo(3));
            
-            Assert.That(frozenLake4b4
+            Assert.That(frozenLake4B4
                 .States[2]
                 .ApplicableActions[(int) Right]
                 .Transitions[0]
                 .Reward, Is.InRange(0.9f, 1.1f));
             
-            Assert.That(frozenLake4b4
+            Assert.That(frozenLake4B4
                 .States[10]
                 .ApplicableActions[(int) Down]
                 .Transitions[0]
                 .SuccessorStateIndex, Is.EqualTo(6));
             
-            Assert.That(frozenLake4b4
+            Assert.That(frozenLake4B4
                 .States[8]
                 .ApplicableActions[(int) Down]
                 .Transitions[0]
                 .Probability, Is.InRange(0.32f, 0.34f));
             
-            Assert.That(frozenLake4b4
+            Assert.That(frozenLake4B4
                 .States[9]
                 .ApplicableActions[(int) Left]
                 .Transitions[0]
                 .SuccessorStateIndex, Is.EqualTo(9));
             
-            Assert.That(frozenLake4b4
+            Assert.That(frozenLake4B4
                 .States[14]
                 .ApplicableActions[(int) Right]
                 .Transitions[0]
@@ -320,5 +321,62 @@ namespace TestsPlayMode
             
         }
 
+    }
+
+    public class AlgorithmsTests
+    {
+        // private GameObject _testGameObject = new GameObject().AddComponent<Algorithms>();
+        private readonly Algorithms _algs = new GameObject().AddComponent<Algorithms>();
+        MDP _frozenLake4B4 = MdpAdmin.LoadMdp(
+            File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json"));
+        MDP _russellNorvig = MdpAdmin.LoadMdp(
+            File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json"));
+        private const GridAction Left  = GridAction.Left;
+        private const GridAction Down  = GridAction.Down;
+        private const GridAction Right = GridAction.Right;
+        private const GridAction Up    = GridAction.Up;
+        
+        [Test]
+        public void TestMaxAbsoluteDifference()
+        {
+            float[] arrayOne = {1.0f, 3.0f, 5.0f};
+            float[] arrayTwo = {1.5f, 2.0f, 8.0f};
+
+            float testDiff = Algorithms.MaxAbsoluteDifference(arrayOne, arrayTwo);
+            
+            Assert.That(testDiff, Is.InRange(2.99f, 3.01f));
+        }
+
+        [Test]
+        public void PolicyEvaluationTest()
+        {
+            _algs.mdp = _frozenLake4B4;
+            _algs.mdp = _russellNorvig;
+            _algs.gamma = 1.0f;
+            _algs.theta = 1E-10f;
+            
+            // A test policy for frozen lake
+            
+            // _algs.policy = new Dictionary<int, GridAction>
+            // {
+            //     {12, Right},{13,  Left},{14, Down},{15,    Up},
+            //     { 8,  Left},            {10, Right},
+            //     { 4,    Up},{ 5,  Down},{ 6,    Up},
+            //                 { 1, Right},{ 2, Down },
+            //     
+            // };
+            
+            // Test policy for Russell Norvig Gridworld
+            
+            _algs.policy = new Dictionary<int, GridAction>
+            {
+                { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
+                { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
+                { 0,    Up},{ 1,  Left},{ 2, Left },{ 3, Left },
+            };
+            
+            _algs.PolicyEvaluation();
+                
+        }
     }
 }
