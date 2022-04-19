@@ -326,7 +326,8 @@ namespace TestsPlayMode
     public class AlgorithmsTests
     {
         // private GameObject _testGameObject = new GameObject().AddComponent<Algorithms>();
-        private readonly Algorithms _algs = new GameObject().AddComponent<Algorithms>();
+        // private readonly Algorithms _algs = new GameObject().AddComponent<Algorithms>();
+        private readonly Algorithms _algs = new Algorithms();
         MDP _frozenLake4B4 = MdpAdmin.LoadMdp(
             File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json"));
         MDP _russellNorvig = MdpAdmin.LoadMdp(
@@ -351,20 +352,20 @@ namespace TestsPlayMode
         public void PolicyEvaluationTest()
         {
             _algs.mdp = _frozenLake4B4;
-            _algs.mdp = _russellNorvig;
+            // _algs.mdp = _russellNorvig;
             _algs.gamma = 1.0f;
             _algs.theta = 1E-10f;
             
             // A test policy for frozen lake
             
-            // _algs.policy = new Dictionary<int, GridAction>
-            // {
-            //     {12, Right},{13,  Left},{14, Down},{15,    Up},
-            //     { 8,  Left},            {10, Right},
-            //     { 4,    Up},{ 5,  Down},{ 6,    Up},
-            //                 { 1, Right},{ 2, Down },
-            //     
-            // };
+            _algs.policy = new Dictionary<int, GridAction>
+            {
+                {12, Right},{13,  Left},{14,  Down},{15,    Up},
+                { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
+                { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
+                { 0,    Up},{ 1, Right},{ 2, Down },{ 3, Left },
+                
+            };
             
             // Test policy for Russell Norvig Gridworld
             
