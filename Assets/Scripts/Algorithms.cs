@@ -7,20 +7,22 @@ using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEditor.Graphs;
 using UnityEngine;
+using UnityEngine.Serialization;
 // using Debug = System.Diagnostics.Debug;
 using Vector2 = System.Numerics.Vector2;
 
 public class Algorithms : MonoBehaviour
 {
     // Cheeky Test stuff Todo Remove
-    public bool FrozenMdp = false;
-    public bool RussellMdp = false;
+    public bool frozenMdp;
+    public bool russellMdp;
     public bool loadMdp;
-    public bool runPolicyEvaluation = false;
+    public bool runPolicyEvaluation;
     
     public MDP mdp;
 
-    public Dictionary<int, GridAction> policy;
+    public Dictionary<int, GridAction> Policy
+        ;
     // public List<GridAction> policy;
     public List<GridAction> previousPolicy;
 
@@ -37,7 +39,7 @@ public class Algorithms : MonoBehaviour
 
     public GridAction Pi(MarkovState state)
     {
-        return policy[state.StateIndex];
+        return Policy[state.StateIndex];
     }
 
     public void PolicyEvaluation()
@@ -48,7 +50,7 @@ public class Algorithms : MonoBehaviour
         
         while (true)
         {
-            stateValue         = new float[mdp.StateCount];
+            stateValue = new float[mdp.StateCount];
             
             foreach (var state in mdp.States)
             {
@@ -56,43 +58,37 @@ public class Algorithms : MonoBehaviour
                 {
                     case StateType.Obstacle:
                         break;
-                    
                     case StateType.Terminal:
-                        stateValue[state.StateIndex] = state.Reward;
-                        break;
-                    
                     case StateType.Goal:
                         stateValue[state.StateIndex] = state.Reward;
                         break;
-                    
                     default:
-                        float  valueOfState = 0;
-                        int    currentState = state.StateIndex;
+                    {
+                        // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
+                        float valueOfState = 0;
+                        int currentState = state.StateIndex;
+
                         foreach (var transition in P(state, Pi(state)))
                         {
-                    
-                            var     actionTaken = transition.ActionTaken;
-                    
-                            float          prob = transition.Probability;
-                            int       nextState = transition.SuccessorStateIndex;
-                            // float        reward = transition.Reward;
                             
-                            float        reward = mdp.States[nextState].Reward;
+                            float probability = transition.Probability;
+                            int     nextState = transition.SuccessorStateIndex;
+                            float      reward = transition.Reward;  // Todo Should I make this the reward for arriving in the next state or the reward for the current state?
 
-                            float       vSprime = previousStateValue[nextState];
-                            float    zeroIfTerm = ZeroIfTerminal(nextState);
-                    
-                            float bellmanBackup = prob * (reward + gamma * vSprime * zeroIfTerm);
+                            float     vSprime = previousStateValue[nextState];
+                            float  zeroIfTerm = ZeroIfTerminal(nextState);
 
-                            valueOfState += bellmanBackup;
-                          
+                            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s')              ]
+                            valueOfState += probability * (reward + gamma * vSprime * zeroIfTerm);
+
                             // stateValue[currentState] += bellmanBackup;
                         }
-                        
+
                         stateValue[currentState] = valueOfState;
                         break;
+                    }
                 }
-                
+
                 // // if (state.IsTerminal() || state.IsGoal() || state.IsObstacle()) continue;
                 // if (state.IsObstacle()) continue;
                 //
@@ -123,7 +119,7 @@ public class Algorithms : MonoBehaviour
 
             if (MaxAbsoluteDifference(previousStateValue, stateValue) < theta) break;
 
-            if (iterations > 1000) break;  // Todo remove. Just for testing.
+            if (iterations >= 1000) break;  // Todo remove. Just for testing.
             // previousStateValue = stateValue.Clone() as float[];
             stateValue.CopyTo(previousStateValue, 0);
             iterations++;
@@ -139,12 +135,8 @@ public class Algorithms : MonoBehaviour
 
     public float ZeroIfTerminal(int stateIndex)
     {
-        
         MarkovState state = mdp.States[stateIndex];
-        bool terminal = state.IsTerminal();
-        bool goal = state.IsGoal();
-        float outcome = (state.IsTerminal() || state.IsGoal()) ? 0 : 1;
-        return outcome;
+        return (state.IsTerminal() || state.IsGoal() || state.IsObstacle()) ? 0 : 1;
     }
 
     public static float MaxAbsoluteDifference(float[] prevValue, float[] value)
@@ -177,16 +169,16 @@ public class Algorithms : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        // Cheeky Test stuff Todo Remove
         if (loadMdp)
         {
 
-            if (RussellMdp)
+            if (russellMdp)
             {
                 mdp = MdpAdmin.LoadMdp(File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json"));
             }
 
-            if (FrozenMdp)
+            if (frozenMdp)
             {
                 mdp = MdpAdmin.LoadMdp(
                     File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json"));
@@ -206,19 +198,19 @@ public class Algorithms : MonoBehaviour
             // gamma = 1.0f;
             // theta = 1E-10f;
             
-            if (RussellMdp)
+            if (russellMdp)
             {
-                policy = new Dictionary<int, GridAction>
+                Policy = new Dictionary<int, GridAction>
                 {
-                    { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
-                    { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
+                    { 8,  Right},{ 9, Right},{10, Right},
+                    { 4,    Up},            { 6,    Up},
                     { 0,    Up},{ 1,  Left},{ 2, Left },{ 3, Left },
                 };
             }
 
-            if (FrozenMdp)
+            if (frozenMdp)
             {
-                policy = new Dictionary<int, GridAction>
+                Policy = new Dictionary<int, GridAction>
                 {
                     {12, Right},{13,  Left},{14,  Down},{15,    Up},
                     { 8,  Left},{ 9, Right},{10, Right},{11,  Down},

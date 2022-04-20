@@ -25,9 +25,9 @@ public static class UncertaintyInEffectsOfActions
     {
         return action switch
         {
-            GridAction.Left  => new[] {GridAction.Down, GridAction.Up},
+            GridAction.Left  => new[] {GridAction.Down, GridAction.Up   },
             GridAction.Down  => new[] {GridAction.Left, GridAction.Right},
-            GridAction.Right => new[] {GridAction.Down, GridAction.Up},
+            GridAction.Right => new[] {GridAction.Down, GridAction.Up   },
             GridAction.Up    => new[] {GridAction.Left, GridAction.Right},
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };

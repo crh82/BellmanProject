@@ -264,9 +264,11 @@ public static class MdpAdmin
             Probability = probabilityDistribution[0],
             SuccessorStateIndex = GenerateSuccessorStateFromAction(mdp, mState, mAction.Action)
         };
-        
-        intended.Reward = mdp.States[intended.SuccessorStateIndex].Reward;
-        
+
+        intended.Reward = intended.SuccessorStateIndex == intended.State
+            ? 0
+            : mdp.States[intended.SuccessorStateIndex].Reward;
+
         var effects = mAction.Action.GetOrthogonalEffects();
         
         var orthogonalEffect = new MarkovTransition
@@ -279,7 +281,10 @@ public static class MdpAdmin
                 mState,
                 effects[0])
         };
-        orthogonalEffect.Reward = mdp.States[orthogonalEffect.SuccessorStateIndex].Reward;
+        
+        orthogonalEffect.Reward = orthogonalEffect.State == orthogonalEffect.SuccessorStateIndex
+            ? 0
+            : mdp.States[orthogonalEffect.SuccessorStateIndex].Reward;
 
         var otherOrthogonalEffect = new MarkovTransition
         {
@@ -291,7 +296,10 @@ public static class MdpAdmin
                 mState,
                 effects[1])
         };
-        otherOrthogonalEffect.Reward = mdp.States[otherOrthogonalEffect.SuccessorStateIndex].Reward;
+        
+        otherOrthogonalEffect.Reward = otherOrthogonalEffect.State == otherOrthogonalEffect.SuccessorStateIndex
+            ? 0
+            : mdp.States[otherOrthogonalEffect.SuccessorStateIndex].Reward;
 
         var transitions = new List<MarkovTransition> {intended, orthogonalEffect, otherOrthogonalEffect};
         return transitions;
@@ -434,3 +442,31 @@ public static class MdpAdmin
         File.WriteAllText(saveFilePath, jsonRepresentationOfMdp);
     }
 }
+
+/*
+ * ┌──────────────────┐
+ * │ Russell & Norvig │
+ * └──────────────────┘
+ * {S     , S     , S     , S     , S     , O   , S     , T  , S     , S     , S     , T}
+ * {-0.04 , -0.04 , -0.04 , -0.04 , -0.04 , 0.0 , -0.04 , -1 , -0.04 , -0.04 , -0.04 , 1}
+ *
+ *
+ *  ┌───────────────┐
+ *  │ FrozenLake4x4 │
+ *  └───────────────┘
+ * {T , S , S , T , S , S , S , T , S , T , S , T , S , S , S , S}
+ * {0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0}
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ * 
+ */
