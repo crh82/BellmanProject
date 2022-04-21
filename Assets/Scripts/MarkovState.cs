@@ -21,6 +21,14 @@ public class MarkovState
     [SerializeField] private float reward;
     [SerializeField] private StateType typeOfState;
 
+    private Dictionary<GridAction, float> actionValue;
+
+    public Dictionary<GridAction, float> ActionValue
+    {
+        get => actionValue;
+        set => actionValue = value;
+    }
+
     public int StateIndex
     {
         get => stateIndex;

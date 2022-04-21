@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using PlasticGui.WorkspaceWindow.Items;
 using UnityEditor.Graphs;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -18,16 +20,20 @@ public class Algorithms : MonoBehaviour
     public bool russellMdp;
     public bool loadMdp;
     public bool runPolicyEvaluation;
+    public bool inPlaceVersion;
     
     public MDP mdp;
 
-    public Dictionary<int, GridAction> Policy
-        ;
+    public Dictionary<int, GridAction> Policy;
     // public List<GridAction> policy;
     public List<GridAction> previousPolicy;
 
-    public float[] stateValue;
-    public float[] previousStateValue;
+    // Two array approach. See Sutton & Barto Chp 4.1
+    public float[] stateValue;        // 2 Arrays version
+    public float[] previousStateValue;// 2 Arrays version
+    
+    // In-place approach. See Sutton & Barto 4.1. Can converge faster.
+    public Dictionary<int, float> ValueOfState; // In-place version
 
     public float    gamma;
 
@@ -35,7 +41,7 @@ public class Algorithms : MonoBehaviour
 
     public float    theta;
 
-    public int iterations; 
+     public int iterations;
 
     public GridAction Pi(MarkovState state)
     {
@@ -45,11 +51,19 @@ public class Algorithms : MonoBehaviour
     public void PolicyEvaluation()
     {
         iterations         = 0;
+
+        var V = new StateValueFunction();
+        ValueOfState = InitializeStateValueDictionary(mdp.States);
         
         previousStateValue = new float[mdp.StateCount];
+
+       
         
         while (true)
         {
+            float delta   = 0;
+            float deltaIP = 0;
+            
             stateValue = new float[mdp.StateCount];
             
             foreach (var state in mdp.States)
@@ -58,77 +72,89 @@ public class Algorithms : MonoBehaviour
                 {
                     case StateType.Obstacle:
                         break;
+                    
                     case StateType.Terminal:
                     case StateType.Goal:
-                        stateValue[state.StateIndex] = state.Reward;
+                          stateValue[state.StateIndex] = state.Reward; // 2 arrays version
+                        // ValueOfState[state.StateIndex] = state.Reward; // In-place version
+                          V.SetValue(state, state.Reward); // In-place version
                         break;
+                    
                     default:
                     {
+                        float v2Arrays = previousStateValue[state.StateIndex]; // 2 arrays version
+                        // float vInPlace = ValueOfState[state.StateIndex];       // In-place version
+                        float vInPlace = V.Value(state);
+                        
                         // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
-                        float valueOfState = 0;
-                        int currentState = state.StateIndex;
+                        float valueOfCurrentState2Arrays = 0;
+                        float valueOfCurrentStateInPlace = 0;
+                        
+                        int   currentState = state.StateIndex;
 
                         foreach (var transition in P(state, Pi(state)))
                         {
                             
-                            float probability = transition.Probability;
-                            int     nextState = transition.SuccessorStateIndex;
-                            float      reward = transition.Reward;  // Todo Should I make this the reward for arriving in the next state or the reward for the current state?
+                            float     probability = transition.Probability;
+                            int         nextState = transition.SuccessorStateIndex;
+                            float          reward = transition.Reward;  // Todo Should I make this the reward for arriving in the next state or the reward for the current state?
 
-                            float     vSprime = previousStateValue[nextState];
-                            float  zeroIfTerm = ZeroIfTerminal(nextState);
+                            float  vSprime2Arrays = previousStateValue[nextState]; // 2 Arrays version
+                            // float  vSprimeInPlace = ValueOfState[nextState];       // In-Place version
+                            float vSprimeInPlace = V.Value(mdp.States[nextState]);
+                            float  zeroIfTerminal = ZeroIfTerminal(nextState);
 
-                            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s')              ]
-                            valueOfState += probability * (reward + gamma * vSprime * zeroIfTerm);
-
-                            // stateValue[currentState] += bellmanBackup;
+                            //                    P(s'| s, π(s) )•[R(s') +   𝛄   •  V(s')              ]
+                             valueOfCurrentState2Arrays += probability * (reward + gamma * vSprime2Arrays * zeroIfTerminal); // 2 Arrays version
+                             valueOfCurrentStateInPlace += probability * (reward + gamma * vSprimeInPlace * zeroIfTerminal); // In-Place version
                         }
 
-                        stateValue[currentState] = valueOfState;
+                        delta   = Math.Max(delta  , Math.Abs(v2Arrays - valueOfCurrentState2Arrays));
+                        deltaIP = Math.Max(deltaIP, Math.Abs(vInPlace - valueOfCurrentStateInPlace));
+                        
+                          stateValue[currentState] = valueOfCurrentState2Arrays; // 2 Arrays version
+                        // ValueOfState[currentState] = valueOfCurrentStateInPlace; // In-Place version
+                        V.SetValue(state, valueOfCurrentStateInPlace);           // In-Place version
                         break;
                     }
                 }
-
-                // // if (state.IsTerminal() || state.IsGoal() || state.IsObstacle()) continue;
-                // if (state.IsObstacle()) continue;
-                //
-                // float  valueOfState = 0;
-                // int    currentState = state.StateIndex;
-                //
-                // foreach (var transition in P(state, Pi(state)))
-                // {
-                //     
-                //     var     actionTaken = transition.ActionTaken;
-                //     
-                //     float          prob = transition.Probability;
-                //     int       nextState = transition.SuccessorStateIndex;
-                //     float        reward = transition.Reward;
-                //     
-                //     float       vSprime = previousStateValue[nextState];
-                //     float    zeroIfTerm = ZeroIfTerminal(nextState);
-                //     
-                //     float bellmanBackup = prob * (reward + gamma * vSprime * zeroIfTerm);
-                //
-                //           valueOfState += bellmanBackup;
-                //           
-                //     // stateValue[currentState] += bellmanBackup;
-                // }
-                //
-                // stateValue[currentState] = valueOfState;
             }
 
-            if (MaxAbsoluteDifference(previousStateValue, stateValue) < theta) break;
-
-            if (iterations >= 1000) break;  // Todo remove. Just for testing.
-            // previousStateValue = stateValue.Clone() as float[];
-            stateValue.CopyTo(previousStateValue, 0);
+            // if (MaxAbsoluteDifference(previousStateValue, stateValue) < theta) break;
+            if (delta < theta)
+            {
+                Debug.Log($"delta: {delta} deltaIP: {deltaIP}");
+                break;
+            }
+            
+            if (inPlaceVersion & (deltaIP < theta)) 
+            {
+                Debug.Log($"delta: {delta} deltaIP: {deltaIP}");
+                break;
+            }
+            
+            // Two array approach. See Sutton & Barto Chp 4.1
+            stateValue.CopyTo(previousStateValue, 0); // 2 Arrays version
+            
             iterations++;
         }
+
+        foreach (var stateAndValue in ValueOfState)
+        {
+            Debug.Log($"V(S{stateAndValue.Key} = {stateAndValue.Value}");
+        }
+        
         
         Debug.Log(iterations);
     }
+    
 
-    private float BellmanBackup(float prob, float reward, float vSprime, float zeroIfTerm)
+    public void PolicyImprovement()
+    {
+        
+    }
+
+    private float OneStepLookAhead(float prob, float reward, float vSprime, float zeroIfTerm)
     {
         return prob * (reward + gamma * vSprime * zeroIfTerm);
     }
@@ -154,7 +180,24 @@ public class Algorithms : MonoBehaviour
     {
         return state.ApplicableActions[(int) action].Transitions;
     }
-    
+
+    public Dictionary<int, float> InitializeStateValueDictionary(
+        List<MarkovState> states, 
+        bool randomValues = false,
+        float[] specificValues = null)
+    {
+        // Todo implement the assigning random or specific values feature.
+        
+        var stateValueDict = new Dictionary<int, float>();
+        
+        foreach (var state in states)
+        {
+            stateValueDict[state.StateIndex] = 0f;
+        }
+
+        return stateValueDict;
+    }
+
     private void Awake()
     {
         // mdp = JsonUtility.FromJson<MDP>(File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json"));
@@ -190,10 +233,10 @@ public class Algorithms : MonoBehaviour
         
         if (runPolicyEvaluation)
         {
-            GridAction Left  = GridAction.Left;
-            GridAction Down  = GridAction.Down;
-            GridAction Right = GridAction.Right;
-            GridAction Up    = GridAction.Up;
+            var Left  = GridAction.Left;
+            var Down  = GridAction.Down;
+            var Right = GridAction.Right;
+            var Up    = GridAction.Up;
             
             // gamma = 1.0f;
             // theta = 1E-10f;
@@ -226,3 +269,68 @@ public class Algorithms : MonoBehaviour
         }
     }
 }
+
+
+public class StateValueFunction
+{
+    private readonly Dictionary<int, float> _valueOfAState = new Dictionary<int, float>();
+
+    public void SetValue(MarkovState state, float valueOfState)
+    {
+        switch (_valueOfAState.ContainsKey(state.StateIndex))
+        {
+            case true:
+                _valueOfAState[state.StateIndex] = valueOfState;
+                break;
+            case false:
+                _valueOfAState.Add(state.StateIndex, valueOfState);
+                break;
+        }
+    }
+
+    public float Value(MarkovState state)
+    {
+        switch (_valueOfAState.ContainsKey(state.StateIndex))
+        {
+            case true:
+                return _valueOfAState[state.StateIndex];
+            case false:
+                SetValue(state, 0);
+                return 0;
+        }
+    }
+}
+
+public class ActionValueFunction
+{
+    private readonly Dictionary<string, float> _valueOfQGivenSandA = new Dictionary<string, float>();
+
+    public void SetValue(MarkovState state, MarkovAction action, float qsaValue)
+    {
+        var stateActionValueKey = $"{state}{action}";
+        switch (_valueOfQGivenSandA.ContainsKey(stateActionValueKey))
+        {
+            case true:
+                _valueOfQGivenSandA[stateActionValueKey] = qsaValue;
+                break;
+            default:
+                _valueOfQGivenSandA.Add(stateActionValueKey, qsaValue);
+                break;
+        }
+    }
+
+    public float Value(MarkovState state, MarkovAction action)
+    {
+        var stateActionValueKey = $"{state}{action}";
+
+        switch (_valueOfQGivenSandA.ContainsKey(stateActionValueKey))
+        {
+            case true:
+                return _valueOfQGivenSandA[stateActionValueKey];
+            default:
+                SetValue(state, action, 0f);
+                return 0;
+        }
+    }
+}
+

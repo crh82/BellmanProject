@@ -351,28 +351,35 @@ namespace TestsPlayMode
         [Test]
         public void PolicyEvaluationTest()
         {
-            _algs.mdp = _frozenLake4B4;
-            // _algs.mdp = _russellNorvig;
+            // _algs.mdp = _frozenLake4B4;
+            _algs.mdp = _russellNorvig;
             _algs.gamma = 1.0f;
             _algs.theta = 1E-10f;
             
             // A test policy for frozen lake
             
-            _algs.policy = new Dictionary<int, GridAction>
-            {
-                {12, Right},{13,  Left},{14,  Down},{15,    Up},
-                { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
-                { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
-                { 0,    Up},{ 1, Right},{ 2, Down },{ 3, Left },
-                
-            };
+            // _algs.policy = new Dictionary<int, GridAction>
+            // {
+            //     {12, Right},{13,  Left},{14,  Down},{15,    Up},
+            //     { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
+            //     { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
+            //     { 0,    Up},{ 1, Right},{ 2, Down },{ 3, Left },
+            //     
+            // };
+            //
+            // // Test policy for Russell Norvig Gridworld
+            //
+            // _algs.policy = new Dictionary<int, GridAction>
+            // {
+            //     { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
+            //     { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
+            //     { 0,    Up},{ 1,  Left},{ 2, Left },{ 3, Left },
+            // };
             
-            // Test policy for Russell Norvig Gridworld
-            
-            _algs.policy = new Dictionary<int, GridAction>
+            _algs.Policy = new Dictionary<int, GridAction>
             {
-                { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
-                { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
+                { 8, Right},{ 9, Right},{10, Right},
+                { 4,    Up},            { 6,    Up},
                 { 0,    Up},{ 1,  Left},{ 2, Left },{ 3, Left },
             };
             
