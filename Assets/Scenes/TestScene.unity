@@ -328,10 +328,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9714671ec1b0b4de9b27806d3992b4bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FrozenMdp: 0
-  RussellMdp: 0
+  frozenMdp: 0
+  russellMdp: 0
   loadMdp: 0
   runPolicyEvaluation: 0
+  inPlaceVersion: 1
   mdp:
     name: 
     width: 0
@@ -341,12 +342,12 @@ MonoBehaviour:
     obstacleStates: 
     terminalStates: 
     goalStates: 
-  previousPolicy: 
+  editorDisplayPolicy: []
   stateValue: []
   previousStateValue: []
-  gamma: 0
+  discountFactorGamma: 0
   epsilon: 0
-  theta: 0
+  thresholdTheta: 0
   iterations: 0
 --- !u!4 &553553599
 Transform:

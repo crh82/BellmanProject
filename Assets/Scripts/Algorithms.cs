@@ -1,28 +1,23 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
-using PlasticGui.WorkspaceWindow.Items;
-using UnityEditor.Graphs;
+using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Object = UnityEngine.Object;
+using UnityEngine.WSA;
+using Object = System.Object;
 using Random = UnityEngine.Random;
 // using Debug = System.Diagnostics.Debug;
-using Vector2 = System.Numerics.Vector2;
-
 public class Algorithms : MonoBehaviour
 {
     // Cheeky Test stuff Todo Remove
     public bool frozenMdp;
     public bool russellMdp;
+    public bool myLittleMdp;
     public bool loadMdp;
     public bool runPolicyEvaluation;
-    public bool inPlaceVersion;
+    public bool runPolicyImprovement;
+    public bool inPlaceVersion = true;
     
     public MDP mdp;
 
@@ -31,7 +26,8 @@ public class Algorithms : MonoBehaviour
     
     public Dictionary<int, GridAction> Policy;
     // public List<GridAction> policy;
-    public List<GridAction> previousPolicy;
+    public string[] editorDisplayPolicy;
+    public float[] editorDisplayStateValue;
 
     // Two array approach. See Sutton & Barto Chp 4.1
     public float[] stateValue;        // 2 Arrays version
@@ -50,17 +46,103 @@ public class Algorithms : MonoBehaviour
 
     public StateValueFunction PolicyEvaluation(MDP mdp, Policy policy, float gamma, float theta)
     {
-        iterations         = 0;
+        iterations = 0;
 
         var stateValueFunctionV = new StateValueFunction();
+
+        while (true)
+        {
+            float delta = 0;
+
+            foreach (var state in mdp.States)
+            {
+                switch (state.TypeOfState)
+                {
+                    case StateType.Obstacle:
+                        break;
+                    
+                    case StateType.Terminal:
+                    case StateType.Goal:
+                        stateValueFunctionV.SetValue(state, state.Reward); // In-place version
+                        break;
+                    
+                    default:
+                    {
+                        float valueBeforeUpdate = stateValueFunctionV.Value(state);     // In-place version
+                        
+                        // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
+                        float valueOfState = 0;
+
+                        foreach (var transition in mdp.TransitionFunction(state, policy.GetAction(state)))
+                       
+                         
+                        
+                        // foreach (var transition in P(state, policy.Pi(state)))
+                        {
+                            float          probability = transition.Probability;
+                            MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
+                            float               reward = transition.Reward;  // Todo Should I make this the reward for arriving in the next state or the reward for the current state?
+                            float     valueOfSuccessor = stateValueFunctionV.Value(successorState); // In-Place version
+                            float       zeroIfTerminal = ZeroIfTerminal(successorState);
+
+                            //                          P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
+                            valueOfState += probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal); // In-Place version
+                        }
+                        
+                        
+                        
+                        stateValueFunctionV.SetValue(state, valueOfState);         // In-Place version
+                        
+                        delta = Math.Max(delta, Math.Abs(valueBeforeUpdate - valueOfState));
+                        
+                        break;
+                    }
+                }
+            }
+
+            // Todo Change this as its currently in a hackish form for testing inside the Unity editor
+            if (delta < theta) 
+            {
+                Debug.Log($"delta: {delta} theta: {theta}");
+                break;
+            }
+
+            // if (iterations % 500 == 0)
+            // {
+            //     Debug.Log($"delta: {(double) delta} theta: {(double) theta}");
+            // }
+            
+            if (iterations >= 100000)
+            {
+                Debug.Log($"delta: {delta} theta: {theta}");
+                break;
+            }
+            
+            iterations++;
+        }
+
+        // For testing and debugging, updates the Unity Editor stateValue array.
+        editorDisplayStateValue = stateValueFunctionV.EditorStateValueArrayUpdator(mdp.StateCount);
+        
+        foreach (var state in mdp.States)
+        {
+            Debug.Log($"V({state}) = {stateValueFunctionV.Value(state)}");
+        }
+        
+        Debug.Log(iterations);
+        return stateValueFunctionV;
+    }
+    
+    public float[] PolicyEvaluationTwoArrays(MDP mdp, Policy policy, float gamma, float theta)
+    {
+        iterations = 0;
 
         previousStateValue = new float[mdp.StateCount];
 
         while (true)
         {
             float delta   = 0;
-            float deltaIP = 0;
-            
+
             stateValue = new float[mdp.StateCount];
             
             foreach (var state in mdp.States)
@@ -73,80 +155,60 @@ public class Algorithms : MonoBehaviour
                     case StateType.Terminal:
                     case StateType.Goal:
                           stateValue[state.StateIndex] = state.Reward; // 2 arrays version
-                          stateValueFunctionV.SetValue(state, state.Reward); // In-place version
-                        break;
+                          break;
                     
                     default:
                     {
                         float v2Arrays = previousStateValue[state.StateIndex]; // 2 arrays version
-                        float vInPlace = stateValueFunctionV.Value(state);     // In-place version
-                        
+
                         // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
                         float valueOfCurrentState2Arrays = 0;
-                        float valueOfCurrentStateInPlace = 0;
-                        
+
                         int   currentState = state.StateIndex;
                         
-                        foreach (var transition in P(state, policy.Pi(state)))
+                        foreach (var transition in P(state, policy.GetAction(state)))
                         {
                             
                             float     probability = transition.Probability;
                             int         nextState = transition.SuccessorStateIndex;
-                            float          reward = transition.Reward;  // Todo Should I make this the reward for arriving in the next state or the reward for the current state?
+                            float          reward = transition.Reward;
+                            float  vSprime = previousStateValue[nextState]; // 2 Arrays version
 
-                            float  vSprime2Arrays = previousStateValue[nextState]; // 2 Arrays version
-                            float  vSprimeInPlace = stateValueFunctionV.Value(mdp.States[nextState]); // In-Place version
-                            
-                            float  zeroIfTerminal = ZeroIfTerminal(nextState);
+                            float  zeroIfTerminal = ZeroIfTerminal(mdp.States[nextState]);
 
                             //                          P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
-                             valueOfCurrentState2Arrays += probability * (reward + gamma * vSprime2Arrays * zeroIfTerminal); // 2 Arrays version
-                             valueOfCurrentStateInPlace += probability * (reward + gamma * vSprimeInPlace * zeroIfTerminal); // In-Place version
+                             valueOfCurrentState2Arrays += probability * (reward + gamma * vSprime * zeroIfTerminal); // 2 Arrays version
                         }
 
                         delta   = Math.Max(delta  , Math.Abs(v2Arrays - valueOfCurrentState2Arrays));
-                        deltaIP = Math.Max(deltaIP, Math.Abs(vInPlace - valueOfCurrentStateInPlace));
-                        
+
                         stateValue[currentState] = valueOfCurrentState2Arrays; // 2 Arrays version
-                        stateValueFunctionV.SetValue(state, valueOfCurrentStateInPlace);         // In-Place version
-                        
+
                         break;
                     }
                 }
             }
-
-            // if (MaxAbsoluteDifference(previousStateValue, stateValue) < theta) break;
-            if (delta < theta)
-            {
-                Debug.Log($"delta: {delta} deltaIP: {deltaIP}");
-                break;
-            }
             
-            if (inPlaceVersion & (deltaIP < theta)) // Todo Change this as its currently in a hackish form for testing inside the Unity editor
+            if (delta <= theta) 
             {
-                Debug.Log($"delta: {delta} deltaIP: {deltaIP}");
+                Debug.Log($"delta: {delta} theta: {theta}");
                 break;
             }
             
             // Two array approach. See Sutton & Barto Chp 4.1
             stateValue.CopyTo(previousStateValue, 0); // 2 Arrays version
 
-            if (iterations >= 1000) break;
+            if (iterations >= 1000) break;  // 
             
             iterations++;
         }
         
-        foreach (var state in mdp.States)
-        {
-            Debug.Log($"V({state}) = {stateValueFunctionV.Value(state)}");
-        }
         
         Debug.Log(iterations);
-        return stateValueFunctionV;
+        return stateValue;
     }
-    
 
-    public Policy PolicyImprovement(StateValueFunction stateValueFunction, Policy policy, float gamma)
+    public Policy PolicyImprovement(MDP mdp, StateValueFunction stateValueFunction, float gamma)
     {
         var policyPrime = new Policy();
         
@@ -175,7 +237,7 @@ public class Algorithms : MonoBehaviour
                     float valueSprime = stateValueFunction.Value(nextState);
                     
                     stateActionValueQsa +=
-                        probability * (reward + gamma * valueSprime * ZeroIfTerminal(nextState.StateIndex));
+                        probability * (reward + gamma * valueSprime * ZeroIfTerminal(nextState));
                 }
                 
                 actionValueFunctionQ.SetValue(state, action.Action, stateActionValueQsa);
@@ -185,18 +247,39 @@ public class Algorithms : MonoBehaviour
             
             policyPrime.SetAction(state, argMaxAction);
         }
-        
+
+        // todo remove after debug
+        editorDisplayPolicy = policyPrime.EditorPolicyDisplayUpdate(mdp.States, mdp.StateCount);
         return policyPrime;
     }
 
+    public (StateValueFunction, Policy) PolicyIteration(
+        MDP mdp,
+        Policy policy = null, 
+        float gamma = 1f, 
+        float theta = 1e-10f)
+    {
+        StateValueFunction valueOfPolicy;
+        Policy oldPolicy = policy ?? new Policy(mdp.StateCount);
+        Policy newPolicy;
+        
+        while (true)
+        {
+            valueOfPolicy = PolicyEvaluation(mdp, oldPolicy, gamma, theta);
+            newPolicy     = PolicyImprovement(mdp, valueOfPolicy, gamma);
+            if (oldPolicy.Equals(newPolicy)) break;
+            oldPolicy     = newPolicy;
+        }
+        
+        return (valueOfPolicy, newPolicy);
+    }
     private float OneStepLookAhead(float prob, float reward, float vSprime, float zeroIfTerm)
     {
         return prob * (reward + discountFactorGamma * vSprime * zeroIfTerm);
     }
 
-    public float ZeroIfTerminal(int stateIndex)
+    public float ZeroIfTerminal(MarkovState state)
     {
-        MarkovState state = mdp.States[stateIndex];
         return (state.IsTerminal() || state.IsGoal() || state.IsObstacle()) ? 0 : 1;
     }
 
@@ -261,10 +344,20 @@ public class Algorithms : MonoBehaviour
                 mdp = MdpAdmin.LoadMdp(
                     File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json"));
             }
+
+            if (myLittleMdp)
+            {
+                mdp = MdpAdmin.LoadMdp(
+                    File.ReadAllText("Assets/Resources/TestMDPs/LittleTestWorldTest.json"));
+            }
             
             
             loadMdp = false;
         }
+        
+        var optimalPolicy = new Policy();
+        var myMistakePolicy = new Policy();
+        var mistakePolEvaluated = new StateValueFunction();
         
         if (runPolicyEvaluation)
         {
@@ -273,7 +366,7 @@ public class Algorithms : MonoBehaviour
             var Right = GridAction.Right;
             var Up    = GridAction.Up;
 
-            Policy optimalPolicy = new Policy();
+            
             // gamma = 1.0f;
             // theta = 1E-10f;
             
@@ -284,17 +377,9 @@ public class Algorithms : MonoBehaviour
                 optimalPolicy.SetAction(mdp.States[4],     Up);                                               optimalPolicy.SetAction(mdp.States[6],     Up);
                 optimalPolicy.SetAction(mdp.States[0],     Up);optimalPolicy.SetAction(mdp.States[1],   Left);optimalPolicy.SetAction(mdp.States[2],   Left);optimalPolicy.SetAction(mdp.States[3],   Left);
                 
-                
-                
-                
-                
-                
-                Policy = new Dictionary<int, GridAction>
-                {
-                    { 8,  Right},{ 9, Right},{10, Right},
-                    { 4,    Up},            { 6,    Up},
-                    { 0,    Up},{ 1,  Left},{ 2, Left },{ 3, Left },
-                };
+                myMistakePolicy.SetAction(mdp.States[8],  Left);myMistakePolicy.SetAction(mdp.States[9],  Right);myMistakePolicy.SetAction(mdp.States[10], Right);
+                myMistakePolicy.SetAction(mdp.States[4],     Up);                                                 myMistakePolicy.SetAction(mdp.States[6],     Up);
+                myMistakePolicy.SetAction(mdp.States[0],     Up);myMistakePolicy.SetAction(mdp.States[1],   Left);myMistakePolicy.SetAction(mdp.States[2],   Left);myMistakePolicy.SetAction(mdp.States[3],   Left);
             }
 
             if (frozenMdp)
@@ -308,11 +393,30 @@ public class Algorithms : MonoBehaviour
                 
                 };
             }
+
+            if (myLittleMdp)
+            {
+                myMistakePolicy = new Policy();
+                myMistakePolicy.SetAction(0, Down);
+                myMistakePolicy.SetAction(3, Left);
+                myMistakePolicy.SetAction(4, Left);
+                myMistakePolicy.SetAction(5, Up);
+            }
             
             
-            PolicyEvaluation(this.mdp, optimalPolicy, this.discountFactorGamma, this.thresholdTheta);
+            mistakePolEvaluated = PolicyEvaluation(this.mdp, myMistakePolicy, this.discountFactorGamma, this.thresholdTheta);
             runPolicyEvaluation = false;
         }
+
+        if (runPolicyImprovement)
+        {
+            var improved = PolicyImprovement(mdp, mistakePolEvaluated, discountFactorGamma);
+            runPolicyImprovement = false;
+            var valueImproved = PolicyEvaluation(mdp, improved, discountFactorGamma, thresholdTheta);
+
+            stateValue = valueImproved.EditorStateValueArrayUpdator(mdp.StateCount);
+        }
+        
     }
 }
 
@@ -333,6 +437,20 @@ public class StateValueFunction
                 break;
         }
     }
+    
+    
+    public void SetValue(int stateIndex, float valueOfState)
+    {
+        switch (_valueOfAState.ContainsKey(stateIndex))
+        {
+            case true:
+                _valueOfAState[stateIndex] = valueOfState;
+                break;
+            case false:
+                _valueOfAState.Add(stateIndex, valueOfState);
+                break;
+        }
+    }
 
     public float Value(MarkovState state)
     {
@@ -344,6 +462,37 @@ public class StateValueFunction
                 SetValue(state, 0);
                 return 0;
         }
+    }
+    
+    public float Value(int stateIndex)
+    {
+        switch (_valueOfAState.ContainsKey(stateIndex))
+        {
+            case true:
+                return _valueOfAState[stateIndex];
+            case false:
+                SetValue(stateIndex, 0);
+                return 0;
+        }
+    }
+
+    /// <summary>
+    /// A small method to help with testing and debugging in the Unity Editor. Used to update the Editor visible list
+    /// of state values.
+    /// </summary>
+    /// <param name="stateValueArrayLength"><c>int</c>: Representing the number of states</param>
+    /// <returns><c>float[]</c>Updating the Editor visible state value array.</returns>
+    public float[] EditorStateValueArrayUpdator(int stateValueArrayLength)
+    {
+        var newStateValues = new float[stateValueArrayLength];
+        
+        foreach (var stateValue in _valueOfAState)
+        {
+            newStateValues[stateValue.Key] = stateValue.Value;
+
+        }
+
+        return newStateValues;
     }
 }
 
@@ -438,16 +587,30 @@ public class Policy
     {
     }
     
+    // Initializes the policy with random actions
     public Policy(MDP mdp)
     {
         Array actions = Enum.GetValues(typeof(GridAction));
+        
         
         foreach (var state in mdp.States)
         {
             if (state.TypeOfState == StateType.Standard)
             {
-                SetAction(state, (GridAction) actions.GetValue(Random.Range(0,5)));
+                SetAction(state, (GridAction) actions.GetValue(Random.Range(0,4)));
             }
+        }
+    }
+    
+    
+    // Initializes the policy with random actions, ignoring any terminal or obstacle states
+    public Policy(int numberOfStates)
+    {
+        Array actions = Enum.GetValues(typeof(GridAction));
+
+        for (int stateIndex = 0; stateIndex < numberOfStates; stateIndex++)
+        {
+            SetAction(stateIndex, (GridAction) actions.GetValue(Random.Range(0,4)));
         }
     }
 
@@ -463,8 +626,66 @@ public class Policy
                 break;
         }
     }
+    
+    public void SetAction(int stateIndex, GridAction action)
+    {
+        switch (_policy.ContainsKey(stateIndex))
+        {
+            case true:
+                _policy[stateIndex] = action;
+                break;
+            case false:
+                _policy.Add(stateIndex, action);
+                break;
+        }
+    }
+    
+    public void SetAction(int stateIndex, string action)
+    {
+        string cleanedAction = action.ToLower();
+        GridAction parsedAction = cleanedAction switch
+        {
+            "l"     => GridAction.Left,
+            "left"  => GridAction.Left,
+            "d"     => GridAction.Down,
+            "down"  => GridAction.Down,
+            "r"     => GridAction.Right,
+            "right" => GridAction.Right,
+            "u"     => GridAction.Up,
+            "up"    => GridAction.Up,
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
-    public GridAction Pi(MarkovState state)
+        switch (_policy.ContainsKey(stateIndex))
+        {
+            case true:
+                _policy[stateIndex] = parsedAction;
+                break;
+            case false:
+                _policy.Add(stateIndex, parsedAction);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// A small method to help with testing and debugging in the Unity Editor. Used to update the Editor visible policy.
+    /// </summary>
+    /// <param name="setOfStates">Represents the state space</param>
+    /// <param name="numberOfStates"><c>int</c></param>
+    /// <returns>A string array representation of the policy where the actions are indexed by their corresponding state index</returns>
+    public string[] EditorPolicyDisplayUpdate(List<MarkovState> setOfStates, int numberOfStates)
+    {
+        var stringDisplayOfPolicy = new string[numberOfStates];
+        for (var stateIndex = 0; stateIndex < numberOfStates; stateIndex++)
+        {
+            stringDisplayOfPolicy[stateIndex] =
+                setOfStates[stateIndex].IsObstacle() ? "N/A Action" : _policy[stateIndex].ToString();
+        }
+        
+        return stringDisplayOfPolicy;
+    }
+    
+    public GridAction GetAction(MarkovState state)
     {
         return _policy.ContainsKey(state.StateIndex) switch
         {
@@ -473,22 +694,34 @@ public class Policy
         };
     }
 
-    private sealed class PolicyEqualityComparer : IEqualityComparer<Policy>
+    public Policy Copy()
     {
-        public bool Equals(Policy x, Policy y)
+        var copyOfPolicy = new Policy();
+        foreach (var kvp in _policy)
         {
-            if (ReferenceEquals(x, y)) return true;
-            if (ReferenceEquals(x, null)) return false;
-            if (ReferenceEquals(y, null)) return false;
-            if (x.GetType() != y.GetType()) return false;
-            return Equals(x._policy, y._policy);
+            copyOfPolicy.SetAction(kvp.Key, kvp.Value);
         }
-
-        public int GetHashCode(Policy obj)
-        {
-            return (obj._policy != null ? obj._policy.GetHashCode() : 0);
-        }
+        return copyOfPolicy;
     }
 
-    public static IEqualityComparer<Policy> PolicyComparer { get; } = new PolicyEqualityComparer();
+
+    public bool Equals(Policy policyPrime)
+    {
+        if (null == policyPrime) 
+            return _policy == null;
+        if (null == _policy) 
+            return false;
+        if (ReferenceEquals(_policy, policyPrime._policy)) 
+            return true;
+        if (_policy.Count != policyPrime._policy.Count) 
+            return false;
+
+        foreach (int k in _policy.Keys)
+        {
+            if (!policyPrime._policy.ContainsKey(k))        return false;
+            if (!_policy[k].Equals(policyPrime._policy[k])) return false;
+        }
+
+        return true;
+    }
 }

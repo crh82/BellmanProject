@@ -151,7 +151,7 @@ public static class MdpAdmin
         }
     }
 
-    private static List<MarkovTransition> GenerateTransitions(MDP mdp, MarkovState mState, MarkovAction mAction)
+    public static List<MarkovTransition> GenerateTransitions(MDP mdp, MarkovState mState, MarkovAction mAction)
     {
         List<MarkovTransition> transitions;
         
@@ -279,7 +279,7 @@ public static class MdpAdmin
             SuccessorStateIndex = GenerateSuccessorStateFromAction(
                 mdp,
                 mState,
-                effects[0])
+                effects.Item1)
         };
         
         orthogonalEffect.Reward = orthogonalEffect.State == orthogonalEffect.SuccessorStateIndex
@@ -294,7 +294,7 @@ public static class MdpAdmin
             SuccessorStateIndex = GenerateSuccessorStateFromAction(
                 mdp,
                 mState,
-                effects[1])
+                effects.Item2)
         };
         
         otherOrthogonalEffect.Reward = otherOrthogonalEffect.State == otherOrthogonalEffect.SuccessorStateIndex

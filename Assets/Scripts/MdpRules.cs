@@ -20,11 +20,38 @@ public enum MdpRules
 public static class RuleProbabilityDistributor
 {
     /// <summary>
-    /// probability of:
-    /// Intended  s'   ( 50% )
-    /// NoEffect  s'=s ( 33.333% )
-    /// 180°      s'   ( 16.667% ) 
+    /// <list type="bullet">
+    /// <listheader>
+    /// <term><b>Slippery Walk Rules</b></term>
+    /// </listheader>
+    /// <item>Intended successor state   ( 50% ) </item>
+    /// <item>Remain in current state    ( 33.333% )</item>
+    /// <item>180° successor state       ( 16.667% ) </item>
+    /// </list>
+    /// <list type="bullet">
+    /// <listheader>
+    /// <term><b>Russell and Norvig's Rules</b></term>
+    /// </listheader>
+    /// <item>Intended successor state ( 80% )</item>
+    /// <item> 90° successor state ( 10% )</item>
+    /// <item>-90° successor state( 10% )</item>
+    /// </list>
+    /// <list type="bullet">
+    /// <listheader>
+    /// <term><b>Frozen Walk Rules</b></term>
+    /// </listheader>
+    /// <item>Intended successor state ( 33.33333% )</item>
+    /// <item> 90° successor state ( 33.33333% )</item>
+    /// <item>-90° successor state( 33.33333% )</item>
+    /// </list>
+    /// <list type="bullet">
+    /// <listheader>
+    /// <term><b>Drunk Bonanza Rules</b></term>
+    /// </listheader>
+    /// <item>¯¯\_(ツ)_/¯¯</item>
+    /// </list>
     /// </summary>
+    /// 
     /// <param name="mdpRuleSet"></param>
     /// <returns></returns>
     [SuppressMessage("ReSharper", "CommentTypo")]

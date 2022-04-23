@@ -21,14 +21,14 @@ public static class UncertaintyInEffectsOfActions
     /// Down -> [Left, Right], ..., etc
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static GridAction[] GetOrthogonalEffects(this GridAction action)
+    public static (GridAction, GridAction) GetOrthogonalEffects(this GridAction action)
     {
         return action switch
         {
-            GridAction.Left  => new[] {GridAction.Down, GridAction.Up   },
-            GridAction.Down  => new[] {GridAction.Left, GridAction.Right},
-            GridAction.Right => new[] {GridAction.Down, GridAction.Up   },
-            GridAction.Up    => new[] {GridAction.Left, GridAction.Right},
+            GridAction.Left  => (GridAction.Down, GridAction.Up   ),
+            GridAction.Down  => (GridAction.Left, GridAction.Right),
+            GridAction.Right => (GridAction.Down, GridAction.Up   ),
+            GridAction.Up    => (GridAction.Left, GridAction.Right),
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
     }
