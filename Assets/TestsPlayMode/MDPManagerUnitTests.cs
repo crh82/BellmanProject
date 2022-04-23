@@ -178,7 +178,7 @@ namespace TestsPlayMode
         private const GridAction Up    = GridAction.Up;
         
         private readonly MDP _russellNorvigMdp = MdpAdmin.GenerateMdp(
-            "RussellNorvigGridworld", 
+            "RussellNorvigGridworldTest", 
             MdpRules.RussellAndNorvig,
             new[] {4, 3},
             new[] {5},
@@ -189,7 +189,7 @@ namespace TestsPlayMode
             1f);
         
         private readonly MDP _frozenLake4 = MdpAdmin.GenerateMdp(
-            "FrozenLake4x4", 
+            "FrozenLake4x4Test", 
             MdpRules.FrozenLake,
             new[] {4, 4},
             new int[] {},
@@ -197,7 +197,7 @@ namespace TestsPlayMode
             new[] {3});
         
         private readonly MDP _drunkBonanza = MdpAdmin.GenerateMdp(
-            name:"DrunkBonanza4x4", 
+            name:"DrunkBonanza4x4Test", 
             MdpRules.DrunkBonanza,
             dimensions: new[] {4, 4},
             new int[] {},
@@ -227,15 +227,15 @@ namespace TestsPlayMode
         [Test]
         public void SerialisingStates()
         {
-            MdpAdmin.SaveMdpToFile(_russellNorvigMdp, "Assets/Resources/CanonicalMDPs");
-            MdpAdmin.SaveMdpToFile(_frozenLake4, "Assets/Resources/CanonicalMDPs");
-            MdpAdmin.SaveMdpToFile(_drunkBonanza, "Assets/Resources/CanonicalMDPs");
+            MdpAdmin.SaveMdpToFile(_russellNorvigMdp, "Assets/Resources/TestMDPs");
+            MdpAdmin.SaveMdpToFile(_frozenLake4, "Assets/Resources/TestMDPs");
+            MdpAdmin.SaveMdpToFile(_drunkBonanza, "Assets/Resources/TestMDPs");
         }
 
         [Test]
         public void DeserialisationTests()
         {
-            string jsonStringFromJsonFile = File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json");
+            string jsonStringFromJsonFile = File.ReadAllText("Assets/Resources/TestMDPs/RussellNorvigGridworldTest.json");
             MDP russellAndNorvig = MdpAdmin.LoadMdp(jsonStringFromJsonFile);
             
             Assert.That(russellAndNorvig.ObstacleStates, Has.Member(5));
@@ -277,7 +277,7 @@ namespace TestsPlayMode
                 .Transitions[0]
                 .Reward, Is.InRange(0.9f, 1.1f));
             
-            jsonStringFromJsonFile = File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json");
+            jsonStringFromJsonFile = File.ReadAllText("Assets/Resources/TestMDPs/FrozenLake4x4Test.json");
             MDP frozenLake4B4 = MdpAdmin.LoadMdp(jsonStringFromJsonFile);
             
             Assert.That(frozenLake4B4.TerminalStates, Has.Member(11));
@@ -353,8 +353,8 @@ namespace TestsPlayMode
         {
             // _algs.mdp = _frozenLake4B4;
             _algs.mdp = _russellNorvig;
-            _algs.gamma = 1.0f;
-            _algs.theta = 1E-10f;
+            _algs.discountFactorGamma = 1.0f;
+            _algs.thresholdTheta = 1E-10f;
             
             // A test policy for frozen lake
             
@@ -382,9 +382,74 @@ namespace TestsPlayMode
                 { 4,    Up},            { 6,    Up},
                 { 0,    Up},{ 1,  Left},{ 2, Left },{ 3, Left },
             };
+
+            var myMistakePolicy = new Policy();
+
+            myMistakePolicy.SetAction(_algs.mdp.States[8],   Left);
+            myMistakePolicy.SetAction(_algs.mdp.States[4],     Up);
+            myMistakePolicy.SetAction(_algs.mdp.States[0],     Up);
+            myMistakePolicy.SetAction(_algs.mdp.States[9],  Right);
+            myMistakePolicy.SetAction(_algs.mdp.States[1],   Left);
+            myMistakePolicy.SetAction(_algs.mdp.States[10], Right);
+            myMistakePolicy.SetAction(_algs.mdp.States[6],     Up);
+            myMistakePolicy.SetAction(_algs.mdp.States[2],   Left);
+            myMistakePolicy.SetAction(_algs.mdp.States[3],   Left);
+
+            StateValueFunction valueFunction = _algs.PolicyEvaluation(_algs.mdp, myMistakePolicy, 1f, 1e-10f);
+        }
+
+        [Test]
+        public void ArgMaxSimple()
+        {
+            MarkovAction a0 = new MarkovAction {Action = Left};
+            MarkovAction a1 = new MarkovAction {Action = Down};
+            MarkovAction a2 = new MarkovAction {Action = Right};
+
+            float qs1a0 = 0.0f;
+            float qs1a1 = 1.0f;
+            float qs1a2 = 2.0f;
             
-            _algs.PolicyEvaluation();
-                
+            MarkovState s1 = new MarkovState
+            {
+                StateIndex = 0,
+                ApplicableActions = new List<MarkovAction>{a0,a1,a2}
+            };
+
+            ActionValueFunction q = new ActionValueFunction();
+            
+            q.SetValue(s1, a0.Action, qs1a0);
+            q.SetValue(s1, a2.Action, qs1a2);
+            q.SetValue(s1, a1.Action, qs1a1);
+
+            Assert.That(Right, Is.EqualTo(q.ArgMaxAction(s1)));
+            Assert.That(Left,  Is.Not.EqualTo(q.ArgMaxAction(s1)));
+        }
+        
+        [Test]
+        public void ArgMaxPrecision()
+        {
+            MarkovAction a0 = new MarkovAction {Action = Left};
+            MarkovAction a1 = new MarkovAction {Action = Down};
+            MarkovAction a2 = new MarkovAction {Action = Right};
+
+            float qs1a0 = 0.00000000001f;
+            float qs1a1 = 0.00000000002f;
+            float qs1a2 = 0.00000000003f;
+            
+            MarkovState s1 = new MarkovState
+            {
+                StateIndex = 0,
+                ApplicableActions = new List<MarkovAction>{a0,a1,a2}
+            };
+
+            ActionValueFunction q = new ActionValueFunction();
+            
+            q.SetValue(s1, a0.Action, qs1a0);
+            q.SetValue(s1, a2.Action, qs1a2);
+            q.SetValue(s1, a1.Action, qs1a1);
+
+            Assert.That(Right, Is.EqualTo(q.ArgMaxAction(s1)));
+            Assert.That(Left,  Is.Not.EqualTo(q.ArgMaxAction(s1)));
         }
     }
 }

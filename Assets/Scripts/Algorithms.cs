@@ -48,16 +48,11 @@ public class Algorithms : MonoBehaviour
 
     public int iterations;
 
-    public GridAction Pi(MarkovState state)
-    {
-        return Policy[state.StateIndex];
-    }
-
     public StateValueFunction PolicyEvaluation(MDP mdp, Policy policy, float gamma, float theta)
     {
         iterations         = 0;
 
-        var V = new StateValueFunction();
+        var stateValueFunctionV = new StateValueFunction();
 
         previousStateValue = new float[mdp.StateCount];
 
@@ -78,13 +73,13 @@ public class Algorithms : MonoBehaviour
                     case StateType.Terminal:
                     case StateType.Goal:
                           stateValue[state.StateIndex] = state.Reward; // 2 arrays version
-                          V.SetValue(state, state.Reward); // In-place version
+                          stateValueFunctionV.SetValue(state, state.Reward); // In-place version
                         break;
                     
                     default:
                     {
                         float v2Arrays = previousStateValue[state.StateIndex]; // 2 arrays version
-                        float vInPlace = V.Value(state);
+                        float vInPlace = stateValueFunctionV.Value(state);     // In-place version
                         
                         // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
                         float valueOfCurrentState2Arrays = 0;
@@ -100,7 +95,7 @@ public class Algorithms : MonoBehaviour
                             float          reward = transition.Reward;  // Todo Should I make this the reward for arriving in the next state or the reward for the current state?
 
                             float  vSprime2Arrays = previousStateValue[nextState]; // 2 Arrays version
-                            float  vSprimeInPlace = V.Value(mdp.States[nextState]); // In-Place version
+                            float  vSprimeInPlace = stateValueFunctionV.Value(mdp.States[nextState]); // In-Place version
                             
                             float  zeroIfTerminal = ZeroIfTerminal(nextState);
 
@@ -113,7 +108,7 @@ public class Algorithms : MonoBehaviour
                         deltaIP = Math.Max(deltaIP, Math.Abs(vInPlace - valueOfCurrentStateInPlace));
                         
                         stateValue[currentState] = valueOfCurrentState2Arrays; // 2 Arrays version
-                        V.SetValue(state, valueOfCurrentStateInPlace);         // In-Place version
+                        stateValueFunctionV.SetValue(state, valueOfCurrentStateInPlace);         // In-Place version
                         
                         break;
                     }
@@ -143,11 +138,11 @@ public class Algorithms : MonoBehaviour
         
         foreach (var state in mdp.States)
         {
-            Debug.Log($"V({state}) = {V.Value(state)}");
+            Debug.Log($"V({state}) = {stateValueFunctionV.Value(state)}");
         }
         
         Debug.Log(iterations);
-        return V;
+        return stateValueFunctionV;
     }
     
 
@@ -170,7 +165,7 @@ public class Algorithms : MonoBehaviour
                 //     let valueSprime = stateValueFunction.Value(nextState) 
                 //     select probability * (reward + gamma * valueSprime * ZeroIfTerminal(nextState.StateIndex))).Sum();
 
-                var stateActionValueQ = 0.0f;
+                var stateActionValueQsa = 0.0f;
                 
                 foreach (var transition in action.Transitions)
                 {
@@ -179,11 +174,11 @@ public class Algorithms : MonoBehaviour
                     float      reward = transition.Reward;
                     float valueSprime = stateValueFunction.Value(nextState);
                     
-                    stateActionValueQ +=
+                    stateActionValueQsa +=
                         probability * (reward + gamma * valueSprime * ZeroIfTerminal(nextState.StateIndex));
                 }
                 
-                actionValueFunctionQ.SetValue(state, action.Action, stateActionValueQ);
+                actionValueFunctionQ.SetValue(state, action.Action, stateActionValueQsa);
             }
 
             GridAction argMaxAction = actionValueFunctionQ.ArgMaxAction(state);
