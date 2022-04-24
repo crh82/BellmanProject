@@ -339,10 +339,10 @@ namespace TestsPlayMode
     {
         // private GameObject _testGameObject = new GameObject().AddComponent<Algorithms>();
         // private readonly Algorithms _algs = new GameObject().AddComponent<Algorithms>();
-        private readonly Algorithms _algs = new Algorithms();
-        MDP _frozenLake4B4 = MdpAdmin.LoadMdp(
+        private readonly Algorithms _algorithms = new Algorithms();
+        MDP _frozenLake4B4Mdp = MdpAdmin.LoadMdp(
             File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json"));
-        MDP _russellNorvig = MdpAdmin.LoadMdp(
+        MDP _russellNorvigMdp = MdpAdmin.LoadMdp(
             File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json"));
         private const GridAction Left  = GridAction.Left;
         private const GridAction Down  = GridAction.Down;
@@ -360,55 +360,134 @@ namespace TestsPlayMode
             
             Assert.That(testDiff, Is.InRange(2.99f, 3.01f));
         }
-        
+
+        [Test]
+        public void FrozenLake4X4AdversarialToOptimalGamma1()
+        {
+            const string nameOfFile = "TestResultsFL4x4";
+               
+            var frozenLakeAdversarialPolicy = new Policy();
+            frozenLakeAdversarialPolicy.SetAction(1,  Left);
+            frozenLakeAdversarialPolicy.SetAction(2,  Left);
+            frozenLakeAdversarialPolicy.SetAction(4,  Left);
+            frozenLakeAdversarialPolicy.SetAction(5,  Left);
+            frozenLakeAdversarialPolicy.SetAction(6,  Left);
+            frozenLakeAdversarialPolicy.SetAction(8,  Up);
+            frozenLakeAdversarialPolicy.SetAction(10, Up);
+            frozenLakeAdversarialPolicy.SetAction(12, Up);
+            frozenLakeAdversarialPolicy.SetAction(13, Up);
+            frozenLakeAdversarialPolicy.SetAction(14, Up);
+            frozenLakeAdversarialPolicy.SetAction(15, Up);
+            
+            StateValueFunction adversarialPolicyValue =
+                _algorithms.PolicyEvaluation(_frozenLake4B4Mdp, frozenLakeAdversarialPolicy, 1f, 1e-10f);
+
+            var (valueOfIteratedPolicy, iteratedPolicy) = _algorithms.PolicyIteration(
+                _frozenLake4B4Mdp, 
+                frozenLakeAdversarialPolicy, 
+                1f,
+                1e-10f,
+                true,
+                1000,
+                false);
+            
+            var frozenLakeOptimalBenchmark = new Policy();
+            frozenLakeOptimalBenchmark.SetAction(1,  Right);
+            frozenLakeOptimalBenchmark.SetAction(2,  Down);
+            frozenLakeOptimalBenchmark.SetAction(4,  Up);
+            frozenLakeOptimalBenchmark.SetAction(5,  Down);
+            frozenLakeOptimalBenchmark.SetAction(6,  Left);
+            frozenLakeOptimalBenchmark.SetAction(8,  Left);
+            frozenLakeOptimalBenchmark.SetAction(10, Left);
+            frozenLakeOptimalBenchmark.SetAction(12, Left);
+            frozenLakeOptimalBenchmark.SetAction(13, Up);
+            frozenLakeOptimalBenchmark.SetAction(14, Up);
+            frozenLakeOptimalBenchmark.SetAction(15, Up);
+            
+            MdpAdmin.GenerateTestOutputAsCsv(
+                _frozenLake4B4Mdp, 
+                adversarialPolicyValue, 
+                valueOfIteratedPolicy, 
+                frozenLakeAdversarialPolicy, 
+                iteratedPolicy, 
+                nameOfFile);
+            
+            var saveFilePath = $"Assets/TestResults/{nameOfFile}.csv";
+            string[] iteratedPolicyArray =
+                iteratedPolicy.PolicyToStringArray(_frozenLake4B4Mdp.States, _frozenLake4B4Mdp.StateCount);
+            string[] optimalTestArray =
+                frozenLakeOptimalBenchmark.PolicyToStringArray(_frozenLake4B4Mdp.States, _frozenLake4B4Mdp.StateCount);
+            
+            Assert.That(iteratedPolicyArray, Is.EquivalentTo(optimalTestArray));
+        }
+
+
+        [Test]
+        public void RussellNorvigRandomToOptimalTest()
+        {
+            const string nameOfFile = "TestResultsRNGWRandToOpt";
+
+            var randomPolicy = new Policy(_russellNorvigMdp);
+
+            StateValueFunction randomPolicyValue = _algorithms.PolicyEvaluation(
+                _russellNorvigMdp, 
+                randomPolicy,
+                gamma: 0.99f,
+                theta: 1e-10f,
+                boundIterations: false);
+            
+            var (optimalValue, optimalPolicy) = _algorithms.PolicyIteration(
+                _russellNorvigMdp, 
+                randomPolicy, 
+                0.99f,
+                1e-10f,
+                false,
+                1000,
+                true);
+            
+            MdpAdmin.GenerateTestOutputAsCsv(
+                _russellNorvigMdp,
+                randomPolicyValue,
+                optimalValue,
+                randomPolicy,
+                optimalPolicy,
+                nameOfFile);
+            
+            var saveFilePath = $"Assets/TestResults/{nameOfFile}.csv";
+            
+            Assert.That(File.Exists(saveFilePath), Is.True);
+
+        }
         [Test]
         public void PolicyEvaluationTest()
         {
             // _algs.mdp = _frozenLake4B4;
-            _algs.mdp = _russellNorvig;
-            _algs.discountFactorGamma = 1.0f;
-            _algs.thresholdTheta = 1E-10f;
+            _algorithms.globalMdp           = _russellNorvigMdp;
+            _algorithms.discountFactorGamma = 1.0f;
+            _algorithms.thresholdTheta      = 1e-10f;
             
             // A test policy for frozen lake
             
-            // _algs.policy = new Dictionary<int, GridAction>
-            // {
-            //     {12, Right},{13,  Left},{14,  Down},{15,    Up},
-            //     { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
-            //     { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
-            //     { 0,    Up},{ 1, Right},{ 2, Down },{ 3, Left },
-            //     
-            // };
-            //
-            // // Test policy for Russell Norvig Gridworld
-            //
-            // _algs.policy = new Dictionary<int, GridAction>
-            // {
-            //     { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
-            //     { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
-            //     { 0,    Up},{ 1,  Left},{ 2, Left },{ 3, Left },
-            // };
-            
-            _algs.Policy = new Dictionary<int, GridAction>
-            {
-                { 8, Right},{ 9, Right},{10, Right},
-                { 4,    Up},            { 6,    Up},
-                { 0,    Up},{ 1,  Left},{ 2, Left },{ 3, Left },
-            };
 
             var myMistakePolicy = new Policy();
 
-            myMistakePolicy.SetAction(_algs.mdp.States[8],   Left);
-            myMistakePolicy.SetAction(_algs.mdp.States[4],     Up);
-            myMistakePolicy.SetAction(_algs.mdp.States[0],     Up);
-            myMistakePolicy.SetAction(_algs.mdp.States[9],  Right);
-            myMistakePolicy.SetAction(_algs.mdp.States[1],   Left);
-            myMistakePolicy.SetAction(_algs.mdp.States[10], Right);
-            myMistakePolicy.SetAction(_algs.mdp.States[6],     Up);
-            myMistakePolicy.SetAction(_algs.mdp.States[2],   Left);
-            myMistakePolicy.SetAction(_algs.mdp.States[3],   Left);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[8],   Left);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[4],     Up);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[0],     Up);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[9],  Right);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[1],   Left);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[10], Right);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[6],     Up);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[2],   Left);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[3],   Left);
 
-            StateValueFunction valueFunction = _algs.PolicyEvaluation(_russellNorvig, myMistakePolicy, 1f, 1e-10f);
+            StateValueFunction valueFunction = _algorithms.PolicyEvaluation(
+                _russellNorvigMdp, 
+                myMistakePolicy, 
+                1f, 
+                1e-10f, 
+                true, 
+                1000);
             
             Assert.AreEqual(-7.882292, valueFunction.Value(0), 1e-6);
             Assert.AreEqual(-7.920341, valueFunction.Value(1),1e-6);
@@ -426,7 +505,7 @@ namespace TestsPlayMode
         }
 
         [Test]
-        public void PolicyEqualsTest()
+        public void TestPolicyEqualityFunction()
         {
             var policy1 = new Policy(4);
             var policy1Copy = policy1.Copy();
@@ -460,32 +539,39 @@ namespace TestsPlayMode
         [Test]
         public void PolicyImprovementTest()
         {
-            float gamma = 1f;
-            float theta = 1e-10f;
+            const float gamma = 1f;
+            const float theta = 1e-10f;
             
             var myMistakePolicy = new Policy();
 
-            myMistakePolicy.SetAction(_russellNorvig.States[8],   Left);
-            myMistakePolicy.SetAction(_russellNorvig.States[4],     Up);
-            myMistakePolicy.SetAction(_russellNorvig.States[0],     Up);
-            myMistakePolicy.SetAction(_russellNorvig.States[9],  Right);
-            myMistakePolicy.SetAction(_russellNorvig.States[1],   Left);
-            myMistakePolicy.SetAction(_russellNorvig.States[10], Right);
-            myMistakePolicy.SetAction(_russellNorvig.States[6],     Up);
-            myMistakePolicy.SetAction(_russellNorvig.States[2],   Left);
-            myMistakePolicy.SetAction(_russellNorvig.States[3],   Left);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[8],   Left);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[4],     Up);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[0],     Up);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[9],  Right);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[1],   Left);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[10], Right);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[6],     Up);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[2],   Left);
+            myMistakePolicy.SetAction(_russellNorvigMdp.States[3],   Left);
             
             var optimalPolicy = myMistakePolicy.Copy();
             optimalPolicy.SetAction(8, Right);
 
             StateValueFunction valueOfMistakePolicy =
-                _algs.PolicyEvaluation(_russellNorvig, myMistakePolicy, gamma, theta);
+                _algorithms.PolicyEvaluation(_russellNorvigMdp, myMistakePolicy, gamma, theta);
 
-            Policy improvedPolicy = _algs.PolicyImprovement(_russellNorvig, valueOfMistakePolicy, gamma);
+            Policy improvedPolicy = _algorithms.PolicyImprovement(_russellNorvigMdp, valueOfMistakePolicy, gamma);
 
+            StateValueFunction valueOfImprovedPolicy =
+                _algorithms.PolicyEvaluation(_russellNorvigMdp, improvedPolicy, gamma, theta);
+
+            float sumOfMistakenValues =
+                valueOfMistakePolicy.StateValuesToFloatArray(_russellNorvigMdp.StateCount).Sum();
+            float sumOfImprovedValues =
+                valueOfImprovedPolicy.StateValuesToFloatArray(_russellNorvigMdp.StateCount).Sum();
             
+            Assert.That(sumOfMistakenValues, Is.LessThan(sumOfImprovedValues));
             Assert.That(myMistakePolicy.Equals(improvedPolicy), Is.False);
-            Assert.That(optimalPolicy.Equals(improvedPolicy), Is.True);
         }
 
         [Test]
@@ -637,9 +723,9 @@ namespace TestsPlayMode
             worstPolicy.SetAction(5, Up);
             
             StateValueFunction valueOfWorstPolicy =
-                _algorithms.PolicyEvaluation(_littleWorld, worstPolicy, TestGamma, TestTheta);
+                _algorithms.PolicyEvaluation(_littleWorld, worstPolicy, 0.99f, TestTheta);
 
-            var (stateValueFunction, policy) = _algorithms.PolicyIteration(_littleWorld, worstPolicy);
+            var (stateValueFunction, policy) = _algorithms.PolicyIteration(_littleWorld, worstPolicy, 0.99f);
             
             MdpAdmin.GenerateTestOutputAsCsv(
                 _littleWorld, 
@@ -651,6 +737,30 @@ namespace TestsPlayMode
             var saveFilePath = $"Assets/TestResults/{nameOfFile}.csv";
             
             Assert.That(File.Exists(saveFilePath), Is.True);
+        }
+
+        [Test]
+        public void PolicyIterationFromRandomValuesAndRandomPolicy()
+        {
+            const string nameOfFile2 = "TestLittleWorldFromRandom";
+            
+            var startPolicy = new Policy(_littleWorld);
+
+            StateValueFunction valueOfStartPolicy = new StateValueFunction(_littleWorld, -2.0f, 3.0f);
+
+            var (valueOfEndPolicy, endPolicy) = _algorithms.PolicyIteration(_littleWorld, startPolicy, 0.99f, debugMode:true);
+            
+            MdpAdmin.GenerateTestOutputAsCsv(
+                _littleWorld, 
+                valueOfStartPolicy, 
+                valueOfEndPolicy, 
+                startPolicy, 
+                endPolicy, 
+                nameOfFile2);
+            var saveFilePath2 = $"Assets/TestResults/{nameOfFile2}.csv";
+            
+            Assert.That(File.Exists(saveFilePath2), Is.True);
+
             
         }
     }

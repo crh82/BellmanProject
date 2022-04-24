@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 using UnityEngine.WSA;
 using Object = System.Object;
@@ -467,6 +468,36 @@ public class StateValueFunction
 {
     private readonly Dictionary<int, float> _valueOfAState = new Dictionary<int, float>();
 
+    public StateValueFunction()
+    {
+    }
+
+    public StateValueFunction(MDP mdp, float lowerBoundOfValues, float upperBoundOfValues)
+    {
+        Assert.IsTrue(lowerBoundOfValues < upperBoundOfValues);
+        foreach (var state in mdp.States)
+        {
+            switch (state.TypeOfState)
+            {
+                case StateType.Terminal:
+                case StateType.Obstacle:
+                case StateType.Goal:
+                    SetValue(state, state.Reward);
+                    break;
+                case StateType.Standard:
+                    SetValue(state, Random.Range(lowerBoundOfValues, upperBoundOfValues));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            // if (state.IsObstacle() || state.IsGoal() || state.IsTerminal()) SetValue(state, state.Reward);
+            // else SetValue(state, Random.Range(lowerBoundOfValues, upperBoundOfValues));
+            
+        }
+    }
+    
+    
+
     public void SetValue(MarkovState state, float valueOfState)
     {
         switch (_valueOfAState.ContainsKey(state.StateIndex))
@@ -618,7 +649,6 @@ public class Policy
     public Policy(MDP mdp)
     {
         Array actions = Enum.GetValues(typeof(GridAction));
-        
         
         foreach (var state in mdp.States)
         {
