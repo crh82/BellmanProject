@@ -89,7 +89,13 @@ public class MDP
         get => _rewards;
         set => _rewards = value;
     }
+
     
+    public List<MarkovTransition> TransitionFunction(MarkovState state, MarkovAction action)
+    {
+        return TransitionFunction(state, action.Action);
+    }
+
     /// <summary>
     /// Computes the transition objects from the given state and action according to the specified 
     /// MDP rule set ( <see cref="MdpRules"/> ).  
@@ -109,30 +115,30 @@ public class MDP
                 
                 var intended = new MarkovTransition
                 {
-                    State = state.StateIndex,
-                    ActionTaken = action,
-                    Probability = probabilityDistribution[0],
+                    State               = state.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = probabilityDistribution[0],
                     SuccessorStateIndex = GenerateSuccessorStateFromAction(state, action)
                 };
-                intended.Reward = States[intended.SuccessorStateIndex].Reward;
+                intended.Reward         = States[intended.SuccessorStateIndex].Reward;
 
                 var noEffect = new MarkovTransition
                 {
-                    State = state.StateIndex, 
-                    ActionTaken = action,
-                    Probability = probabilityDistribution[1],
+                    State               = state.StateIndex, 
+                    ActionTaken         = action,
+                    Probability         = probabilityDistribution[1],
                     SuccessorStateIndex = state.StateIndex
                 };
-                noEffect.Reward = States[noEffect.SuccessorStateIndex].Reward;
+                noEffect.Reward         = States[noEffect.SuccessorStateIndex].Reward;
                 
                 var inverseEffect = new MarkovTransition
                 {
-                    State = state.StateIndex,
-                    ActionTaken = action,
-                    Probability = probabilityDistribution[2],
+                    State               = state.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = probabilityDistribution[2],
                     SuccessorStateIndex = GenerateSuccessorStateFromAction(state, action.GetInverseEffectOfAction())
                 };
-                inverseEffect.Reward = States[inverseEffect.SuccessorStateIndex].Reward;
+                inverseEffect.Reward    = States[inverseEffect.SuccessorStateIndex].Reward;
 
                 transitions = new List<MarkovTransition> {intended, noEffect, inverseEffect};
                 break;
@@ -174,12 +180,12 @@ public class MDP
         {
             var newTransition = new MarkovTransition
             {
-                State = mState.StateIndex,
-                ActionTaken = (GridAction) i,
-                Probability = probabilityDistribution[i],
+                State               = mState.StateIndex,
+                ActionTaken         = (GridAction) i,
+                Probability         = probabilityDistribution[i],
                 SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, (GridAction) i)
             };
-            newTransition.Reward = States[newTransition.SuccessorStateIndex].Reward;
+            newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
             
             transitions.Add(newTransition);
         }
@@ -195,9 +201,9 @@ public class MDP
         // if (probabilityDistribution == null) throw new ArgumentNullException(nameof(probabilityDistribution));
         var intended = new MarkovTransition
         {
-            State = mState.StateIndex,
-            ActionTaken = action,
-            Probability = probabilityDistribution[0],
+            State               = mState.StateIndex,
+            ActionTaken         = action,
+            Probability         = probabilityDistribution[0],
             SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
         };
 
@@ -215,7 +221,8 @@ public class MDP
             SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, effects.Item1)
         };
         
-        orthogonalEffect.Reward = orthogonalEffect.State == orthogonalEffect.SuccessorStateIndex
+        orthogonalEffect.Reward = 
+            orthogonalEffect.State == orthogonalEffect.SuccessorStateIndex
             ? 0
             : States[orthogonalEffect.SuccessorStateIndex].Reward;
 
@@ -227,7 +234,8 @@ public class MDP
             SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, effects.Item2)
         };
         
-        otherOrthogonalEffect.Reward = otherOrthogonalEffect.State == otherOrthogonalEffect.SuccessorStateIndex
+        otherOrthogonalEffect.Reward = 
+            otherOrthogonalEffect.State == otherOrthogonalEffect.SuccessorStateIndex
             ? 0
             : States[otherOrthogonalEffect.SuccessorStateIndex].Reward;
         

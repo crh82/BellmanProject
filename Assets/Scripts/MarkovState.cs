@@ -68,6 +68,11 @@ public class MarkovState
         return typeOfState.Equals(StateType.Goal);
     }
 
+    public bool IsStandard()
+    {
+        return typeOfState.Equals(StateType.Standard);
+    }
+
     public override bool Equals(object obj)
     {
         return base.Equals(obj);

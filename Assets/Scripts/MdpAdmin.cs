@@ -457,8 +457,8 @@ public static class MdpAdmin
         toCsv.Add(header);
         float[]  startValues        = startValueOfStates.StateValuesToFloatArray(mdp.StateCount);
         float[]  endValues          = endValueOfStates.StateValuesToFloatArray(mdp.StateCount);
-        string[] startPolicyActions = startPolicy.PolicyToStringArray(mdp.States, mdp.StateCount);
-        string[] endPolicyActions   = endPolicy.PolicyToStringArray(mdp.States, mdp.StateCount);
+        string[] startPolicyActions = startPolicy.PolicyToStringArray(mdp.States);
+        string[] endPolicyActions   = endPolicy.PolicyToStringArray(mdp.States);
 
         for (var i = 0; i < mdp.StateCount; i++)
         {
