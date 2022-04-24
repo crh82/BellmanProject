@@ -441,6 +441,33 @@ public static class MdpAdmin
         string jsonRepresentationOfMdp = JsonUtility.ToJson(mdp);
         File.WriteAllText(saveFilePath, jsonRepresentationOfMdp);
     }
+
+    public static void GenerateTestOutputAsCsv(
+        MDP mdp,
+        StateValueFunction startValueOfStates,
+        StateValueFunction endValueOfStates, 
+        Policy startPolicy, 
+        Policy endPolicy, 
+        string fileName)
+    {
+        var saveFilePath = $"Assets/TestResults/{fileName}.csv";
+        var toCsv = new List<string>();
+        if (toCsv == null) throw new ArgumentNullException(nameof(toCsv));
+        var header = $"StartPolicyValues,EndPolicyValues,StartPolicyActions,EndPolicyActions";
+        toCsv.Add(header);
+        float[]  startValues        = startValueOfStates.StateValuesToFloatArray(mdp.StateCount);
+        float[]  endValues          = endValueOfStates.StateValuesToFloatArray(mdp.StateCount);
+        string[] startPolicyActions = startPolicy.PolicyToStringArray(mdp.States, mdp.StateCount);
+        string[] endPolicyActions   = endPolicy.PolicyToStringArray(mdp.States, mdp.StateCount);
+
+        for (var i = 0; i < mdp.StateCount; i++)
+        {
+            var line = $"{startValues[i]},{endValues[i]},{startPolicyActions[i]},{endPolicyActions[i]}";
+            toCsv.Add(line);
+        }
+        
+        File.WriteAllLines(saveFilePath, toCsv);
+    }
 }
 
 /*

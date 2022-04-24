@@ -2,7 +2,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace TestsPlayMode
 {
@@ -116,12 +118,12 @@ namespace TestsPlayMode
         [Test]
         public void OrthogonalActionsTests()
         {
-            GridAction[] vertical   = {Down, Up   };
-            GridAction[] horizontal = {Left, Right};
-            Assert.That(Left.GetOrthogonalEffects(),  Is.EquivalentTo( vertical ));
-            Assert.That(Down.GetOrthogonalEffects(),  Is.EquivalentTo( horizontal ));
-            Assert.That(Right.GetOrthogonalEffects(), Is.EquivalentTo( vertical ));
-            Assert.That(Up.GetOrthogonalEffects(),    Is.EquivalentTo( horizontal ));
+            var vertical   = (Down, Up   );
+            var horizontal = (Left, Right);
+            Assert.That(Left.GetOrthogonalEffects(),  Is.EqualTo( vertical ));
+            Assert.That(Down.GetOrthogonalEffects(),  Is.EqualTo( horizontal ));
+            Assert.That(Right.GetOrthogonalEffects(), Is.EqualTo( vertical ));
+            Assert.That(Up.GetOrthogonalEffects(),    Is.EqualTo( horizontal ));
              
         }
     }
@@ -207,6 +209,15 @@ namespace TestsPlayMode
             -1f,
             10f);
 
+        private readonly MDP _littleTestWorld = MdpAdmin.GenerateMdp(
+            "LittleTestWorldTest",
+            MdpRules.FrozenLake,
+            new [] {3,2},
+            new int[] {},
+            new [] {1},
+            new []{2}
+        );
+
         [Test]
         public void TestGridWorldRules()
         {
@@ -230,6 +241,7 @@ namespace TestsPlayMode
             MdpAdmin.SaveMdpToFile(_russellNorvigMdp, "Assets/Resources/TestMDPs");
             MdpAdmin.SaveMdpToFile(_frozenLake4, "Assets/Resources/TestMDPs");
             MdpAdmin.SaveMdpToFile(_drunkBonanza, "Assets/Resources/TestMDPs");
+            MdpAdmin.SaveMdpToFile(_littleTestWorld, "Assets/Resources/TestMDPs");
         }
 
         [Test]
@@ -337,6 +349,7 @@ namespace TestsPlayMode
         private const GridAction Right = GridAction.Right;
         private const GridAction Up    = GridAction.Up;
         
+        
         [Test]
         public void TestMaxAbsoluteDifference()
         {
@@ -347,7 +360,7 @@ namespace TestsPlayMode
             
             Assert.That(testDiff, Is.InRange(2.99f, 3.01f));
         }
-
+        
         [Test]
         public void PolicyEvaluationTest()
         {
@@ -395,7 +408,84 @@ namespace TestsPlayMode
             myMistakePolicy.SetAction(_algs.mdp.States[2],   Left);
             myMistakePolicy.SetAction(_algs.mdp.States[3],   Left);
 
-            StateValueFunction valueFunction = _algs.PolicyEvaluation(_algs.mdp, myMistakePolicy, 1f, 1e-10f);
+            StateValueFunction valueFunction = _algs.PolicyEvaluation(_russellNorvig, myMistakePolicy, 1f, 1e-10f);
+            
+            Assert.AreEqual(-7.882292, valueFunction.Value(0), 1e-6);
+            Assert.AreEqual(-7.920341, valueFunction.Value(1),1e-6);
+            Assert.AreEqual(-7.000689, valueFunction.Value(2),1e-6);
+            Assert.AreEqual(-6.368815, valueFunction.Value(3),1e-6);
+            Assert.AreEqual(-7.842292, valueFunction.Value(4),1e-6);
+            Assert.AreEqual(0,         valueFunction.Value(5),1e-6);
+            Assert.AreEqual(0.7095891, valueFunction.Value(6),1e-6);
+            Assert.AreEqual(-1,        valueFunction.Value(7),1e-6);
+            Assert.AreEqual(-7.812047, valueFunction.Value(8),1e-6);
+            Assert.AreEqual(0.9232877, valueFunction.Value(9),1e-6);
+            Assert.AreEqual(0.9632877, valueFunction.Value(10),1e-6);
+            Assert.AreEqual(1,         valueFunction.Value(11),1e-6);
+            
+        }
+
+        [Test]
+        public void PolicyEqualsTest()
+        {
+            var policy1 = new Policy(4);
+            var policy1Copy = policy1.Copy();
+            
+            Assert.That(policy1.Equals(policy1Copy), Is.True);
+            
+            var policy2 = new Policy();
+            
+            Assert.That(policy1.Equals(policy2), Is.False);
+            
+            policy2.SetAction(0,Left);
+            policy2.SetAction(1, Down);
+            policy2.SetAction(2, Right);
+            policy2.SetAction(3, Up);
+
+            var policy3 = new Policy();
+            
+            policy3.SetAction(0,Left);
+            policy3.SetAction(1, Down);
+            policy3.SetAction(2, Right);
+            policy3.SetAction(3, Up);
+            
+            Assert.That(policy2.Equals(policy3), Is.True);
+            
+            policy3.SetAction(0, Right);
+            
+            Assert.That(policy2.Equals(policy3), Is.False);
+
+        }
+
+        [Test]
+        public void PolicyImprovementTest()
+        {
+            float gamma = 1f;
+            float theta = 1e-10f;
+            
+            var myMistakePolicy = new Policy();
+
+            myMistakePolicy.SetAction(_russellNorvig.States[8],   Left);
+            myMistakePolicy.SetAction(_russellNorvig.States[4],     Up);
+            myMistakePolicy.SetAction(_russellNorvig.States[0],     Up);
+            myMistakePolicy.SetAction(_russellNorvig.States[9],  Right);
+            myMistakePolicy.SetAction(_russellNorvig.States[1],   Left);
+            myMistakePolicy.SetAction(_russellNorvig.States[10], Right);
+            myMistakePolicy.SetAction(_russellNorvig.States[6],     Up);
+            myMistakePolicy.SetAction(_russellNorvig.States[2],   Left);
+            myMistakePolicy.SetAction(_russellNorvig.States[3],   Left);
+            
+            var optimalPolicy = myMistakePolicy.Copy();
+            optimalPolicy.SetAction(8, Right);
+
+            StateValueFunction valueOfMistakePolicy =
+                _algs.PolicyEvaluation(_russellNorvig, myMistakePolicy, gamma, theta);
+
+            Policy improvedPolicy = _algs.PolicyImprovement(_russellNorvig, valueOfMistakePolicy, gamma);
+
+            
+            Assert.That(myMistakePolicy.Equals(improvedPolicy), Is.False);
+            Assert.That(optimalPolicy.Equals(improvedPolicy), Is.True);
         }
 
         [Test]
@@ -450,6 +540,118 @@ namespace TestsPlayMode
 
             Assert.That(Right, Is.EqualTo(q.ArgMaxAction(s1)));
             Assert.That(Left,  Is.Not.EqualTo(q.ArgMaxAction(s1)));
+        }
+    }
+
+    public class LittleWorldTests
+    {
+        private readonly Algorithms _algorithms = new Algorithms();
+
+        private readonly MDP _littleWorld = MdpAdmin.LoadMdp(
+            File.ReadAllText("Assets/Resources/TestMDPs/LittleTestWorldTest.json"));
+        
+        private const GridAction Left  = GridAction.Left;
+        private const GridAction Down  = GridAction.Down;
+        private const GridAction Right = GridAction.Right;
+        private const GridAction Up    = GridAction.Up;
+        private const float TestGamma = 1f;
+        private const float TestTheta = 1e-10f;
+        
+
+
+        [Test]
+        public void PolicyEvaluationTest()
+        {
+            var worstPolicy = new Policy();
+            worstPolicy.SetAction(0, Down);
+            worstPolicy.SetAction(3, Left);
+            worstPolicy.SetAction(4, Left);
+            worstPolicy.SetAction(5, Up);
+
+            StateValueFunction valueOfWorstPolicy =
+                _algorithms.PolicyEvaluation(_littleWorld, worstPolicy, TestGamma, TestTheta);
+            
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(0)));
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(1)));
+            Assert.That(1f, Is.EqualTo(valueOfWorstPolicy.Value(2)));
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(3)));
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(4)));
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(5)));
+
+            var terminalStateReachablePolicy = new Policy();
+            terminalStateReachablePolicy.SetAction(0, Left);
+            terminalStateReachablePolicy.SetAction(3, Up);
+            terminalStateReachablePolicy.SetAction(4, Up);
+            terminalStateReachablePolicy.SetAction(5, Right);
+
+            StateValueFunction valueOfTerminalStateReachablePolicy =
+                _algorithms.PolicyEvaluation(_littleWorld, terminalStateReachablePolicy, TestGamma, TestTheta);
+            Assert.That(valueOfTerminalStateReachablePolicy.Value(0), Is.GreaterThan(0));
+            Assert.That(0f, Is.EqualTo(valueOfTerminalStateReachablePolicy.Value(1)));
+            Assert.That(1f, Is.EqualTo(valueOfTerminalStateReachablePolicy.Value(2)));
+            Assert.That(valueOfTerminalStateReachablePolicy.Value(3), Is.GreaterThan(0));
+            Assert.That(valueOfTerminalStateReachablePolicy.Value(4), Is.GreaterThan(0));
+            Assert.That(valueOfTerminalStateReachablePolicy.Value(5), Is.GreaterThan(0));
+            
+            
+        }
+
+        [Test]
+        public void PolicyImprovementTest()
+        {
+
+            var worstPolicy = new Policy();
+            worstPolicy.SetAction(0, Down);
+            worstPolicy.SetAction(3, Left);
+            worstPolicy.SetAction(4, Left);
+            worstPolicy.SetAction(5, Up);
+
+            StateValueFunction valueOfWorstPolicy =
+                _algorithms.PolicyEvaluation(_littleWorld, worstPolicy, TestGamma, TestTheta);
+            
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(0)));
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(1)));
+            Assert.That(1f, Is.EqualTo(valueOfWorstPolicy.Value(2)));
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(3)));
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(4)));
+            Assert.That(0f, Is.EqualTo(valueOfWorstPolicy.Value(5)));
+
+            Policy improvedPolicy = _algorithms.PolicyImprovement(_littleWorld, valueOfWorstPolicy, TestGamma);
+            
+            Assert.That(worstPolicy.Equals(improvedPolicy), Is.False);
+            
+            StateValueFunction valueOfImprovedPolicy =
+                _algorithms.PolicyEvaluation(_littleWorld, improvedPolicy, TestGamma, TestTheta);
+            Assert.That(valueOfImprovedPolicy.Value(5), Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void PolicyIterationTest()
+        {
+            const string nameOfFile = "TestLittleWorld";
+            
+            var worstPolicy = new Policy();
+            worstPolicy.SetAction(0, Down);
+            worstPolicy.SetAction(3, Left);
+            worstPolicy.SetAction(4, Left);
+            worstPolicy.SetAction(5, Up);
+            
+            StateValueFunction valueOfWorstPolicy =
+                _algorithms.PolicyEvaluation(_littleWorld, worstPolicy, TestGamma, TestTheta);
+
+            var (stateValueFunction, policy) = _algorithms.PolicyIteration(_littleWorld, worstPolicy);
+            
+            MdpAdmin.GenerateTestOutputAsCsv(
+                _littleWorld, 
+                valueOfWorstPolicy, 
+                stateValueFunction, 
+                worstPolicy, 
+                policy, 
+                nameOfFile);
+            var saveFilePath = $"Assets/TestResults/{nameOfFile}.csv";
+            
+            Assert.That(File.Exists(saveFilePath), Is.True);
+            
         }
     }
 }
