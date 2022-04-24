@@ -229,8 +229,8 @@ public static class MdpAdmin
     // }
 
     private static List<MarkovTransition> FullTransitionsEffects(
-        MDP mdp, 
-        MarkovState mState, 
+        MDP                  mdp, 
+        MarkovState          mState, 
         IReadOnlyList<float> probabilityDistribution)
     {
         var transitions = new List<MarkovTransition>();
@@ -252,10 +252,10 @@ public static class MdpAdmin
     }
 
     private static List<MarkovTransition> TransitionsWithOrthogonalEffects(
-        MDP mdp, 
-        MarkovState mState, 
+        MDP          mdp, 
+        MarkovState  mState, 
         MarkovAction mAction,
-        float[] probabilityDistribution)
+        float[]      probabilityDistribution)
     {
         var intended = new MarkovTransition
         {
@@ -478,9 +478,9 @@ public static class MdpAdmin
  * {-0.04 , -0.04 , -0.04 , -0.04 , -0.04 , 0.0 , -0.04 , -1 , -0.04 , -0.04 , -0.04 , 1}
  *
  *
- *  ┌───────────────┐
- *  │ FrozenLake4x4 │
- *  └───────────────┘
+ * ┌───────────────┐
+ * │ FrozenLake4x4 │
+ * └───────────────┘
  * {T , S , S , T , S , S , S , T , S , T , S , T , S , S , S , S}
  * {0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0}
  *

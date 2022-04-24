@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.WSA;
 using Object = System.Object;
 using Random = UnityEngine.Random;
@@ -19,12 +20,12 @@ public class Algorithms : MonoBehaviour
     public bool runPolicyImprovement;
     public bool inPlaceVersion = true;
     
-    public MDP mdp;
+    [FormerlySerializedAs("mdp")] public MDP globalMdp;
 
     public Policy currentPolicy;
     
     
-    public Dictionary<int, GridAction> Policy;
+    public Dictionary<int, GridAction> PolicyDictDeprecated;
     // public List<GridAction> policy;
     public string[] editorDisplayPolicy;
     public float[] editorDisplayStateValue;
@@ -38,19 +39,18 @@ public class Algorithms : MonoBehaviour
 
     public float discountFactorGamma;
 
-    public float epsilon;
-
     public float thresholdTheta;
 
     public int iterations;
 
     public StateValueFunction PolicyEvaluation(
-        MDP mdp, 
+        MDP    mdp, 
         Policy policy, 
-        float gamma, 
-        float theta, 
-        bool boundIterations=true, 
-        int maxIterations=10000)
+        float  gamma, 
+        float  theta, 
+        bool   boundIterations = true, 
+        int    maxIterations   = 10000,
+        bool   debugMode       = false)
     {
         var kIterations = 0;
 
@@ -116,13 +116,13 @@ public class Algorithms : MonoBehaviour
             
             if (delta < theta) 
             {
-                Debug.Log($"delta: {delta} theta: {theta}");
+                if (debugMode) Debug.Log($"delta: {delta} theta: {theta}");
                 break;
             }
             
             if (boundIterations & (kIterations >= maxIterations))
             {
-                Debug.Log($"delta: {delta} theta: {theta}");
+                if (debugMode) Debug.Log($"delta: {delta} theta: {theta}");
                 break;
             }
 
@@ -134,12 +134,17 @@ public class Algorithms : MonoBehaviour
 
         iterations = kIterations;
         
-        foreach (var state in mdp.States)
+        if (debugMode)
         {
-            Debug.Log($"V({state}) = {stateValueFunctionV.Value(state)}");
+            Debug.Log("——————————————————————————");
+            foreach (var state in mdp.States)
+            {
+                Debug.Log($"V({state}) = {stateValueFunctionV.Value(state)}");
+            }
+            
+            Debug.Log(kIterations);
+            Debug.Log("——————————————————————————");
         }
-        
-        Debug.Log(kIterations);
         // ——— End Unity Editor debug stuff ———
         
         return stateValueFunctionV;
@@ -221,7 +226,11 @@ public class Algorithms : MonoBehaviour
         return stateValue;
     }
 
-    public Policy PolicyImprovement(MDP mdp, StateValueFunction stateValueFunction, float gamma)
+    public Policy PolicyImprovement(
+        MDP                mdp, 
+        StateValueFunction stateValueFunction, 
+        float              gamma,
+        bool               debugMode = false)
     {
         var policyPrime = new Policy();
         
@@ -264,28 +273,45 @@ public class Algorithms : MonoBehaviour
         // todo remove after debug
         editorDisplayPolicy = policyPrime.PolicyToStringArray(mdp.States, mdp.StateCount);
         
+        if (debugMode)
+        {
+            Debug.Log("——————————————————————————"); 
+            foreach (var state in mdp.States)
+            {
+                Debug.Log($"π({state}) = {editorDisplayPolicy[state.StateIndex]}");
+            }
+            Debug.Log("——————————————————————————");
+        }
+        
         return policyPrime;
     }
 
     public (StateValueFunction, Policy) PolicyIteration(
-        MDP mdp,
-        Policy policy = null, 
-        float gamma = 1f, 
-        float theta = 1e-10f)
+        MDP    mdp,
+        Policy policy          = null, 
+        float  gamma           = 1f, 
+        float  theta           = 1e-10f,
+        bool   boundIterations = true, 
+        int    maxIterations   = 10000,
+        bool   debugMode       = false)
     {
+        var kIterations = 0;
+        
         StateValueFunction valueOfPolicy;
-        
-        Policy oldPolicy = policy ?? new Policy(mdp.StateCount);
-        
-        Policy newPolicy;
+
+        var newPolicy = policy ?? new Policy(mdp.StateCount);
         
         while (true)
         {
-            valueOfPolicy = PolicyEvaluation(mdp, oldPolicy, gamma, theta);
-            newPolicy     = PolicyImprovement(mdp, valueOfPolicy, gamma);
+            var oldPolicy = newPolicy.Copy();
+            valueOfPolicy = PolicyEvaluation(mdp, newPolicy, gamma, theta, boundIterations, maxIterations, debugMode);
+            newPolicy     = PolicyImprovement(mdp, valueOfPolicy, gamma, debugMode);
             if (oldPolicy.Equals(newPolicy)) break;
-            oldPolicy     = newPolicy;
+            if (boundIterations && (kIterations >= maxIterations)) break;
+            kIterations++;
         }
+        
+        Debug.Log($"Num Iterations: {kIterations}");
         
         return (valueOfPolicy, newPolicy);
     }
@@ -352,18 +378,18 @@ public class Algorithms : MonoBehaviour
 
             if (russellMdp)
             {
-                mdp = MdpAdmin.LoadMdp(File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json"));
+                globalMdp = MdpAdmin.LoadMdp(File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json"));
             }
 
             if (frozenMdp)
             {
-                mdp = MdpAdmin.LoadMdp(
+                globalMdp = MdpAdmin.LoadMdp(
                     File.ReadAllText("Assets/Resources/CanonicalMDPs/FrozenLake4x4.json"));
             }
 
             if (myLittleMdp)
             {
-                mdp = MdpAdmin.LoadMdp(
+                globalMdp = MdpAdmin.LoadMdp(
                     File.ReadAllText("Assets/Resources/TestMDPs/LittleTestWorldTest.json"));
             }
             
@@ -389,25 +415,25 @@ public class Algorithms : MonoBehaviour
             if (russellMdp)
             {
 
-                optimalPolicy.SetAction(mdp.States[8],  Right);optimalPolicy.SetAction(mdp.States[9],  Right);optimalPolicy.SetAction(mdp.States[10], Right);
-                optimalPolicy.SetAction(mdp.States[4],     Up);                                               optimalPolicy.SetAction(mdp.States[6],     Up);
-                optimalPolicy.SetAction(mdp.States[0],     Up);optimalPolicy.SetAction(mdp.States[1],   Left);optimalPolicy.SetAction(mdp.States[2],   Left);optimalPolicy.SetAction(mdp.States[3],   Left);
+                optimalPolicy.SetAction(globalMdp.States[8],  Right);optimalPolicy.SetAction(globalMdp.States[9],  Right);optimalPolicy.SetAction(globalMdp.States[10], Right);
+                optimalPolicy.SetAction(globalMdp.States[4],     Up);                                               optimalPolicy.SetAction(globalMdp.States[6],     Up);
+                optimalPolicy.SetAction(globalMdp.States[0],     Up);optimalPolicy.SetAction(globalMdp.States[1],   Left);optimalPolicy.SetAction(globalMdp.States[2],   Left);optimalPolicy.SetAction(globalMdp.States[3],   Left);
                 
-                myMistakePolicy.SetAction(mdp.States[8],  Left);myMistakePolicy.SetAction(mdp.States[9],  Right);myMistakePolicy.SetAction(mdp.States[10], Right);
-                myMistakePolicy.SetAction(mdp.States[4],     Up);                                                 myMistakePolicy.SetAction(mdp.States[6],     Up);
-                myMistakePolicy.SetAction(mdp.States[0],     Up);myMistakePolicy.SetAction(mdp.States[1],   Left);myMistakePolicy.SetAction(mdp.States[2],   Left);myMistakePolicy.SetAction(mdp.States[3],   Left);
+                myMistakePolicy.SetAction(globalMdp.States[8],  Left);myMistakePolicy.SetAction(globalMdp.States[9],  Right);myMistakePolicy.SetAction(globalMdp.States[10], Right);
+                myMistakePolicy.SetAction(globalMdp.States[4],     Up);                                                 myMistakePolicy.SetAction(globalMdp.States[6],     Up);
+                myMistakePolicy.SetAction(globalMdp.States[0],     Up);myMistakePolicy.SetAction(globalMdp.States[1],   Left);myMistakePolicy.SetAction(globalMdp.States[2],   Left);myMistakePolicy.SetAction(globalMdp.States[3],   Left);
             }
 
             if (frozenMdp)
             {
-                Policy = new Dictionary<int, GridAction>
-                {
-                    {12, Right},{13,  Left},{14,  Down},{15,    Up},
-                    { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
-                    { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
-                    { 0,    Up},{ 1, Right},{ 2, Down },{ 3, Left },
-                
-                };
+                // PolicyDictDeprecated = new Dictionary<int, GridAction>
+                // {
+                //     {12, Right},{13,  Left},{14,  Down},{15,    Up},
+                //     { 8,  Left},{ 9, Right},{10, Right},{11,  Down},
+                //     { 4,    Up},{ 5,  Down},{ 6,    Up},{ 7,  Down},
+                //     { 0,    Up},{ 1, Right},{ 2, Down },{ 3, Left },
+                //
+                // };
             }
 
             if (myLittleMdp)
@@ -420,17 +446,17 @@ public class Algorithms : MonoBehaviour
             }
             
             
-            mistakePolEvaluated = PolicyEvaluation(this.mdp, myMistakePolicy, this.discountFactorGamma, this.thresholdTheta);
+            mistakePolEvaluated = PolicyEvaluation(this.globalMdp, myMistakePolicy, this.discountFactorGamma, this.thresholdTheta);
             runPolicyEvaluation = false;
         }
 
         if (runPolicyImprovement)
         {
-            var improved = PolicyImprovement(mdp, mistakePolEvaluated, discountFactorGamma);
+            var improved = PolicyImprovement(globalMdp, mistakePolEvaluated, discountFactorGamma);
             runPolicyImprovement = false;
-            var valueImproved = PolicyEvaluation(mdp, improved, discountFactorGamma, thresholdTheta);
+            var valueImproved = PolicyEvaluation(globalMdp, improved, discountFactorGamma, thresholdTheta);
 
-            stateValue = valueImproved.StateValuesToFloatArray(mdp.StateCount);
+            stateValue = valueImproved.StateValuesToFloatArray(globalMdp.StateCount);
         }
         
     }
@@ -679,8 +705,14 @@ public class Policy
         var stringDisplayOfPolicy = new string[numberOfStates];
         for (var stateIndex = 0; stateIndex < numberOfStates; stateIndex++)
         {
-            stringDisplayOfPolicy[stateIndex] =
-                setOfStates[stateIndex].IsObstacle() ? "N/A Action" : _policy[stateIndex].ToString();
+            stringDisplayOfPolicy[stateIndex] = setOfStates[stateIndex].TypeOfState switch
+            {
+                StateType.Standard => _policy[stateIndex].ToString(),
+                StateType.Terminal => "Term Act N/A",
+                StateType.Obstacle => "Obs Act N/A",
+                StateType.Goal     => "Goal Act N/A",
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
         
         return stringDisplayOfPolicy;
