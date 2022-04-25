@@ -2,9 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace TestsPlayMode
 {
@@ -330,9 +327,7 @@ namespace TestsPlayMode
                 .ApplicableActions[(int) Right]
                 .Transitions[0]
                 .Reward, Is.InRange(0.0f, 0.01f));
-            
         }
-
     }
 
     public class AlgorithmsTests
@@ -348,6 +343,11 @@ namespace TestsPlayMode
         private const GridAction Down  = GridAction.Down;
         private const GridAction Right = GridAction.Right;
         private const GridAction Up    = GridAction.Up;
+
+        private StateValueFunction _valueFunctionAfterPolicyIteration;
+        private Policy             _policyAfterPolicyIteration;
+        private StateValueFunction _valueFunctionAfterValueIteration;
+        private Policy             _policyAfterValueIteration;
         
         
         [Test]
@@ -414,13 +414,19 @@ namespace TestsPlayMode
             
             var saveFilePath = $"Assets/TestResults/{nameOfFile}.csv";
             string[] iteratedPolicyArray =
-                iteratedPolicy.PolicyToStringArray(_frozenLake4B4Mdp.States, _frozenLake4B4Mdp.StateCount);
+                iteratedPolicy.PolicyToStringArray(_frozenLake4B4Mdp.States);
             string[] optimalTestArray =
-                frozenLakeOptimalBenchmark.PolicyToStringArray(_frozenLake4B4Mdp.States, _frozenLake4B4Mdp.StateCount);
+                frozenLakeOptimalBenchmark.PolicyToStringArray(_frozenLake4B4Mdp.States);
+            
+            Assert.That(iteratedPolicyArray, Is.EquivalentTo(optimalTestArray));
+
+            var outcome = _algorithms.ValueIteration(_frozenLake4B4Mdp);
+
+            iteratedPolicyArray = outcome.Item2.PolicyToStringArray(_frozenLake4B4Mdp.States);
             
             Assert.That(iteratedPolicyArray, Is.EquivalentTo(optimalTestArray));
         }
-
+        
 
         [Test]
         public void RussellNorvigRandomToOptimalTest()
@@ -454,10 +460,26 @@ namespace TestsPlayMode
                 nameOfFile);
             
             var saveFilePath = $"Assets/TestResults/{nameOfFile}.csv";
+
+            var vIoutcome = _algorithms.ValueIteration(
+                _russellNorvigMdp, 
+                0.99f,
+                1e-10f,
+                false,
+                1000,
+                true);
+
+            string[] pIactions = optimalPolicy.PolicyToStringArray(_russellNorvigMdp.States);
+            string[] vIactions = vIoutcome.Item2.PolicyToStringArray(_russellNorvigMdp.States);
+            
+            Assert.That(pIactions, Is.EquivalentTo(vIactions));
             
             Assert.That(File.Exists(saveFilePath), Is.True);
 
         }
+        
+        
+        
         [Test]
         public void PolicyEvaluationTest()
         {
@@ -642,8 +664,9 @@ namespace TestsPlayMode
         private const GridAction Up    = GridAction.Up;
         private const float TestGamma = 1f;
         private const float TestTheta = 1e-10f;
-        
 
+        private Policy policyIteratedPolicy;
+        private Policy valueIteratedPolicy;
 
         [Test]
         public void PolicyEvaluationTest()
@@ -714,7 +737,7 @@ namespace TestsPlayMode
         [Test]
         public void PolicyIterationTest()
         {
-            const string nameOfFile = "TestLittleWorld";
+            const string nameOfFile = "TestLittleWorld_PI";
             
             var worstPolicy = new Policy();
             worstPolicy.SetAction(0, Down);
@@ -758,10 +781,47 @@ namespace TestsPlayMode
                 endPolicy, 
                 nameOfFile2);
             var saveFilePath2 = $"Assets/TestResults/{nameOfFile2}.csv";
+
+            policyIteratedPolicy = endPolicy;
             
             Assert.That(File.Exists(saveFilePath2), Is.True);
 
             
+        }
+        
+        [Test]
+        public void ValueIterationTest()
+        {
+            const string nameOfFile = "TestLittleWorld_VI";
+            
+            var worstPolicy = new Policy();
+            worstPolicy.SetAction(0, Down);
+            worstPolicy.SetAction(3, Left);
+            worstPolicy.SetAction(4, Left);
+            worstPolicy.SetAction(5, Up);
+            
+            StateValueFunction valueOfWorstPolicy =
+                _algorithms.PolicyEvaluation(_littleWorld, worstPolicy, 0.99f, TestTheta);
+
+            
+            var (valueIteratedStateValues, policy) = _algorithms.ValueIteration(_littleWorld, 0.99f);
+            
+            MdpAdmin.GenerateTestOutputAsCsv(
+                _littleWorld, 
+                valueOfWorstPolicy, 
+                valueIteratedStateValues, 
+                worstPolicy, 
+                policy, 
+                nameOfFile);
+            
+            var saveFilePath = $"Assets/TestResults/{nameOfFile}.csv";
+
+            string[] pI = policyIteratedPolicy.PolicyToStringArray(_littleWorld.States);
+            string[] vI = policy.PolicyToStringArray(_littleWorld.States);
+            
+            Assert.That(vI, Is.EquivalentTo(pI));
+            
+            Assert.That(File.Exists(saveFilePath), Is.True);
         }
     }
 }

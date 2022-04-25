@@ -8,26 +8,23 @@ using UnityEngine.Assertions;
 public class MDP
 {
 
-    [SerializeField] private string name;
-    [SerializeField] private int width;
-    [SerializeField] private int height;
+    [SerializeField] private string            name;
+    [SerializeField] private int               width;
+    [SerializeField] private int               height;
     [SerializeField] private List<MarkovState> states;
-    [SerializeField] private MdpRules mdpRules;
-    [SerializeField] private int[] obstacleStates;
-    [SerializeField] private int[] terminalStates;
-    [SerializeField] private int[] goalStates;
+    [SerializeField] private MdpRules          mdpRules;
+    [SerializeField] private int[]             obstacleStates;
+    [SerializeField] private int[]             terminalStates;
+    [SerializeField] private int[]             goalStates;
 
     // NOTE: Don't know if it's better to use dictionaries here...
     // noting that Unity can't serialize and deserialize dictionaries.
     private Dictionary<int[], float> _transitionProbabilities;  // CURRENTLY DOESN'T DO ANYTHING
     private Dictionary<int, float> _rewards;                    // CURRENTLY DOESN'T DO ANYTHING
-
-
-    // public List<Transition> P(int state, int action)
-    // {
-    //     // return TransitionFunction[state][action];
-    // }
-
+    
+    
+    // Getters & Setters
+    
     public string Name
     {
         get => name;
@@ -90,15 +87,22 @@ public class MDP
         set => _rewards = value;
     }
 
-    
+    /// <summary>See <see cref="TransitionFunction(MarkovState,GridAction)"/> below for documentation.</summary>
     public List<MarkovTransition> TransitionFunction(MarkovState state, MarkovAction action)
     {
         return TransitionFunction(state, action.Action);
     }
 
     /// <summary>
+    /// <para>
     /// Computes the transition objects from the given state and action according to the specified 
-    /// MDP rule set ( <see cref="MdpRules"/> ).  
+    /// MDP rule set ( <see cref="MdpRules"/> ).
+    /// </para>
+    /// <para>
+    /// Used to dynamically calculate transitions. We use this instead of precalculated transitions (State Machine) so
+    /// that we will be able to change parameters such as the rule sets, the discount factor (gamma), convergence
+    /// threshold (theta), and so forth.
+    /// </para>
     /// </summary>
     /// <param name="state">Markov state object representing the current state</param>
     /// <param name="action">GridAction object representing the action taken in the current state</param>
@@ -160,8 +164,8 @@ public class MDP
                 break;
 
             case MdpRules.GrastiensWindFromTheNorth:
-                // transitions = GrastiensRules(mdp, mState, probabilityDistribution);
-                // break;
+            // transitions = GrastiensRules(mdp, mState, probabilityDistribution);
+            // break;
             case MdpRules.Deterministic:
             default:
                 transitions = FullTransitionsEffects(state, probabilityDistribution);
@@ -171,7 +175,36 @@ public class MDP
         Assert.IsNotNull(transitions);
         return transitions;
     }
-    
+
+    /// <summary>
+    /// Used to dynamically calculate transitions. We use this instead of precalculated transitions (State Machine) so
+    /// that we will be able to change parameters such as the rule sets, the discount factor (gamma), convergence
+    /// threshold (theta), and so forth. Uses the index (<c>int</c>) representation of the state and an action to
+    /// calculate the successor state (represented by its index). 
+    /// </summary>
+    /// <param name="mdp">
+    /// <c>MDP</c> object 
+    /// </param>
+    /// <param name="state">
+    /// <c>int</c> representing the state index, rather than the state itself
+    /// </param>
+    /// <param name="action">
+    /// <c>GridAction</c> representing the action taken
+    /// </param>
+    /// <returns>
+    /// <c>int</c> representing the index of the successor state
+    /// </returns>
+    private int GenerateSuccessorStateFromAction(MarkovState state, GridAction action)
+    {
+        int successorIndex = state.StateIndex + ArithmeticEffectOfAction(action);
+        if (state.IsGoal())     return state.StateIndex;
+        if (state.IsTerminal()) return state.StateIndex;
+        if (state.IsObstacle()) return state.StateIndex;
+        if (SuccessorStateOutOfBounds(state.StateIndex, successorIndex, action)) return state.StateIndex;
+        if (States[successorIndex].IsObstacle()) return state.StateIndex;
+        return successorIndex;
+    }
+
     private List<MarkovTransition> FullTransitionsEffects(MarkovState mState, IReadOnlyList<float> probabilityDistribution)
     {
         var transitions = new List<MarkovTransition>();
@@ -198,7 +231,6 @@ public class MDP
         GridAction action, 
         [NotNull] IReadOnlyList<float> probabilityDistribution)
     {
-        // if (probabilityDistribution == null) throw new ArgumentNullException(nameof(probabilityDistribution));
         var intended = new MarkovTransition
         {
             State               = mState.StateIndex,
@@ -241,41 +273,7 @@ public class MDP
         
         return new List<MarkovTransition> {intended, orthogonalEffect, otherOrthogonalEffect};
     }
-
-
-    /// <summary>
-    /// Uses the index (<c>int</c>) representation of the state and an action to calculate the successor state (again
-    /// represented as by its index) during the generation of the model of the environment — in this case the gridworld.
-    /// </summary>
-    /// <param name="mdp">
-    /// <c>MDP</c> object 
-    /// </param>
-    /// <param name="state">
-    /// <c>int</c> representing the state index, rather than the state itself
-    /// </param>
-    /// <param name="action">
-    /// <c>GridAction</c> representing the action taken
-    /// </param>
-    /// <returns>
-    /// <c>int</c> representing the index of the successor state
-    /// </returns>
-    private int GenerateSuccessorStateFromAction(MarkovState state, GridAction action)
-    {
-        int successorIndex = state.StateIndex + ArithmeticEffectOfAction(action);
-        if (state.IsGoal())     return state.StateIndex;
-        if (state.IsTerminal()) return state.StateIndex;
-        if (state.IsObstacle()) return state.StateIndex;
-        if (SuccessorStateOutOfBounds(state.StateIndex, successorIndex, action)) return state.StateIndex;
-        if (States[successorIndex].IsObstacle()) return state.StateIndex;
-        return successorIndex;
-    }
     
-    // public static int GenerateSuccessorStateFromAction(int mdpWidth, int state, GridAction action)
-    // {
-    //     int successorState = state + ArithmeticEffectOfAction(mdpWidth, action);
-    //     return SuccessorStateOutOfBounds(mdpWidth, state, successorState, action) ? state : successorState;
-    // }
-
     private bool SuccessorStateOutOfBounds(int stateIndex, int successorIndex, GridAction action)
     {
         bool outOfBoundsTop             = successorIndex   > States.Count - 1;
@@ -297,6 +295,17 @@ public class MDP
             GridAction.Up    =>  Width,
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
+    }
+
+    /// <summary>
+    /// Todo implement dynamic reward function
+    /// </summary>
+    /// <param name="state"></param>
+    /// <returns><c>float</c> representing the reward for arriving in the given state.</returns>
+    /// <exception cref="Exception"></exception>
+    public float RewardFunction(MarkovState state)
+    {
+        throw new Exception();
     }
 }
 

@@ -16,12 +16,12 @@ public class MarkovState
     // public int State;
     // public List<MarkovAction> ApplicableActions;
 
-    [SerializeField] private int stateIndex;
+    [SerializeField] private int                stateIndex;
     [SerializeField] private List<MarkovAction> applicableActions;
-    [SerializeField] private float reward;
-    [SerializeField] private StateType typeOfState;
+    [SerializeField] private float              reward;
+    [SerializeField] private StateType          typeOfState;
 
-    private Dictionary<GridAction, float> actionValue;
+    private Dictionary<GridAction, float> actionValue; // Not currently in use
 
     public Dictionary<GridAction, float> ActionValue
     {

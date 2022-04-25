@@ -4,11 +4,10 @@ using System.IO;
 using System.Linq;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 using UnityEngine.WSA;
 using Object = System.Object;
-using Random = UnityEngine.Random;
+
 // using Debug = System.Diagnostics.Debug;
 public class Algorithms : MonoBehaviour
 {
@@ -63,19 +62,8 @@ public class Algorithms : MonoBehaviour
 
             foreach (var state in mdp.States.Where(state => state.IsStandard()))
             {
-                switch (state.TypeOfState)
-                {
-                    case StateType.Obstacle:
-                        break;
-                    
-                    case StateType.Terminal:
-                    case StateType.Goal:
-                        stateValueFunctionV.SetValue(state, state.Reward); 
-                        break;
-                    
-                    default:
-                    {
-                        float valueBeforeUpdate = stateValueFunctionV.Value(state);     
+                
+                float valueBeforeUpdate = stateValueFunctionV.Value(state);     
                         
                         // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
                         float valueOfState = 0;
@@ -107,12 +95,9 @@ public class Algorithms : MonoBehaviour
 
                         stateValueFunctionV.SetValue(state, valueOfState);
                         
-                        // Rather than running the L-inf norm
+                        // Rather than running the L-inf norm on the full state set, this checks the change incrementally
                         delta = Math.Max(delta, Math.Abs(valueBeforeUpdate - valueOfState));
                         
-                        break;
-                    }
-                }
             }
             
             if (delta < theta) 
@@ -137,101 +122,6 @@ public class Algorithms : MonoBehaviour
         // ——— End Unity Editor debug stuff ———
         
         return stateValueFunctionV;
-    }
-
-    private static void GenerateDebugInformation(MDP mdp, StateValueFunction stateValueFunctionV, int kIterations)
-    {
-        Debug.Log("——————————————————————————");
-        foreach (var state in mdp.States)
-        {
-            Debug.Log($"V({state}) = {stateValueFunctionV.Value(state)}");
-        }
-
-        Debug.Log(kIterations);
-        Debug.Log("——————————————————————————");
-    }
-
-    private void UpdateGameObjectFields(MDP mdp, StateValueFunction stateValueFunctionV, int kIterations)
-    {
-        editorDisplayStateValue = stateValueFunctionV.StateValuesToFloatArray(mdp.StateCount);
-
-        iterations = kIterations;
-    }
-
-    public float[] PolicyEvaluationTwoArrays(MDP mdp, Policy policy, float gamma, float theta)
-    {
-        iterations = 0;
-
-        previousStateValue = new float[mdp.StateCount];
-
-        while (true)
-        {
-            float delta   = 0;
-
-            stateValue = new float[mdp.StateCount];
-            
-            foreach (var state in mdp.States)
-            {
-                switch (state.TypeOfState)
-                {
-                    case StateType.Obstacle:
-                        break;
-                    
-                    case StateType.Terminal:
-                    case StateType.Goal:
-                          stateValue[state.StateIndex] = state.Reward; // 2 arrays version
-                          break;
-                    
-                    default:
-                    {
-                        float v2Arrays = previousStateValue[state.StateIndex]; // 2 arrays version
-
-                        // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
-                        float valueOfCurrentState2Arrays = 0;
-
-                        int   currentState = state.StateIndex;
-                        
-                        // foreach (var transition in P(state, policy.GetAction(state))) <—— Precomputed transitions.
-                        foreach (var transition in mdp.TransitionFunction(state, policy.GetAction(state)))
-                        {
-                            
-                            float     probability = transition.Probability;
-                            int         nextState = transition.SuccessorStateIndex;
-                            float          reward = transition.Reward;
-                            float  vSprime = previousStateValue[nextState]; // 2 Arrays version
-
-                            float  zeroIfTerminal = ZeroIfTerminal(mdp.States[nextState]);
-
-                            //                          P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
-                             valueOfCurrentState2Arrays += probability * (reward + gamma * vSprime * zeroIfTerminal); // 2 Arrays version
-                        }
-
-                        delta   = Math.Max(delta  , Math.Abs(v2Arrays - valueOfCurrentState2Arrays));
-
-                        stateValue[currentState] = valueOfCurrentState2Arrays; // 2 Arrays version
-
-                        break;
-                    }
-                }
-            }
-            
-            if (delta <= theta) 
-            {
-                Debug.Log($"delta: {delta} theta: {theta}");
-                break;
-            }
-            
-            // Two array approach. See Sutton & Barto Chp 4.1
-            stateValue.CopyTo(previousStateValue, 0); // 2 Arrays version
-
-            if (iterations >= 1000) break;  // 
-            
-            iterations++;
-        }
-        
-        
-        Debug.Log(iterations);
-        return stateValue;
     }
 
     public Policy PolicyImprovement(
@@ -286,10 +176,12 @@ public class Algorithms : MonoBehaviour
         
         if (debugMode)
         {
+            string[] stringRepresentationOfPolicy = policyPrime.PolicyToStringArray(mdp.States);
+            
             Debug.Log("——————————————————————————"); 
             foreach (var state in mdp.States)
             {
-                Debug.Log($"π({state}) = {editorDisplayPolicy[state.StateIndex]}");
+                Debug.Log($"π({state}) = {stringRepresentationOfPolicy[state.StateIndex]}");
             }
             Debug.Log("——————————————————————————");
         }
@@ -337,7 +229,7 @@ public class Algorithms : MonoBehaviour
     {
         var kIterations = 0;
 
-        var stateValueFunctionV = new StateValueFunction();
+        var stateValueFunctionV = new StateValueFunction(mdp);
         
         ActionValueFunction actionValueFunctionQ;
         
@@ -347,10 +239,9 @@ public class Algorithms : MonoBehaviour
             
             actionValueFunctionQ = new ActionValueFunction(mdp);
             
-            foreach (var state in mdp.States)
+            foreach (var state in mdp.States.Where(state => state.IsStandard()))
             {
-                if (!state.IsStandard()) continue;
-                
+
                 float valueBeforeUpdate = stateValueFunctionV.Value(state); 
                 
                 foreach (var action in state.ApplicableActions)
@@ -374,48 +265,9 @@ public class Algorithms : MonoBehaviour
                 float valueOfState = actionValueFunctionQ.MaxValue(state);
                         
                 stateValueFunctionV.SetValue(state, valueOfState);
-                        
+
                 delta = Math.Max(delta, Math.Abs(valueBeforeUpdate - valueOfState));
 
-                
-                // switch (state.TypeOfState)
-                // {
-                //     case StateType.Obstacle:
-                //         break;
-                //     case StateType.Terminal:
-                //     case StateType.Goal:
-                //         stateValueFunctionV.SetValue(state, state.Reward); 
-                //         break;
-                //     case StateType.Standard:
-                //     default:
-                //         foreach (var action in state.ApplicableActions)
-                //         {
-                //             var stateActionValueQsa = 0.0f;
-                //
-                //             // foreach (var transition in action.Transitions) <—— Precomputed transitions.
-                //             foreach (var transition in mdp.TransitionFunction(state, action))
-                //             {
-                //                 float probability = transition.Probability;
-                //                 var     nextState = mdp.States[transition.SuccessorStateIndex];
-                //                 float      reward = transition.Reward;
-                //                 float valueSprime = stateValueFunctionV.Value(nextState);
-                //     
-                //                 stateActionValueQsa +=
-                //                     probability * (reward + gamma * valueSprime * ZeroIfTerminal(nextState));
-                //             }
-                //             actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
-                //         }
-                //
-                //         float valueOfState = actionValueFunctionQ.MaxValue(state);
-                //         
-                //         stateValueFunctionV.SetValue(state, valueOfState);
-                //         
-                //         delta = Math.Max(delta, Math.Abs(valueBeforeUpdate - valueOfState));
-                //         
-                //         break;
-                // }
-                
-                
             }
             
             if (delta < theta) 
@@ -446,48 +298,41 @@ public class Algorithms : MonoBehaviour
         
         return (stateValueFunctionV, policy);
     }
-    private float OneStepLookAhead(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
-    {
-        return prob * (reward + gamma * vSprime * zeroIfTerm);
-    }
 
     public float ZeroIfTerminal(MarkovState state)
     {
         return (state.IsTerminal() || state.IsGoal() || state.IsObstacle()) ? 0 : 1;
     }
 
-    public static float MaxAbsoluteDifference(float[] prevValue, float[] value)
+    private static void GenerateDebugInformation(MDP mdp, StateValueFunction stateValueFunctionV, int kIterations)
     {
-        var absoluteDifferences = new float[value.Length];
-        
-        for (var i = 0; i < value.Length; i++)
+        Debug.Log("——————————————————————————");
+        foreach (var state in mdp.States)
         {
-            absoluteDifferences[i] = Math.Abs(prevValue[i] - value[i]);
-        }
-        return absoluteDifferences.Max();
-    }
-
-    public List<MarkovTransition> P(MarkovState state, GridAction action)
-    {
-        return state.ApplicableActions[(int) action].Transitions;
-    }
-
-    // DEPRECATED
-    public Dictionary<int, float> InitializeStateValueDictionary(
-        List<MarkovState> states, 
-        bool randomValues = false,
-        float[] specificValues = null)
-    {
-        // Todo implement the assigning random or specific values feature.
-        
-        var stateValueDict = new Dictionary<int, float>();
-        
-        foreach (var state in states)
-        {
-            stateValueDict[state.StateIndex] = 0f;
+            Debug.Log($"V({state}) = {stateValueFunctionV.Value(state)}");
         }
 
-        return stateValueDict;
+        Debug.Log(kIterations);
+        Debug.Log("——————————————————————————");
+    }
+
+    private static void GenerateDebugInformation(MDP mdp, Policy policy)
+    {
+        string[] stringRepresentationOfPolicy = policy.PolicyToStringArray(mdp.States);
+            
+        Debug.Log("——————————————————————————"); 
+        foreach (var state in mdp.States)
+        {
+            Debug.Log($"π({state}) = {stringRepresentationOfPolicy[state.StateIndex]}");
+        }
+        Debug.Log("——————————————————————————");
+    }
+
+    private void UpdateGameObjectFields(MDP mdp, StateValueFunction stateValueFunctionV, int kIterations)
+    {
+        editorDisplayStateValue = stateValueFunctionV.StateValuesToFloatArray(mdp.StateCount);
+
+        iterations = kIterations;
     }
 
     private void Awake()
@@ -591,391 +436,101 @@ public class Algorithms : MonoBehaviour
         }
         
     }
-}
-
-
-public class StateValueFunction
-{
-    private readonly Dictionary<int, float> _valueOfAState = new Dictionary<int, float>();
-
-    public StateValueFunction()
+    
+    // ╔══════════════════════════════════════╗
+    // ║ DEPRECATED CODE / CODE FOR LATER USE ║
+    // ╚══════════════════════════════════════╝
+    
+    // CURRENTLY NOT IN USE. KEEPING THIS TO POTENTIALLY SHOW THE DIFFERENCE IN COMPLEXITY TO STUDENTS
+    public float[] PolicyEvaluationTwoArrays(MDP mdp, Policy policy, float gamma, float theta)
     {
-    }
+        iterations = 0;
 
-    public StateValueFunction(MDP mdp)
-    {
-        foreach (var state in mdp.States)
+        previousStateValue = new float[mdp.StateCount];
+
+        while (true)
         {
-            switch (state.TypeOfState)
-            {
-                case StateType.Terminal:
-                case StateType.Obstacle:
-                case StateType.Goal:
-                    SetValue(state, state.Reward);
-                    break;
-                case StateType.Standard:
-                    SetValue(state, 0f);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            // if (state.IsObstacle() || state.IsGoal() || state.IsTerminal()) SetValue(state, state.Reward);
-            // else SetValue(state, Random.Range(lowerBoundOfValues, upperBoundOfValues));
+            float delta   = 0;
+
+            stateValue = new float[mdp.StateCount];
             
-        }
-    }
-
-    public StateValueFunction(MDP mdp, float lowerBoundOfValues, float upperBoundOfValues)
-    {
-        Assert.IsTrue(lowerBoundOfValues < upperBoundOfValues);
-        foreach (var state in mdp.States)
-        {
-            switch (state.TypeOfState)
+            foreach (var state in mdp.States)
             {
-                case StateType.Terminal:
-                case StateType.Obstacle:
-                case StateType.Goal:
-                    SetValue(state, state.Reward);
-                    break;
-                case StateType.Standard:
-                    SetValue(state, Random.Range(lowerBoundOfValues, upperBoundOfValues));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            // if (state.IsObstacle() || state.IsGoal() || state.IsTerminal()) SetValue(state, state.Reward);
-            // else SetValue(state, Random.Range(lowerBoundOfValues, upperBoundOfValues));
-            
-        }
-    }
-    
-    
-
-    public void SetValue(MarkovState state, float valueOfState)
-    {
-        switch (_valueOfAState.ContainsKey(state.StateIndex))
-        {
-            case true:
-                _valueOfAState[state.StateIndex] = valueOfState;
-                break;
-            case false:
-                _valueOfAState.Add(state.StateIndex, valueOfState);
-                break;
-        }
-    }
-    
-    
-    public void SetValue(int stateIndex, float valueOfState)
-    {
-        switch (_valueOfAState.ContainsKey(stateIndex))
-        {
-            case true:
-                _valueOfAState[stateIndex] = valueOfState;
-                break;
-            case false:
-                _valueOfAState.Add(stateIndex, valueOfState);
-                break;
-        }
-    }
-
-    public float Value(MarkovState state)
-    {
-        switch (_valueOfAState.ContainsKey(state.StateIndex))
-        {
-            case true:
-                return _valueOfAState[state.StateIndex];
-            case false:
-                SetValue(state, 0);
-                return 0;
-        }
-    }
-    
-    public float Value(int stateIndex)
-    {
-        switch (_valueOfAState.ContainsKey(stateIndex))
-        {
-            case true:
-                return _valueOfAState[stateIndex];
-            case false:
-                SetValue(stateIndex, 0);
-                return 0;
-        }
-    }
-
-    /// <summary>
-    /// A small method to help with testing and debugging in the Unity Editor. Used to update the Editor visible list
-    /// of state values.
-    /// </summary>
-    /// <param name="stateValueArrayLength"><c>int</c>: Representing the number of states</param>
-    /// <returns><c>float[]</c>Updating the Editor visible state value array.</returns>
-    public float[] StateValuesToFloatArray(int stateValueArrayLength)
-    {
-        var newStateValues = new float[stateValueArrayLength];
-        
-        foreach (var stateValue in _valueOfAState)
-        {
-            newStateValues[stateValue.Key] = stateValue.Value;
-        }
-        
-        return newStateValues;
-    }
-}
-
-public class ActionValueFunction
-{
-
-    private readonly Dictionary<int, Dictionary<GridAction, float>> _valueOfQGivenSandA = new Dictionary<int, Dictionary<GridAction, float>>();
-
-    public ActionValueFunction()
-    {
-    }
-
-    public ActionValueFunction(MDP mdp)
-    {
-        foreach (var state in mdp.States)
-        {
-            switch (state.TypeOfState)
-            {
-                case StateType.Terminal:
-                case StateType.Obstacle:
-                case StateType.Goal:
-                    break;
-                case StateType.Standard:
-                    foreach (var action in state.ApplicableActions)
-                    {
-                        SetValue(state, action.Action, 0f);
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            
-        }
-    }
-
-    public void SetValue(MarkovState state, MarkovAction action, float valueOfActionInState)
-    {
-        SetValue(state, action.Action, valueOfActionInState);
-    }
-    
-    public void SetValue(MarkovState state, GridAction action, float valueOfActionInState)
-    {
-        if (_valueOfQGivenSandA.ContainsKey(state.StateIndex))
-        {
-            var stateActions = _valueOfQGivenSandA[state.StateIndex];
-            
-            if (stateActions.ContainsKey(action))
-            {
-                _valueOfQGivenSandA[state.StateIndex][action] = valueOfActionInState;
-            }
-            else
-            {
-                _valueOfQGivenSandA[state.StateIndex].Add(action, valueOfActionInState);
-            }
-        }
-        else
-        {
-            var stateActions = new Dictionary<GridAction, float> {{action, valueOfActionInState}};
-            _valueOfQGivenSandA.Add(state.StateIndex, stateActions);
-        }
-    }
-
-    public float Value(MarkovState state, MarkovAction action)
-    {
-        return Value(state, action.Action);
-    }
-    
-    public float Value(MarkovState state, GridAction action)
-    {
-
-        switch (_valueOfQGivenSandA.ContainsKey(state.StateIndex))
-        {
-            case true:
-                switch (_valueOfQGivenSandA[state.StateIndex].ContainsKey(action))
+                switch (state.TypeOfState)
                 {
-                    case true:
-                        return _valueOfQGivenSandA[state.StateIndex][action];
+                    case StateType.Obstacle:
+                        break;
+                    
+                    case StateType.Terminal:
+                    case StateType.Goal:
+                          stateValue[state.StateIndex] = state.Reward; // 2 arrays version
+                          break;
+                    
                     default:
-                        SetValue(state, action, 0f);
-                        Debug.Log($"ActionValueFunction tried to access an uninitialized value. " +
-                                  $"{state} was present but {action} was not. " +
-                                  $"Stored Q({state},{action}) = {0.0f} instead. " +
-                                  $"Check for unintended consequences"); // Todo remove once stable
-                        return 0;
+                    {
+                        float v2Arrays = previousStateValue[state.StateIndex]; // 2 arrays version
+
+                        // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
+                        float valueOfCurrentState2Arrays = 0;
+
+                        int   currentState = state.StateIndex;
+                        
+                        // foreach (var transition in P(state, policy.GetAction(state))) <—— Precomputed transitions.
+                        foreach (var transition in mdp.TransitionFunction(state, policy.GetAction(state)))
+                        {
+                            
+                            float     probability = transition.Probability;
+                            int         nextState = transition.SuccessorStateIndex;
+                            float          reward = transition.Reward;
+                            float         vSprime = previousStateValue[nextState]; // 2 Arrays version
+
+                            float  zeroIfTerminal = ZeroIfTerminal(mdp.States[nextState]);
+
+                            //                          P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
+                             valueOfCurrentState2Arrays += probability * (reward + gamma * vSprime * zeroIfTerminal); // 2 Arrays version
+                        }
+
+                        delta   = Math.Max(delta  , Math.Abs(v2Arrays - valueOfCurrentState2Arrays));
+
+                        stateValue[currentState] = valueOfCurrentState2Arrays; // 2 Arrays version
+
+                        break;
+                    }
                 }
-            default:
-                SetValue(state, action, 0f);
-                Debug.Log($"ActionValueFunction tried to access an uninitialized value. " +
-                          $"Neither {state} nor {action} were present. " +
-                          $"Stored Q({state},{action}) = {0.0f} instead. " +
-                          $"Check for unintended consequences"); // Todo remove once stable
-                return 0;
-        }
-    }
-
-    public GridAction ArgMaxAction(MarkovState state)
-    {
-        float maxStateActionValue = MaxValue(state);
-        return _valueOfQGivenSandA[state.StateIndex].First(kvp => Math.Abs(kvp.Value - maxStateActionValue) < 1e-15).Key;
-    }
-
-    public float MaxValue(MarkovState state)
-    {
-        return _valueOfQGivenSandA[state.StateIndex].Max(keyValuePair => keyValuePair.Value);
-    }
-}
-
-
-public class Policy
-{
-    private readonly Dictionary<int, GridAction> _policy = new Dictionary<int, GridAction>();
-
-    // CONSTRUCTORS
-    public Policy()
-    {
-    }
-    
-    // Initializes the policy with random actions
-    public Policy(MDP mdp)
-    {
-        Array actions = Enum.GetValues(typeof(GridAction));
-        
-        foreach (var state in mdp.States)
-        {
-            if (state.TypeOfState == StateType.Standard)
-            {
-                SetAction(state, (GridAction) actions.GetValue(Random.Range(0,4)));
             }
-        }
-    }
-    
-    
-    // Initializes the policy with random actions, ignoring any terminal or obstacle states
-    public Policy(int numberOfStates)
-    {
-        Array actions = Enum.GetValues(typeof(GridAction));
-
-        for (int stateIndex = 0; stateIndex < numberOfStates; stateIndex++)
-        {
-            SetAction(stateIndex, (GridAction) actions.GetValue(Random.Range(0,4)));
-        }
-    }
-
-    public void SetAction(MarkovState state, GridAction action)
-    {
-        switch (_policy.ContainsKey(state.StateIndex))
-        {
-            case true:
-                _policy[state.StateIndex] = action;
-                break;
-            case false:
-                _policy.Add(state.StateIndex, action);
-                break;
-        }
-    }
-    
-    public void SetAction(int stateIndex, GridAction action)
-    {
-        switch (_policy.ContainsKey(stateIndex))
-        {
-            case true:
-                _policy[stateIndex] = action;
-                break;
-            case false:
-                _policy.Add(stateIndex, action);
-                break;
-        }
-    }
-    
-    public void SetAction(int stateIndex, string action)
-    {
-        string cleanedAction = action.ToLower();
-        GridAction parsedAction = cleanedAction switch
-        {
-            "l"     => GridAction.Left,
-            "left"  => GridAction.Left,
-            "d"     => GridAction.Down,
-            "down"  => GridAction.Down,
-            "r"     => GridAction.Right,
-            "right" => GridAction.Right,
-            "u"     => GridAction.Up,
-            "up"    => GridAction.Up,
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        switch (_policy.ContainsKey(stateIndex))
-        {
-            case true:
-                _policy[stateIndex] = parsedAction;
-                break;
-            case false:
-                _policy.Add(stateIndex, parsedAction);
-                break;
-        }
-    }
-
-    /// <summary>
-    /// A small method to help with testing and debugging in the Unity Editor. Used to update the Editor visible policy.
-    /// </summary>
-    /// <param name="setOfStates">Represents the state space</param>
-    /// <param name="numberOfStates"><c>int</c></param>
-    /// <returns>A string array representation of the policy where the actions are indexed by their corresponding state index</returns>
-    public string[] PolicyToStringArray(List<MarkovState> setOfStates)
-    {
-        
-        var stringDisplayOfPolicy = new string[setOfStates.Count];
-        for (var stateIndex = 0; stateIndex < setOfStates.Count; stateIndex++)
-        {
-            stringDisplayOfPolicy[stateIndex] = setOfStates[stateIndex].TypeOfState switch
+            
+            if (delta <= theta) 
             {
-                StateType.Standard => _policy[stateIndex].ToString(),
-                StateType.Terminal => "Term Act N/A",
-                StateType.Obstacle => "Obs Act N/A",
-                StateType.Goal     => "Goal Act N/A",
-                _ => throw new ArgumentOutOfRangeException()
-            };
+                Debug.Log($"delta: {delta} theta: {theta}");
+                break;
+            }
+            
+            // Two array approach. See Sutton & Barto Chp 4.1
+            stateValue.CopyTo(previousStateValue, 0); // 2 Arrays version
+
+            if (iterations >= 1000) break;  // 
+            
+            iterations++;
         }
         
-        return stringDisplayOfPolicy;
+        
+        Debug.Log(iterations);
+        return stateValue;
     }
     
-    public GridAction GetAction(MarkovState state)
+    private float OneStepLookAhead(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
     {
-        return _policy.ContainsKey(state.StateIndex) switch
-        {
-            true  => _policy[state.StateIndex],
-            false => throw new ArgumentOutOfRangeException(nameof(state), state, null)
-        };
+        return prob * (reward + gamma * vSprime * zeroIfTerm);
     }
-
-    public Policy Copy()
+    
+    public static float MaxAbsoluteDifference(float[] prevValue, float[] value)
     {
-        var copyOfPolicy = new Policy();
-        foreach (var kvp in _policy)
+        var absoluteDifferences = new float[value.Length];
+        
+        for (var i = 0; i < value.Length; i++)
         {
-            copyOfPolicy.SetAction(kvp.Key, kvp.Value);
+            absoluteDifferences[i] = Math.Abs(prevValue[i] - value[i]);
         }
-        return copyOfPolicy;
-    }
-
-
-    public bool Equals(Policy policyPrime)
-    {
-        if (null == policyPrime) 
-            return _policy == null;
-        if (null == _policy) 
-            return false;
-        if (ReferenceEquals(_policy, policyPrime._policy)) 
-            return true;
-        if (_policy.Count != policyPrime._policy.Count) 
-            return false;
-
-        foreach (int k in _policy.Keys)
-        {
-            if (!policyPrime._policy.ContainsKey(k))        return false;
-            if (!_policy[k].Equals(policyPrime._policy[k])) return false;
-        }
-
-        return true;
+        return absoluteDifferences.Max();
     }
 }
