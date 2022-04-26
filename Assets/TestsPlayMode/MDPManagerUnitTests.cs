@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace TestsPlayMode
 {
@@ -380,7 +381,7 @@ namespace TestsPlayMode
             frozenLakeAdversarialPolicy.SetAction(15, Up);
             
             StateValueFunction adversarialPolicyValue =
-                _algorithms.PolicyEvaluation(_frozenLake4B4Mdp, frozenLakeAdversarialPolicy, 1f, 1e-10f);
+                _algorithms.PolicyEvaluation(_frozenLake4B4Mdp, frozenLakeAdversarialPolicy, 1f, 1e-10f, false, 10000, true);
 
             var (valueOfIteratedPolicy, iteratedPolicy) = _algorithms.PolicyIteration(
                 _frozenLake4B4Mdp, 
@@ -426,6 +427,41 @@ namespace TestsPlayMode
             
             Assert.That(iteratedPolicyArray, Is.EquivalentTo(optimalTestArray));
         }
+
+        [Test]
+        public void FrozenLakeOptimalBenchmarkTest()
+        {
+            var frozenLakeOptimalBenchmark = new Policy();
+            frozenLakeOptimalBenchmark.SetAction(1,  Right);
+            frozenLakeOptimalBenchmark.SetAction(2,  Down);
+            frozenLakeOptimalBenchmark.SetAction(4,  Up);
+            frozenLakeOptimalBenchmark.SetAction(5,  Down);
+            frozenLakeOptimalBenchmark.SetAction(6,  Left);
+            frozenLakeOptimalBenchmark.SetAction(8,  Left);
+            frozenLakeOptimalBenchmark.SetAction(10, Left);
+            frozenLakeOptimalBenchmark.SetAction(12, Left);
+            frozenLakeOptimalBenchmark.SetAction(13, Up);
+            frozenLakeOptimalBenchmark.SetAction(14, Up);
+            frozenLakeOptimalBenchmark.SetAction(15, Up);
+            
+            StateValueFunction adversarialPolicyValue =
+                _algorithms.PolicyEvaluation(
+                    _frozenLake4B4Mdp, 
+                    frozenLakeOptimalBenchmark, 
+                    0.99f, 
+                    1e-10f, 
+                    false, 
+                    218, 
+                    true);
+
+            float[] twoArraysVersion =
+                _algorithms.PolicyEvaluationTwoArrays(_frozenLake4B4Mdp, frozenLakeOptimalBenchmark, 0.99f, 1e-10f);
+
+            for (int i = 0; i < twoArraysVersion.Length; i++)   
+            {
+                Debug.Log($"V({i}) = {twoArraysVersion[i]}");
+            }
+        }
         
 
         [Test]
@@ -438,14 +474,14 @@ namespace TestsPlayMode
             StateValueFunction randomPolicyValue = _algorithms.PolicyEvaluation(
                 _russellNorvigMdp, 
                 randomPolicy,
-                gamma: 0.99f,
+                gamma: 1f,
                 theta: 1e-10f,
                 boundIterations: false);
             
             var (optimalValue, optimalPolicy) = _algorithms.PolicyIteration(
                 _russellNorvigMdp, 
                 randomPolicy, 
-                0.99f,
+                1f,
                 1e-10f,
                 false,
                 1000,
@@ -463,7 +499,7 @@ namespace TestsPlayMode
 
             var vIoutcome = _algorithms.ValueIteration(
                 _russellNorvigMdp, 
-                0.99f,
+                1f,
                 1e-10f,
                 false,
                 1000,
@@ -780,6 +816,7 @@ namespace TestsPlayMode
                 startPolicy, 
                 endPolicy, 
                 nameOfFile2);
+            
             var saveFilePath2 = $"Assets/TestResults/{nameOfFile2}.csv";
 
             policyIteratedPolicy = endPolicy;
