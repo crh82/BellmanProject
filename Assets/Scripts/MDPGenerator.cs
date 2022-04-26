@@ -44,9 +44,9 @@ public class MDPGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        string filePath = File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json");
-        testMdp = JsonUtility.FromJson<MDP>(filePath);
-        // mdp = JsonUtility.FromJson<MDP>(mdpFileToLoad.text);
+        // string filePath = File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json");
+        // testMdp = JsonUtility.FromJson<MDP>(filePath);
+        mdp = JsonUtility.FromJson<MDP>(mdpFileToLoad.text);
 
         _offsetToCenterVector = new Vector2((-mdp.Width / 2f), (-mdp.Height / 2f));
         
@@ -130,6 +130,7 @@ public class MDPGenerator : MonoBehaviour
                 // {
                 //     currentState.SetActive(false);
                 // }
+                if (mdp.States[id].IsObstacle()) currentState.SetActive(false);
                 id++;
 
             }

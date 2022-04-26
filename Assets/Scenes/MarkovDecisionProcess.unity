@@ -285,7 +285,7 @@ GameObject:
   m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &492645291
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -796,10 +796,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mdp:
     name: 
-    dimX: 0
-    dimY: 0
-    States: []
+    width: 0
+    height: 0
+    states: []
+    mdpRules: 0
     obstacleStates: 
+    terminalStates: 
+    goalStates: 
   mdpFileToLoad: {fileID: 4900000, guid: 4c60237eb12514138beca5edf0626112, type: 3}
   dimensions: {x: 1, y: 1}
 --- !u!4 &1082401144
@@ -867,11 +870,23 @@ MonoBehaviour:
   stateSpace: {fileID: 912804705}
   mdp:
     name: 
-    dimX: 0
-    dimY: 0
-    States: []
+    width: 0
+    height: 0
+    states: []
+    mdpRules: 0
     obstacleStates: 
-  mdpFileToLoad: {fileID: 4900000, guid: 70938f1039a994ba892aefbd8c55dd97, type: 3}
+    terminalStates: 
+    goalStates: 
+  testMdp:
+    name: 
+    width: 0
+    height: 0
+    states: []
+    mdpRules: 0
+    obstacleStates: 
+    terminalStates: 
+    goalStates: 
+  mdpFileToLoad: {fileID: 4900000, guid: 55e39f99f5c8e4cc48102cb8b4045be7, type: 3}
 --- !u!1 &1365518104
 GameObject:
   m_ObjectHideFlags: 0
@@ -1000,6 +1015,10 @@ PrefabInstance:
     - target: {fileID: 1864717323818338891, guid: aa92e04a127784cc999138566b1555be, type: 3}
       propertyPath: m_Name
       value: State
+      objectReference: {fileID: 0}
+    - target: {fileID: 4438065504006725371, guid: aa92e04a127784cc999138566b1555be, type: 3}
+      propertyPath: m_Size.y
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 6990103105090496290, guid: aa92e04a127784cc999138566b1555be, type: 3}
       propertyPath: m_Camera

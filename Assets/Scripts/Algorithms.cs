@@ -41,7 +41,7 @@ public class Algorithms : MonoBehaviour
 
     public float thresholdTheta;
 
-    public int iterations;
+    [FormerlySerializedAs("iterations")] public int evaluationIterations;
 
     public StateValueFunction PolicyEvaluation(
         MDP    mdp, 
@@ -85,7 +85,7 @@ public class Algorithms : MonoBehaviour
                         {
                             float          probability = transition.Probability;
                             MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
-                            float               reward = transition.Reward;  // TODO Should I make this the reward for arriving in the next state or the reward for having been in the current state?
+                            float               reward = transition.Reward;
                             float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
                             float       zeroIfTerminal = ZeroIfTerminal(successorState);
 
@@ -174,18 +174,8 @@ public class Algorithms : MonoBehaviour
         // todo remove after debug
         editorDisplayPolicy = policyPrime.PolicyToStringArray(mdp.States);
         
-        if (debugMode)
-        {
-            string[] stringRepresentationOfPolicy = policyPrime.PolicyToStringArray(mdp.States);
-            
-            Debug.Log("——————————————————————————"); 
-            foreach (var state in mdp.States)
-            {
-                Debug.Log($"π({state}) = {stringRepresentationOfPolicy[state.StateIndex]}");
-            }
-            Debug.Log("——————————————————————————");
-        }
-        
+        if (debugMode) GenerateDebugInformation(mdp, policyPrime);
+
         return policyPrime;
     }
 
@@ -214,7 +204,7 @@ public class Algorithms : MonoBehaviour
             kIterations++;
         }
         
-        Debug.Log($"Num Iterations: {kIterations}");
+        if (debugMode) Debug.Log($"Num Iterations: {kIterations}");
         
         return (valueOfPolicy, newPolicy);
     }
@@ -332,7 +322,7 @@ public class Algorithms : MonoBehaviour
     {
         editorDisplayStateValue = stateValueFunctionV.StateValuesToFloatArray(mdp.StateCount);
 
-        iterations = kIterations;
+        evaluationIterations = kIterations;
     }
 
     private void Awake()
@@ -444,7 +434,7 @@ public class Algorithms : MonoBehaviour
     // CURRENTLY NOT IN USE. KEEPING THIS TO POTENTIALLY SHOW THE DIFFERENCE IN COMPLEXITY TO STUDENTS
     public float[] PolicyEvaluationTwoArrays(MDP mdp, Policy policy, float gamma, float theta)
     {
-        iterations = 0;
+        evaluationIterations = 0;
 
         previousStateValue = new float[mdp.StateCount];
 
@@ -508,13 +498,13 @@ public class Algorithms : MonoBehaviour
             // Two array approach. See Sutton & Barto Chp 4.1
             stateValue.CopyTo(previousStateValue, 0); // 2 Arrays version
 
-            if (iterations >= 1000) break;  // 
+            if (evaluationIterations >= 1000) break;  // 
             
-            iterations++;
+            evaluationIterations++;
         }
         
         
-        Debug.Log(iterations);
+        Debug.Log(evaluationIterations);
         return stateValue;
     }
     
