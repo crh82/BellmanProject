@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 1317701d6fe974cb28d7f4081492421c, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -330,10 +330,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   frozenMdp: 0
   russellMdp: 0
+  myLittleMdp: 0
   loadMdp: 0
   runPolicyEvaluation: 0
+  runPolicyImprovement: 0
   inPlaceVersion: 1
-  mdp:
+  globalMdp:
     name: 
     width: 0
     height: 0
@@ -343,12 +345,12 @@ MonoBehaviour:
     terminalStates: 
     goalStates: 
   editorDisplayPolicy: []
+  editorDisplayStateValue: []
   stateValue: []
   previousStateValue: []
   discountFactorGamma: 0
-  epsilon: 0
   thresholdTheta: 0
-  iterations: 0
+  evaluationIterations: 0
 --- !u!4 &553553599
 Transform:
   m_ObjectHideFlags: 0
