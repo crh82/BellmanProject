@@ -9,8 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1191237760229222618}
-  - component: {fileID: 8012257401928961056}
-  - component: {fileID: 7552274115020474930}
   - component: {fileID: 2735232666984824396}
   - component: {fileID: 4438065504006725371}
   m_Layer: 0
@@ -37,32 +35,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8012257401928961056
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1864717323818338891}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 848fab5a452fc4e61bb54d3a61e97ab9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stateValue: 0
---- !u!114 &7552274115020474930
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1864717323818338891}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 848fab5a452fc4e61bb54d3a61e97ab9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stateValue: 0
 --- !u!114 &2735232666984824396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -80,8 +52,10 @@ MonoBehaviour:
   reward: 0
   isStateInfoActive: 0
   stateCanvasHoverOffset: 0.5
+  stateCanvasFlatOffset: 0.1
   stateValue: 0
   stateMesh: {fileID: 2729783304473936585}
+  stateIndex: 0
 --- !u!65 &4438065504006725371
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -93,7 +67,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 0, z: 1}
+  m_Size: {x: 1, y: 0.1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2552538621063933081
 GameObject:
@@ -433,11 +407,11 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 72
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 12
   m_fontSizeMax: 72
   m_fontStyle: 1
   m_HorizontalAlignment: 32

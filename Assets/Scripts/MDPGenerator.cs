@@ -39,6 +39,8 @@ public class MDPGenerator : MonoBehaviour
 
     public TextAsset mdpFileToLoad;
 
+    public Dictionary<int,State> StateSpaceVisualStates = new Dictionary<int, State>();
+
 
 
     // Start is called before the first frame update
@@ -85,7 +87,7 @@ public class MDPGenerator : MonoBehaviour
             {
                 Vector3 scale = new Vector3(
                     (1 - gapBetweenStates),
-                    2.0f,
+                    1.0f,
                     (1 - gapBetweenStates));
                 
                 // // Todo remove this block. This is just for testing
@@ -122,19 +124,34 @@ public class MDPGenerator : MonoBehaviour
                 
                 state.parent = stateSpace;
                 state.name = $"{x}{y}";
-                
+
                 GameObject currentState = GameObject.Find($"{x}{y}");
-                State curSt = currentState.GetComponent<State>();
-                curSt.stateIDNum = id;
+                // State curSt = currentState.GetComponent<State>();
+
+                var curSt = state.GetComponent<State>();
+                curSt.stateIndex = id;
                 // if (curSt.stateIDNum == 0 || curSt.stateIDNum == 5)
                 // {
                 //     currentState.SetActive(false);
                 // }
+                
+                StateSpaceVisualStates[id] = curSt;
+                
                 if (mdp.States[id].IsObstacle()) currentState.SetActive(false);
                 id++;
 
             }
         }
+
+        Debug.Log("Gridworld Instantiated"); // Todo remove after debug
+    }
+
+    public void UpdateAllStateHeights()
+    {
+        // foreach (var VARIABLE in stateSpace.GetComponentInChildren<State>())
+        // {
+        //     
+        // }
     }
 }
 

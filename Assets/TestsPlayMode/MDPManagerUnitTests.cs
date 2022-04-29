@@ -363,7 +363,7 @@ namespace TestsPlayMode
         }
 
         [Test]
-        public void FrozenLake4X4AdversarialToOptimalGamma1()
+         public void FrozenLake4X4AdversarialToOptimalGamma1()
         {
             const string nameOfFile = "TestResultsFL4x4";
                
@@ -381,16 +381,16 @@ namespace TestsPlayMode
             frozenLakeAdversarialPolicy.SetAction(15, Up);
             
             StateValueFunction adversarialPolicyValue =
-                _algorithms.PolicyEvaluation(_frozenLake4B4Mdp, frozenLakeAdversarialPolicy, 1f, 1e-10f, false, 10000, true);
+                _algorithms.PolicyEvaluation(_frozenLake4B4Mdp, frozenLakeAdversarialPolicy, 0.99f, 1e-10f, false, 10000, true);
 
             var (valueOfIteratedPolicy, iteratedPolicy) = _algorithms.PolicyIteration(
                 _frozenLake4B4Mdp, 
                 frozenLakeAdversarialPolicy, 
-                1f,
+                0.99f,
                 1e-10f,
                 true,
                 1000,
-                false);
+                true);
             
             var frozenLakeOptimalBenchmark = new Policy();
             frozenLakeOptimalBenchmark.SetAction(1,  Right);

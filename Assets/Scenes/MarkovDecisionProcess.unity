@@ -794,6 +794,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87650d18a88da4b8394a41ba3c99b12f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  statePrefab: {fileID: 0}
   mdp:
     name: 
     width: 0
@@ -805,6 +806,8 @@ MonoBehaviour:
     goalStates: 
   mdpFileToLoad: {fileID: 4900000, guid: 4c60237eb12514138beca5edf0626112, type: 3}
   dimensions: {x: 1, y: 1}
+  gapBetweenStates: 0.25
+  stateSpace: {fileID: 0}
 --- !u!4 &1082401144
 Transform:
   m_ObjectHideFlags: 0
@@ -1015,10 +1018,6 @@ PrefabInstance:
     - target: {fileID: 1864717323818338891, guid: aa92e04a127784cc999138566b1555be, type: 3}
       propertyPath: m_Name
       value: State
-      objectReference: {fileID: 0}
-    - target: {fileID: 4438065504006725371, guid: aa92e04a127784cc999138566b1555be, type: 3}
-      propertyPath: m_Size.y
-      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 6990103105090496290, guid: aa92e04a127784cc999138566b1555be, type: 3}
       propertyPath: m_Camera
