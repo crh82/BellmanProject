@@ -26,6 +26,8 @@ public class State : MonoBehaviour
     public bool isStateInfoActive;
 
     public float stateCanvasHoverOffset = 1.5f;
+
+    public float stateCanvasFlatOffset = 0.1f;
     
     public float stateValue;
 
@@ -33,7 +35,7 @@ public class State : MonoBehaviour
 
     public Dictionary<int, List<Array>> applicableActions;
 
-    public int stateIDNum;
+    [FormerlySerializedAs("stateIDNum")] public int stateIndex;
 
 
     public Canvas GetStateCanvas()
@@ -51,7 +53,7 @@ public class State : MonoBehaviour
     void Update()
     {
         isStateInfoActive = _stateCanvasHover.gameObject.activeSelf;
-        
+
         if (isStateInfoActive)
         {
             SetHoverCanvasPosition();
@@ -91,7 +93,7 @@ public class State : MonoBehaviour
     /// <summary>
     /// Sets the position of the state information that hovers above each state.
     /// </summary>
-    void SetHoverCanvasPosition()
+    private void SetHoverCanvasPosition()
     {
         var position = transform.position;
         var localScale = stateMesh.transform.localScale;
@@ -100,9 +102,9 @@ public class State : MonoBehaviour
         hoverCanvasPos.y = (localScale.y  + stateCanvasHoverOffset);
         _stateCanvasHover.transform.position = hoverCanvasPos;
         
-        // var transformPosition = _stateCanvasFlat.transform.position;
-        // transformPosition.y = localScale.y;
-        // new Vector3(position.x, localScale.y, position.z);
+        var canvasFlatPos = position;
+        canvasFlatPos.y = localScale.y + stateCanvasFlatOffset;
+        _stateCanvasFlat.transform.position = canvasFlatPos;
     }
 
     
@@ -110,11 +112,24 @@ public class State : MonoBehaviour
     public void ToggleStateInfo()
     {
         _stateCanvasHover.gameObject.SetActive(!isStateInfoActive);
+        _stateCanvasFlat.gameObject.SetActive(!isStateInfoActive);
         
         // Todo Change to state value. This is a temporary solution. (transform.position.y * 2)
         // stateInformationText.text = $"V( {gameObject.name[0]},{gameObject.name[1]} ) = {stateMesh.transform.localScale.y}";
-        stateInformationText.text = $"V( {gameObject.name[0]},{gameObject.name[1]} ) | StateID: {stateIDNum}";
+        stateInformationText.text = $"V( {stateIndex} ) = {Math.Round(stateValue, 3)}";
     }
-    
-    
+
+    public void UpdateHeight(float value)
+    {
+        stateValue = value;
+        var transform1 = stateMesh.transform;
+        Vector3 newHeight = transform1.localScale;
+        Vector3 newPosition = transform1.position;
+        newHeight.y = value;
+        float yScale = newHeight.y;
+        float yPositionOffset = yScale / 2;
+        newPosition.y = yPositionOffset;
+        transform1.localScale = newHeight;
+        transform1.position = newPosition;
+    }
 }

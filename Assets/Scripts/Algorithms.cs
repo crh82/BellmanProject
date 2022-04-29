@@ -67,7 +67,7 @@ public class Algorithms : MonoBehaviour
                         
                         // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
                         float valueOfState = 0;
-                        
+
                         // LINQ VERSION
                         //
                         // float valueOfState = (
@@ -134,7 +134,7 @@ public class Algorithms : MonoBehaviour
         
         var actionValueFunctionQ = new ActionValueFunction();
         
-        foreach (var state in mdp.States)
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
             foreach (var action in state.ApplicableActions)
             {
@@ -508,7 +508,7 @@ public class Algorithms : MonoBehaviour
         return stateValue;
     }
     
-    private float OneStepLookAhead(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
+    private float OneStepUpdate(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
     {
         return prob * (reward + gamma * vSprime * zeroIfTerm);
     }
