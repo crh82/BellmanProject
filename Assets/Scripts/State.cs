@@ -27,7 +27,7 @@ public class State : MonoBehaviour
 
     public float stateCanvasHoverOffset = 1.5f;
 
-    public float stateCanvasFlatOffset = 0.1f;
+    public float stateCanvasFlatOffset = 0.01f;
     
     public float stateValue;
 
@@ -38,11 +38,21 @@ public class State : MonoBehaviour
     [FormerlySerializedAs("stateIDNum")] public int stateIndex;
 
 
-    public Canvas GetStateCanvas()
+    public Canvas GetStateCanvasHover()
     {
         return _stateCanvasHover;
     }
-    
+
+    public Canvas GetStateCanvasFlat()
+    {
+        return _stateCanvasFlat;
+    }
+
+    private void Awake()
+    {
+        
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -84,7 +94,7 @@ public class State : MonoBehaviour
         
         _stateCanvasHover = _stateCanvasArray[0];
         _stateCanvasFlat  = _stateCanvasArray[1];
-        
+
         _stateCanvasHover.gameObject.SetActive(false);
         _stateCanvasFlat.gameObject.SetActive(false);
         // (Canvases end)
@@ -107,6 +117,11 @@ public class State : MonoBehaviour
         _stateCanvasFlat.transform.position = canvasFlatPos;
     }
 
+    public void SetCamera(Camera cameraForCanvas)
+    {
+        _stateCanvasHover.worldCamera = cameraForCanvas;
+        _stateCanvasFlat.worldCamera = cameraForCanvas;
+    }
     
 
     public void ToggleStateInfo()
@@ -122,14 +137,20 @@ public class State : MonoBehaviour
     public void UpdateHeight(float value)
     {
         stateValue = value;
-        var transform1 = stateMesh.transform;
-        Vector3 newHeight = transform1.localScale;
-        Vector3 newPosition = transform1.position;
-        newHeight.y = value;
-        float yScale = newHeight.y;
-        float yPositionOffset = yScale / 2;
-        newPosition.y = yPositionOffset;
-        transform1.localScale = newHeight;
-        transform1.position = newPosition;
+        var stateMeshTransform = stateMesh.transform;
+        var stateMeshTransformLocalScale = stateMesh.transform.localScale;
+        var stateMeshTransformPosition = stateMesh.transform.position;
+        
+        // Vector3 newHeight = stateMeshTransform.localScale;
+        // Vector3 newPosition = stateMeshTransform.position;
+        // newHeight.y = value;
+        // float yScale = newHeight.y;
+        // float yPositionOffset = yScale / 2;
+        // newPosition.y = yPositionOffset;
+        // stateMeshTransform.localScale = newHeight;
+        // stateMeshTransform.position = newPosition;
+
+        stateMeshTransform.localScale = new Vector3(stateMeshTransformLocalScale.x, value, stateMeshTransformLocalScale.z);
+        stateMeshTransform.position = new Vector3(stateMeshTransformPosition.x, (value / 2), stateMeshTransformPosition.z);
     }
 }

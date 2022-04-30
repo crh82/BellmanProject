@@ -53,6 +53,11 @@ public class MdpManager : MonoBehaviour
         mdp = CreateFromJson(mdpFileToLoad.text);
     }
 
+    private void Start()
+    {
+        InstantiateMdpVisualisation();
+    }
+
     public List<MarkovTransition> CalculateTransitions(string transitionProbabilityRules)
     {
         List<MarkovTransition> transitions = new List<MarkovTransition>();
@@ -107,64 +112,53 @@ public class MdpManager : MonoBehaviour
     
     public void InstantiateMdpVisualisation()
     {
-
-        int numberOfStates = mdp.StateCount;
-
-        double extents = Math.Sqrt(mdp.Width * mdp.Height);
-
-        var differenceExtents = extents * 2;
-
-        float cubeLengthWidth = 1 - gapBetweenStates;
-
-        float numStatesToPercent = (1.0f / (numberOfStates - 1));
-
-        var xCenter = 0.0f;
-        var yCenter = 0.0f;
-        var zCenter = 0.0f;
-
-        var maxDistanceFromCenter = Math.Sqrt(2 * mdp.Width * mdp.Height);
-        var reciprocalMaxDistFromCenter = 1.0 / maxDistanceFromCenter;
-
-        var numStatesSquared = numberOfStates * numberOfStates;
-
-        for (int index = 0; index < numberOfStates; index++)
+        var id = 0;
+        
+        _offsetToCenterVector = new Vector2((-mdp.Width / 2f), (-mdp.Height / 2f));
+        
+        if (mdp.Height > 1) {_offsetToCenterVector += _2Doffset;}
+        
+        float stateCubeDimensions = 1 - gapBetweenStates;
+        
+        for (var y = 0; y < mdp.Height; y++)
         {
-            int i = index / numberOfStates;
-            int j = i % numberOfStates;
-
-            var iPercentage = index * numStatesToPercent;
-            var y = -extents + iPercentage * differenceExtents;
-
-            var jPercentage = j * numStatesToPercent;
-            var x = -extents + jPercentage * differenceExtents;
-
-            var scale = new Vector3(cubeLengthWidth, 1f, cubeLengthWidth);
-            float yScale = scale.y;
-            float yPositionOffset = yScale / 2;
-
-            var statePosition = new Vector3((float) x, yPositionOffset, (float) y);
-
-            Transform state = Instantiate(
-                statePrefab,
-                statePosition,
-                Quaternion.Euler(Vector3.zero));
-        
-
-            state.Find("StateMesh").localScale = scale;
-        
-            state.parent = stateSpace;
-            state.name = $"{i}{j}";
-            GameObject currentState = GameObject.Find($"{i}{j}");
-            State curSt = currentState.GetComponent<State>();
-            
-            curSt.stateIndex = index;
+            for (var x = 0; x < mdp.Width; x++)
+            {
+                var scale = new Vector3(stateCubeDimensions, 2.0f, stateCubeDimensions);
                 
-            StateSpaceVisualStates[index] = curSt;
+                var statePosition = new Vector3(
+                    _offsetToCenterVector.x + x,
+                    (scale.y / 2), 
+                    _offsetToCenterVector.y + y);
                 
-            if (mdp.States[index].IsObstacle()) currentState.SetActive(false);
+                Transform state = Instantiate(
+                    statePrefab, 
+                    statePosition, 
+                    Quaternion.Euler(Vector3.zero));
+                
+                state.Find("StateMesh").localScale = scale;
+                
+                state.parent = stateSpace;
+                
+                state.name = $"{x}{y}";
 
+                var currentState = GameObject.Find($"{x}{y}");
+
+                var curSt = state.GetComponent<State>();
+                
+                curSt.stateIndex = id;
+
+                StateSpaceVisualStates[id] = curSt;
+                
+                if (mdp.States[id].IsObstacle()) currentState.SetActive(false);
+                
+                id++;
+            }
         }
-
+       
+        StateSpaceVisualStates[0].UpdateHeight(1.34567f);
+        StateSpaceVisualStates[1].UpdateHeight(2.84357f);
+        
         Debug.Log("Gridworld Instantiated"); // Todo remove after debug
     }
 

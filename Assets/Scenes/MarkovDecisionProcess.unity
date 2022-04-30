@@ -660,6 +660,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 912804705}
+  - component: {fileID: 912804706}
   m_Layer: 0
   m_Name: States
   m_TagString: State Space
@@ -682,6 +683,32 @@ Transform:
   m_Father: {fileID: 1215479917}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &912804706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912804704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87650d18a88da4b8394a41ba3c99b12f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  statePrefab: {fileID: 0}
+  mdp:
+    name: 
+    width: 0
+    height: 0
+    states: []
+    mdpRules: 0
+    obstacleStates: 
+    terminalStates: 
+    goalStates: 
+  mdpFileToLoad: {fileID: 0}
+  dimensions: {x: 1, y: 1}
+  gapBetweenStates: 0.25
+  stateSpace: {fileID: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -832,6 +859,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1215479917}
   - component: {fileID: 1215479918}
+  - component: {fileID: 1215479919}
   m_Layer: 0
   m_Name: MDP
   m_TagString: Untagged
@@ -862,7 +890,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1215479916}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb7da863ffebf43319444ff6729ba24e, type: 3}
   m_Name: 
@@ -890,6 +918,32 @@ MonoBehaviour:
     terminalStates: 
     goalStates: 
   mdpFileToLoad: {fileID: 4900000, guid: 55e39f99f5c8e4cc48102cb8b4045be7, type: 3}
+--- !u!114 &1215479919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215479916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87650d18a88da4b8394a41ba3c99b12f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  statePrefab: {fileID: 1191237760229222618, guid: aa92e04a127784cc999138566b1555be, type: 3}
+  mdp:
+    name: 
+    width: 0
+    height: 0
+    states: []
+    mdpRules: 0
+    obstacleStates: 
+    terminalStates: 
+    goalStates: 
+  mdpFileToLoad: {fileID: 4900000, guid: 55e39f99f5c8e4cc48102cb8b4045be7, type: 3}
+  dimensions: {x: 1, y: 1}
+  gapBetweenStates: 0.25
+  stateSpace: {fileID: 0}
 --- !u!1 &1365518104
 GameObject:
   m_ObjectHideFlags: 0

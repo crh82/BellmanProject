@@ -87,7 +87,7 @@ public class MDPGenerator : MonoBehaviour
             {
                 Vector3 scale = new Vector3(
                     (1 - gapBetweenStates),
-                    1.0f,
+                    0.0f,
                     (1 - gapBetweenStates));
                 
                 // // Todo remove this block. This is just for testing
@@ -143,6 +143,7 @@ public class MDPGenerator : MonoBehaviour
             }
         }
 
+        StateSpaceVisualStates[1].UpdateHeight(2.3456f);
         Debug.Log("Gridworld Instantiated"); // Todo remove after debug
     }
 

@@ -34,6 +34,6 @@ public class StateInteractions : MonoBehaviour
 
         // GameObject.Find("OriginTarget").transform.position = _state.GetStateCanvas().transform.position;
         CameraController orbiter = GameObject.Find("Orbiter").gameObject.GetComponent<CameraController>();
-        orbiter.target = _state.GetStateCanvas().transform;
+        orbiter.target = _state.GetStateCanvasHover().transform;
     }
 }
