@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class Policy
@@ -153,5 +155,24 @@ public class Policy
         }
 
         return true;
+    }
+
+    public string StringRepresentationOfPolicy()
+    {
+        StringBuilder policyString = new StringBuilder();
+        foreach (var stateAction in _policy)
+        {
+            policyString.Append($"< s{stateAction.Key} : {stateAction.Value} >");
+        }
+
+        return policyString.ToString();
+    }
+    
+    public void PrintPolicyToDebugLog()
+    {
+        foreach (var kvp in _policy)
+        {
+            Debug.Log($"s{kvp.Key} : {kvp.Value}");
+        }
     }
 }

@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
 
@@ -17,6 +19,8 @@ using Debug = UnityEngine.Debug;
 public class MdpManager : MonoBehaviour
 {
     public Transform statePrefab;
+
+    public Transform stateSpacePrefab;
     
     public MDP mdp;
 
@@ -25,6 +29,8 @@ public class MdpManager : MonoBehaviour
     public Vector2 dimensions = Vector2.one;
     
     [Range(0, 1)] public float gapBetweenStates = 0.25f;
+
+    public float initialStateValueForTesting; // Todo remove after built
 
     private float _offsetToCenterGridX;
     
@@ -38,24 +44,36 @@ public class MdpManager : MonoBehaviour
     
     private List<Vector2> _states;
     
-    public Transform stateSpace;
+    public Algorithms algorithms;
+
+    public Policy currentPolicy;
+    
+    // public Transform stateSpace;
     
     public Dictionary<int,State> StateSpaceVisualStates = new Dictionary<int, State>();
     
     
-    public static MDP CreateFromJson(string jsonString)
+    public MDP CreateFromJson(string jsonString)
     {
         return JsonUtility.FromJson<MDP>(jsonString);
     }
 
+    public void LoadMdpFromFilePath(string filepath)
+    {
+        string mdpJsonRepresentation = File.ReadAllText(filepath);
+        mdp = CreateFromJson(mdpJsonRepresentation);
+        InstantiateMdpVisualisation();
+    }
+
     public void Awake()
     {
-        mdp = CreateFromJson(mdpFileToLoad.text);
+        algorithms = gameObject.AddComponent<Algorithms>();
     }
 
     private void Start()
     {
-        InstantiateMdpVisualisation();
+        // mdp = CreateFromJson(mdpFileToLoad.text);
+        // InstantiateMdpVisualisation();
     }
 
     public List<MarkovTransition> CalculateTransitions(string transitionProbabilityRules)
@@ -119,76 +137,72 @@ public class MdpManager : MonoBehaviour
         if (mdp.Height > 1) {_offsetToCenterVector += _2Doffset;}
         
         float stateCubeDimensions = 1 - gapBetweenStates;
-        
+
+        Transform stateSpace = Instantiate(
+            stateSpacePrefab, 
+            GameObject.FindGameObjectWithTag("MDP GameObject").transform, 
+            true);
+
         for (var y = 0; y < mdp.Height; y++)
         {
             for (var x = 0; x < mdp.Width; x++)
             {
-                var scale = new Vector3(stateCubeDimensions, 2.0f, stateCubeDimensions);
-                
-                var statePosition = new Vector3(
-                    _offsetToCenterVector.x + x,
-                    (scale.y / 2), 
-                    _offsetToCenterVector.y + y);
-                
-                Transform state = Instantiate(
-                    statePrefab, 
-                    statePosition, 
-                    Quaternion.Euler(Vector3.zero));
-                
-                state.Find("StateMesh").localScale = scale;
-                
-                state.parent = stateSpace;
-                
-                state.name = $"{x}{y}";
-
-                var currentState = GameObject.Find($"{x}{y}");
-
-                var curSt = state.GetComponent<State>();
-                
-                curSt.stateIndex = id;
-
-                StateSpaceVisualStates[id] = curSt;
-                
-                if (mdp.States[id].IsObstacle()) currentState.SetActive(false);
-                
+                var state = InstantiateIndividualState(stateCubeDimensions, x, y, stateSpace, id);
                 id++;
             }
         }
        
-        StateSpaceVisualStates[0].UpdateHeight(1.34567f);
-        StateSpaceVisualStates[1].UpdateHeight(2.84357f);
+        // StateSpaceVisualStates[0].UpdateHeight(1.34567f);
+        // StateSpaceVisualStates[1].UpdateHeight(2.84357f);
         
         Debug.Log("Gridworld Instantiated"); // Todo remove after debug
     }
 
-    private Transform InstantiateIndividualStateVisual(int x, int y)
+    public Transform InstantiateIndividualState(float stateXandZDimensions, int x, int y, Transform stateSpace, int id)
     {
-        var scale = new Vector3(
-            (1 - gapBetweenStates),
-            0.0f,
-            (1 - gapBetweenStates));
-
-
-        float yScale = scale.y;
-        float yPositionOffset = yScale / 2;
+        var scale = new Vector3(stateXandZDimensions, initialStateValueForTesting, stateXandZDimensions);
 
         var statePosition = new Vector3(
             _offsetToCenterVector.x + x,
-            yPositionOffset,
+            (scale.y / 2),
             _offsetToCenterVector.y + y);
 
         Transform state = Instantiate(
             statePrefab,
             statePosition,
             Quaternion.Euler(Vector3.zero));
-        
 
         state.Find("StateMesh").localScale = scale;
-        
+
         state.parent = stateSpace;
+
         state.name = $"{x}{y}";
+
+        var currentState = GameObject.Find($"{x}{y}");
+
+        var curSt = state.GetComponent<State>();
+
+        curSt.stateIndex = id;
+
+        StateSpaceVisualStates[id] = curSt;
+
+        if (mdp.States[id].IsObstacle()) currentState.SetActive(false);
         
         return state;
+    }
+
+    
+    /// <summary>
+    /// TODO Improve because Temporary
+    /// </summary>
+    public void VisualizeStateValues()
+    {
+        StateValueFunction valueOfCurrentPolicy =
+            algorithms.PolicyEvaluation(mdp, currentPolicy, 0.99f, algorithms.thresholdTheta);
+
+        foreach (var stateKvp in StateSpaceVisualStates)
+        {
+            stateKvp.Value.UpdateHeight(valueOfCurrentPolicy.Value(stateKvp.Key));
+        }
     }
 }

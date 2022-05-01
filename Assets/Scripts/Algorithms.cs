@@ -39,7 +39,7 @@ public class Algorithms : MonoBehaviour
 
     public float discountFactorGamma;
 
-    public float thresholdTheta;
+    public float thresholdTheta = 1e-10f;
 
     [FormerlySerializedAs("iterations")] public int evaluationIterations;
 

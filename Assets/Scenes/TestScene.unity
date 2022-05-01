@@ -309,6 +309,7 @@ GameObject:
   m_Component:
   - component: {fileID: 553553599}
   - component: {fileID: 553553598}
+  - component: {fileID: 553553600}
   m_Layer: 0
   m_Name: MDP
   m_TagString: Untagged
@@ -365,3 +366,30 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &553553600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 553553597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87650d18a88da4b8394a41ba3c99b12f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  statePrefab: {fileID: 1191237760229222618, guid: aa92e04a127784cc999138566b1555be, type: 3}
+  mdp:
+    name: 
+    width: 0
+    height: 0
+    states: []
+    mdpRules: 0
+    obstacleStates: 
+    terminalStates: 
+    goalStates: 
+  mdpFileToLoad: {fileID: 4900000, guid: 69d8174278ef744bdaac44e8af27d4ac, type: 3}
+  dimensions: {x: 1, y: 1}
+  gapBetweenStates: 0.25
+  initialStateValueForTesting: 2
+  stateSpace: {fileID: 0}
