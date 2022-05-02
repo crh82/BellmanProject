@@ -70,15 +70,15 @@ public class UIController : MonoBehaviour
 
    public void BuildPolicyFromTestString()
    {
-      string textInput = GameObject.FindGameObjectWithTag("Policy Input").GetComponent<TMP_InputField>().text;
-      
+      string textInput = GameObject.FindGameObjectWithTag("Policy Input").GetComponent<TMP_InputField>().text.Replace(" ", "");
+
       if (textInput.Length != _mdpManager.mdp.StateCount) throw new ArgumentNullException("textInput", "String of Actions does not equal state space of MDP.");
       
       var newPolicy = new Policy(_mdpManager.mdp.StateCount);
       
       for (var index = 0; index < textInput.Length; index++)
       {
-         string action = textInput[index].ToString().ToUpper() ?? throw new ArgumentNullException("textInput[index].ToString().ToUpper()");
+         string action = textInput[index].ToString().ToLower() ?? throw new ArgumentNullException("textInput[index].ToString().ToUpper()");
          newPolicy.SetAction(index, action);
       }
       

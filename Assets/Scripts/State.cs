@@ -29,13 +29,17 @@ public class State : MonoBehaviour
 
     public float stateCanvasFlatOffset = 0.01f;
     
-    public float stateValue;
+    public float stateValue = 0f;
 
     public GameObject stateMesh;
 
     public Dictionary<int, List<Array>> applicableActions;
 
     [FormerlySerializedAs("stateIDNum")] public int stateIndex;
+
+    public TextMeshPro hoveringText;
+    
+    public GameObject textContainer;
 
 
     public Canvas GetStateCanvasHover()
@@ -50,7 +54,6 @@ public class State : MonoBehaviour
 
     private void Awake()
     {
-        
     }
 
     // Start is called before the first frame update
@@ -62,15 +65,16 @@ public class State : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        isStateInfoActive = _stateCanvasHover.gameObject.activeSelf;
-
-        if (isStateInfoActive)
-        {
-            SetHoverCanvasPosition();
-        }
+        // isStateInfoActive = _stateCanvasHover.gameObject.activeSelf;
+        //
+        // if (isStateInfoActive)
+        // {
+        //     SetHoverCanvasPosition();
+        // }
+        //
+        // // Todo needs refactoring to tidy up
+        // stateInformationTextFlat.text = $"{Math.Round(stateMesh.transform.localScale.y, 4)}";
         
-        // Todo needs refactoring to tidy up
-        stateInformationTextFlat.text = $"{stateMesh.transform.localScale.y}";
     }
     
     
@@ -106,15 +110,27 @@ public class State : MonoBehaviour
     private void SetHoverCanvasPosition()
     {
         var position = transform.position;
+        
         var localScale = stateMesh.transform.localScale;
         
         Vector3 hoverCanvasPos = position;
-        hoverCanvasPos.y = (localScale.y  + stateCanvasHoverOffset);
+        
+        float newStateTextHoverHeight = (localScale.y  + stateCanvasHoverOffset);
+        
+        hoverCanvasPos.y = (newStateTextHoverHeight < 0) ? 0.02f : newStateTextHoverHeight;
+        
         _stateCanvasHover.transform.position = hoverCanvasPos;
         
         var canvasFlatPos = position;
-        canvasFlatPos.y = localScale.y + stateCanvasFlatOffset;
+        
+        float newStateCanvasFlatHeight = localScale.y + stateCanvasFlatOffset;
+
+        canvasFlatPos.y = (newStateCanvasFlatHeight < 0) ? 0.02f : newStateCanvasFlatHeight;
+        
         _stateCanvasFlat.transform.position = canvasFlatPos;
+        
+        textContainer.transform.position = canvasFlatPos + new Vector3(0f, 0.03f, 0f);
+        // hoveringText.transform.position = canvasFlatPos + new Vector3(0f, 0.1f, 0f);
     }
 
     public void SetCamera(Camera cameraForCanvas)
@@ -140,17 +156,24 @@ public class State : MonoBehaviour
         var stateMeshTransform = stateMesh.transform;
         var stateMeshTransformLocalScale = stateMesh.transform.localScale;
         var stateMeshTransformPosition = stateMesh.transform.position;
-        
-        // Vector3 newHeight = stateMeshTransform.localScale;
-        // Vector3 newPosition = stateMeshTransform.position;
-        // newHeight.y = value;
-        // float yScale = newHeight.y;
-        // float yPositionOffset = yScale / 2;
-        // newPosition.y = yPositionOffset;
-        // stateMeshTransform.localScale = newHeight;
-        // stateMeshTransform.position = newPosition;
 
-        stateMeshTransform.localScale = new Vector3(stateMeshTransformLocalScale.x, value, stateMeshTransformLocalScale.z);
-        stateMeshTransform.position = new Vector3(stateMeshTransformPosition.x, (value / 2), stateMeshTransformPosition.z);
+        stateMeshTransform.localScale =
+            new Vector3(stateMeshTransformLocalScale.x, value, stateMeshTransformLocalScale.z);
+        stateMeshTransform.position =
+            new Vector3(stateMeshTransformPosition.x, value / 2, stateMeshTransformPosition.z);
+        hoveringText.text = $"{Math.Round(stateValue, 4)}";
+
+        
+        
+        UpdateStateValueVisual();
+    }
+
+    private void UpdateStateValueVisual()
+    {
+        var localScale = stateMesh.transform.localScale;
+
+        textContainer.transform.position += stateValue < 0
+            ? new Vector3(0f, stateCanvasFlatOffset, 0f)
+            : new Vector3(0f, localScale.y + stateCanvasFlatOffset, 0f);
     }
 }
