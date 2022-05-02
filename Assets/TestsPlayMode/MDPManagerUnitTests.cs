@@ -128,10 +128,6 @@ namespace TestsPlayMode
     
     public class MdpManagerStateActionTransitionClassUnitTests
     {
-        private const GridAction Left  = GridAction.Left;
-        private const GridAction Down  = GridAction.Down;
-        private const GridAction Right = GridAction.Right;
-        private const GridAction Up    = GridAction.Up;
 
         private MarkovState _s0 = new MarkovState {StateIndex = 0, Reward = 1.2f, TypeOfState = StateType.Standard};
         private MarkovState _s1 = new MarkovState {StateIndex = 1, Reward = 1.2f, TypeOfState = StateType.Standard};
@@ -345,12 +341,6 @@ namespace TestsPlayMode
         private const GridAction Right = GridAction.Right;
         private const GridAction Up    = GridAction.Up;
 
-        private StateValueFunction _valueFunctionAfterPolicyIteration;
-        private Policy             _policyAfterPolicyIteration;
-        private StateValueFunction _valueFunctionAfterValueIteration;
-        private Policy             _policyAfterValueIteration;
-        
-        
         [Test]
         public void TestMaxAbsoluteDifference()
         {
@@ -454,13 +444,9 @@ namespace TestsPlayMode
                     218, 
                     true);
 
-            float[] twoArraysVersion =
+            var twoArraysVersion =
                 _algorithms.PolicyEvaluationTwoArrays(_frozenLake4B4Mdp, frozenLakeOptimalBenchmark, 0.99f, 1e-10f);
-
-            for (int i = 0; i < twoArraysVersion.Length; i++)   
-            {
-                Debug.Log($"V({i}) = {twoArraysVersion[i]}");
-            }
+            
         }
         
 
@@ -689,7 +675,7 @@ namespace TestsPlayMode
 
     public class LittleWorldTests
     {
-        private readonly Algorithms _algorithms = new Algorithms();
+        private Algorithms _algorithms = new Algorithms();
 
         private readonly MDP _littleWorld = MdpAdmin.LoadMdp(
             File.ReadAllText("Assets/Resources/TestMDPs/LittleTestWorldTest.json"));
@@ -701,9 +687,8 @@ namespace TestsPlayMode
         private const float TestGamma = 1f;
         private const float TestTheta = 1e-10f;
 
-        private Policy policyIteratedPolicy;
-        private Policy valueIteratedPolicy;
-
+        private Policy _policyIteratedPolicy;
+        
         [Test]
         public void PolicyEvaluationTest()
         {
@@ -819,7 +804,7 @@ namespace TestsPlayMode
             
             var saveFilePath2 = $"Assets/TestResults/{nameOfFile2}.csv";
 
-            policyIteratedPolicy = endPolicy;
+            _policyIteratedPolicy = endPolicy;
             
             Assert.That(File.Exists(saveFilePath2), Is.True);
 
@@ -853,7 +838,7 @@ namespace TestsPlayMode
             
             var saveFilePath = $"Assets/TestResults/{nameOfFile}.csv";
 
-            string[] pI = policyIteratedPolicy.PolicyToStringArray(_littleWorld.States);
+            string[] pI = _policyIteratedPolicy.PolicyToStringArray(_littleWorld.States);
             string[] vI = policy.PolicyToStringArray(_littleWorld.States);
             
             Assert.That(vI, Is.EquivalentTo(pI));

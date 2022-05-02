@@ -18,39 +18,46 @@ using Debug = UnityEngine.Debug;
 /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/MDPManager/*'/>
 public class MdpManager : MonoBehaviour
 {
-    public Transform statePrefab;
+    public Transform           statePrefab;
 
-    public Transform stateSpacePrefab;
+    public Transform           stateSpacePrefab;
     
-    public MDP mdp;
+    public TextAsset           mdpFileToLoad;
 
-    public TextAsset mdpFileToLoad;
-
-    public Vector2 dimensions = Vector2.one;
+    public Vector2             dimensions = Vector2.one;
     
     [Range(0, 1)] public float gapBetweenStates = 0.25f;
 
-    public float initialStateValueForTesting; // Todo remove after built
+    public float               initialStateValueForTesting; // Todo remove after built
+    
+    // ┌─────────────────────────┐
+    // │ MDP data and algorithms │
+    // └─────────────────────────┘
+    
+    public MDP                 mdp;
 
-    private float _offsetToCenterGridX;
-    
-    private float _offsetToCenterGridY;
+    public Algorithms          algorithms;
 
-    private Vector2 _offsetToCenterVector;
+    public Policy              CurrentPolicy;
 
-    private Vector2 _2Doffset = new Vector2(0.5f, 0.5f);
-    
-    private GridAction[] _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
-    
-    private List<Vector2> _states;
-    
-    public Algorithms algorithms;
+    public float               gamma = 1f;
 
-    public Policy currentPolicy;
+    // private double             theta = 1e-10;
+
+    public bool                debugMode;
+
+    public int                 maximumIterations = 10_000;
+
+    public bool                boundIterations = false;
     
-    // public Transform stateSpace;
+
+    private Vector2            _offsetToCenterVector;
+
+    private readonly Vector2   _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
     
-    public Dictionary<int,State> StateSpaceVisualStates = new Dictionary<int, State>();
+    private GridAction[]       _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
+
+    private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
     
     
     public MDP CreateFromJson(string jsonString)
@@ -88,53 +95,13 @@ public class MdpManager : MonoBehaviour
         return transitions;
     }
 
-    // Generates the successor state, given a state and action in the modelling of the environment.
-    /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/ExecuteAction/*'/>
-    public int ExecuteAction(int state, GridAction action)
-    {
-        int destination = state + GetEffectOfAction(action);
-        return DestinationOutOfBounds(state, destination, action) ? state : destination;
-    }
-
-    public bool DestinationOutOfBounds(int origin, int destination, GridAction action)
-    {
-        bool outOfBoundsTop             = destination > mdp.States.Count - 1;
-        bool outOfBoundsBottom          = destination < 0;
-        bool outOfBoundsLeft            = origin       % mdp.Width == 0 && action == GridAction.Left;
-        bool outOfBoundsRight           = (origin + 1) % mdp.Width == 0 && action == GridAction.Right;
-        bool hitObstacle = mdp.ObstacleStates.Contains(destination);
-
-        return (outOfBoundsLeft   | 
-                outOfBoundsBottom | 
-                outOfBoundsRight  | 
-                outOfBoundsTop    |
-                hitObstacle) switch
-            {
-                true => true,
-                _ => false
-            };
-    }
-    
-    
-    public int GetEffectOfAction(GridAction action)
-    {
-        return action switch
-        {
-            GridAction.Left => -1,
-            GridAction.Down => -mdp.Width,
-            GridAction.Right => 1,
-            GridAction.Up => mdp.Width,
-            _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
-        };
-    }
-    
     public void InstantiateMdpVisualisation()
     {
         var id = 0;
         
         _offsetToCenterVector = new Vector2((-mdp.Width / 2f), (-mdp.Height / 2f));
         
-        if (mdp.Height > 1) {_offsetToCenterVector += _2Doffset;}
+        if (mdp.Height > 1) {_offsetToCenterVector += _offsetValuesFor2DimensionalGrids;}
         
         float stateCubeDimensions = 1 - gapBetweenStates;
 
@@ -184,7 +151,7 @@ public class MdpManager : MonoBehaviour
 
         curSt.stateIndex = id;
 
-        StateSpaceVisualStates[id] = curSt;
+        _stateSpaceVisualStates[id] = curSt;
 
         if (mdp.States[id].IsObstacle()) currentState.SetActive(false);
         
@@ -197,12 +164,62 @@ public class MdpManager : MonoBehaviour
     /// </summary>
     public void VisualizeStateValues()
     {
-        StateValueFunction valueOfCurrentPolicy =
-            algorithms.PolicyEvaluation(mdp, currentPolicy, 0.99f, algorithms.thresholdTheta);
+        StateValueFunction valueOfCurrentPolicy = algorithms.PolicyEvaluation(
+            mdp, 
+            CurrentPolicy, 
+            gamma, 
+            1e-10f,
+            boundIterations,
+            maximumIterations,
+            debugMode);
 
-        foreach (var stateKvp in StateSpaceVisualStates)
+        foreach (var stateKvp in _stateSpaceVisualStates)
         {
             stateKvp.Value.UpdateHeight(valueOfCurrentPolicy.Value(stateKvp.Key));
         }
+    }
+    
+    // ╔══════════════════════╗
+    // ║ Not Currently In Use ║
+    // ╚══════════════════════╝
+    
+    // Generates the successor state, given a state and action in the modelling of the environment.
+    /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/ExecuteAction/*'/>
+    public int ExecuteAction(int state, GridAction action)
+    {
+        int destination = state + GetEffectOfAction(action);
+        return DestinationOutOfBounds(state, destination, action) ? state : destination;
+    }
+
+    public bool DestinationOutOfBounds(int origin, int destination, GridAction action)
+    {
+        bool outOfBoundsTop             = destination > mdp.States.Count - 1;
+        bool outOfBoundsBottom          = destination < 0;
+        bool outOfBoundsLeft            = origin       % mdp.Width == 0 && action == GridAction.Left;
+        bool outOfBoundsRight           = (origin + 1) % mdp.Width == 0 && action == GridAction.Right;
+        bool hitObstacle = mdp.ObstacleStates.Contains(destination);
+
+        return (outOfBoundsLeft   | 
+                outOfBoundsBottom | 
+                outOfBoundsRight  | 
+                outOfBoundsTop    |
+                hitObstacle) switch
+        {
+            true => true,
+            _ => false
+        };
+    }
+    
+    
+    public int GetEffectOfAction(GridAction action)
+    {
+        return action switch
+        {
+            GridAction.Left => -1,
+            GridAction.Down => -mdp.Width,
+            GridAction.Right => 1,
+            GridAction.Up => mdp.Width,
+            _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
+        };
     }
 }

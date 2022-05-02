@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using TMPro;
 using UnityEngine;
+using Michsky.UI.ModernUIPack;
 
 public class UIController : MonoBehaviour
 {
@@ -15,9 +16,16 @@ public class UIController : MonoBehaviour
 
    // public Policy CurrentPolicy;
 
+   public Canvas mainUserInterface;
+
    public string[] CurrentPolicy;
 
    private MdpManager _mdpManager;
+
+   public CustomDropdown uiMdpSelector;
+
+   public TMP_InputField GammaInputField;
+   
    
 
    // ╔═════════╗
@@ -41,7 +49,7 @@ public class UIController : MonoBehaviour
       
       string mdpString;
       
-      switch (mdpMenu.value)
+      switch (uiMdpSelector.index)
       {
          case 0:
             Debug.Log("Selected Custom Gridworld.");
@@ -90,12 +98,25 @@ public class UIController : MonoBehaviour
       
       CurrentPolicy = newPolicy.PolicyToStringArray(_mdpManager.mdp.States);
 
-      _mdpManager.currentPolicy = newPolicy;
+      _mdpManager.CurrentPolicy = newPolicy;
    }
 
    public void EvaluatePolicy()
    {
       _mdpManager.VisualizeStateValues();
    }
-   
+
+   public void UpdateGamma()
+   {
+      if (GammaInputField != null)
+      {
+         string uiGamma = GammaInputField.text;
+         _mdpManager.gamma = float.Parse(uiGamma);
+      }
+      else
+      {
+         _mdpManager.gamma = 1f;
+      }
+   }
+
 }

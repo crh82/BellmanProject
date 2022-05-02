@@ -58,6 +58,8 @@ public class StateValueFunction
         }
     }
     
+    public int Iterations { get; set; } = 0;
+
     public void SetValue(MarkovState state, float valueOfState)
     {
         switch (_valueOfAState.ContainsKey(state.StateIndex))
@@ -125,4 +127,6 @@ public class StateValueFunction
         
         return newStateValues;
     }
+
+    
 }
