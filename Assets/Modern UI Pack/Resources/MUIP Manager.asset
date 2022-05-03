@@ -20,7 +20,7 @@ MonoBehaviour:
   buttonThemeType: 0
   buttonFont: {fileID: 11400000, guid: 84dd14695854bbc43a5faa24fcf93d0d, type: 2}
   buttonFontSize: 22.5
-  buttonBorderColor: {r: 1, g: 1, b: 1, a: 1}
+  buttonBorderColor: {r: 0.015686275, g: 0.7490196, b: 0.40784314, a: 1}
   buttonFilledColor: {r: 0.1764706, g: 0.25490198, b: 0.33333334, a: 1}
   buttonTextBasicColor: {r: 1, g: 1, b: 1, a: 1}
   buttonTextColor: {r: 0.37254903, g: 0.40784314, b: 0.4509804, a: 1}
@@ -41,7 +41,7 @@ MonoBehaviour:
   dropdownItemIconColor: {r: 255, g: 255, b: 255, a: 1}
   selectorFont: {fileID: 11400000, guid: 4bd810f1cbcb0f446a8f5a31453e243f, type: 2}
   hSelectorFontSize: 28
-  selectorColor: {r: 1, g: 1, b: 1, a: 1}
+  selectorColor: {r: 0.015686275, g: 0.7490196, b: 0.40784314, a: 1}
   selectorHighlightedColor: {r: 0.1764706, g: 0.25490198, b: 0.33333334, a: 1}
   hSelectorInvertAnimation: 0
   hSelectorLoopSelection: 1
@@ -75,8 +75,8 @@ MonoBehaviour:
   scrollbarBackgroundColor: {r: 1, g: 1, b: 1, a: 0.09803922}
   sliderLabelFont: {fileID: 11400000, guid: 84dd14695854bbc43a5faa24fcf93d0d, type: 2}
   sliderLabelFontSize: 24
-  sliderThemeType: 0
-  sliderColor: {r: 1, g: 1, b: 1, a: 1}
+  sliderThemeType: 1
+  sliderColor: {r: 0.015686275, g: 0.7490196, b: 0.40784314, a: 1}
   sliderBackgroundColor: {r: 1, g: 1, b: 1, a: 0.09803922}
   sliderLabelColor: {r: 1, g: 1, b: 1, a: 1}
   sliderPopupLabelColor: {r: 0.37254903, g: 0.40784314, b: 0.4509804, a: 1}

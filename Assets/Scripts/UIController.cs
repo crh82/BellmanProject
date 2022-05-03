@@ -5,26 +5,30 @@ using System.IO;
 using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-   public TMP_Dropdown mdpMenu;
+   public TMP_Dropdown        mdpMenu;
    
-   public GameObject mdpGameObject;
-
-   public TextMeshPro actualPolicy; // Todo improve, currently just for testing.
-
+   public GameObject          mdpGameObject;
+   
    // public Policy CurrentPolicy;
 
-   public Canvas mainUserInterface;
+   public Canvas             mainUserInterface;
 
-   public string[] CurrentPolicy;
+   public string[]           CurrentPolicy;
 
-   private MdpManager _mdpManager;
+   private MdpManager        _mdpManager;
 
-   public CustomDropdown uiMdpSelector;
+   public HorizontalSelector uiMdpSelector;
 
-   public TMP_InputField GammaInputField;
+   public TextMeshProUGUI    thetaValue;
+   
+   public RadialSlider       gammaSlider;
+
+   public Slider             thetaSlider;
    
    
 
@@ -73,7 +77,6 @@ public class UIController : MonoBehaviour
          default:
             break;
       }
-      Debug.Log(mdpMenu.value);
    }
 
    public void BuildPolicyFromTestString()
@@ -103,19 +106,30 @@ public class UIController : MonoBehaviour
 
    public void EvaluatePolicy()
    {
-      _mdpManager.VisualizeStateValues();
+      _mdpManager.EvaluateAndVisualizeStateValues();
    }
 
    public void UpdateGamma()
    {
-      if (GammaInputField != null)
+      // if (GammaInputField != null)
+      // {
+      //    string uiGamma = GammaInputField.text;
+      //    _mdpManager.gamma = float.Parse(uiGamma);
+      // }
+      // else
+      // {
+      //    _mdpManager.gamma = 1f;
+      // }
+      _mdpManager.gamma = gammaSlider.currentValue;
+   }
+
+   public void UpdateTheta()
+   {
+      thetaValue.text = $"1<color=#FFFFFF><sup>-{thetaSlider.value}</sup></color>";
+      
+      if (_mdpManager != null)
       {
-         string uiGamma = GammaInputField.text;
-         _mdpManager.gamma = float.Parse(uiGamma);
-      }
-      else
-      {
-         _mdpManager.gamma = 1f;
+         _mdpManager.theta = (1 / thetaSlider.value);
       }
    }
 

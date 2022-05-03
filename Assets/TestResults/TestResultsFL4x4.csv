@@ -1,0 +1,17 @@
+StartPolicyValues,EndPolicyValues,StartPolicyActions,EndPolicyActions
+0,0,Term Act N/A,Term Act N/A
+0,0.7417241,Left,Right
+0,0.8628391,Left,Down
+1,1,Goal Act N/A,Goal Act N/A
+0,0.5917994,Left,Up
+0,0.6430823,Left,Down
+0,0.6152079,Left,Left
+0,0,Term Act N/A,Term Act N/A
+0,0.5584511,Up,Left
+0,0,Term Act N/A,Term Act N/A
+0,0.3583443,Up,Left
+0,0,Term Act N/A,Term Act N/A
+0,0.5420257,Up,Left
+0,0.4988025,Up,Up
+0,0.4706948,Up,Up
+0,0.4568506,Up,Up

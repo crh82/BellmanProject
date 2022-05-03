@@ -42,7 +42,7 @@ public class MdpManager : MonoBehaviour
 
     public float               gamma = 1f;
 
-    // private double             theta = 1e-10;
+    public float               theta = 1e-10f;
 
     public bool                debugMode;
 
@@ -139,21 +139,25 @@ public class MdpManager : MonoBehaviour
             statePosition,
             Quaternion.Euler(Vector3.zero));
 
-        state.Find("StateMesh").localScale = scale;
+        // state.localScale = scale;
+
+        // state.Find("StateMesh").localScale = scale;
 
         state.parent = stateSpace;
 
         state.name = $"{x}{y}";
 
-        var currentState = GameObject.Find($"{x}{y}");
-
+        // var currentStateGameObject = GameObject.Find($"{x}{y}");
+        
         var curSt = state.GetComponent<State>();
+        
+        curSt.SetStateScale(scale);
 
         curSt.stateIndex = id;
 
         _stateSpaceVisualStates[id] = curSt;
 
-        if (mdp.States[id].IsObstacle()) currentState.SetActive(false);
+        // if (mdp.States[id].IsObstacle()) currentStateGameObject.SetActive(false);
         
         return state;
     }
@@ -162,13 +166,15 @@ public class MdpManager : MonoBehaviour
     /// <summary>
     /// TODO Improve because Temporary
     /// </summary>
-    public void VisualizeStateValues()
+    public void EvaluateAndVisualizeStateValues()
     {
+        NullValuesCheck();
+        
         StateValueFunction valueOfCurrentPolicy = algorithms.PolicyEvaluation(
             mdp, 
             CurrentPolicy, 
             gamma, 
-            1e-10f,
+            theta,
             boundIterations,
             maximumIterations,
             debugMode);
@@ -177,6 +183,17 @@ public class MdpManager : MonoBehaviour
         {
             stateKvp.Value.UpdateHeight(valueOfCurrentPolicy.Value(stateKvp.Key));
         }
+    }
+
+    public void NullValuesCheck()
+    {
+        if (CurrentPolicy == null)
+        {
+            CurrentPolicy = new Policy(mdp);
+            Debug.Log("No Policy specified, evaluating a random policy.");
+        }
+        
+        if (mdp == null) throw new NullReferenceException("No MDP specified.");
     }
     
     // ╔══════════════════════╗

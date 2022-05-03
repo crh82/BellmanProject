@@ -27,6 +27,8 @@ public class State : MonoBehaviour
 
     public float hoverInfoOffset = 0.02f;
 
+    public GameObject stateQuad;
+
 
     public GameObject GetStateCanvasHover()
     {
@@ -76,18 +78,24 @@ public class State : MonoBehaviour
         stateMeshTransform.position =
             new Vector3(stateMeshTransformPosition.x, value / 2, stateMeshTransformPosition.z);
         hoveringText.text = $"{Math.Round(stateValue, 4)}";
-
-        
         
         UpdateStateValueVisual();
     }
 
     private void UpdateStateValueVisual()
     {
-        var localScale = stateMesh.transform.localScale;
+        var stateMeshTransform = stateMesh.transform;
+        var localScale = stateMeshTransform.localScale;
+        var position = stateMeshTransform.position;
 
-        textContainer.transform.position += stateValue < 0
-            ? new Vector3(0f, hoverInfoOffset, 0f)
-            : new Vector3(0f, localScale.y + hoverInfoOffset, 0f);
+        textContainer.transform.position = stateValue < 0
+            ? new Vector3(position.x, hoverInfoOffset, position.z)
+            : new Vector3(position.x, localScale.y + hoverInfoOffset, position.z);
+    }
+
+    public void SetStateScale(Vector3 stateScale)
+    {
+        stateMesh.transform.localScale = stateScale;
+        stateQuad.transform.localScale = stateScale;
     }
 }
