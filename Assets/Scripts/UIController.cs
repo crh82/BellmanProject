@@ -5,6 +5,7 @@ using System.IO;
 using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using UnityEditor;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -24,11 +25,20 @@ public class UIController : MonoBehaviour
 
    public HorizontalSelector uiMdpSelector;
 
-   public TextMeshProUGUI    thetaValue;
    
    public RadialSlider       gammaSlider;
+   
+   
+   public TextMeshProUGUI    thetaValue;
 
    public Slider             thetaSlider;
+   
+
+   public Slider             maxIterationsSlider;
+
+   public TextMeshProUGUI    maxIterationsValue;
+
+   public GameObject         maxIterationsControlPanel;
    
    
 
@@ -79,6 +89,10 @@ public class UIController : MonoBehaviour
       }
    }
 
+   // ┌────────────────┐
+   // │ Policy Related │
+   // └────────────────┘
+   
    public void BuildPolicyFromTestString()
    {
       string textInput = GameObject.FindGameObjectWithTag("Policy Input").GetComponent<TMP_InputField>().text.Replace(" ", "");
@@ -109,6 +123,15 @@ public class UIController : MonoBehaviour
       _mdpManager.EvaluateAndVisualizeStateValues();
    }
 
+   public void ShowActionSpritesAtopStateValueVisuals()
+   {
+      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
+   }
+   
+   
+   // ┌───────────────────────┐
+   // │ MDP Parameter Related │
+   // └───────────────────────┘
    public void UpdateGamma()
    {
       // if (GammaInputField != null)
@@ -131,6 +154,32 @@ public class UIController : MonoBehaviour
       {
          _mdpManager.theta = (1 / thetaSlider.value);
       }
+   }
+
+   public void MaxIterationsOn()
+   {
+      _mdpManager.boundIterations = true;
+      // maxIterationsControlPanel.SetActive(true);
+   }
+
+   public void MaxIterationsOff()
+   {
+      _mdpManager.boundIterations = false;
+      // maxIterationsControlPanel.SetActive(false);
+   }
+
+   public void UpdateMaxIterations()
+   {
+      var maxIterationsExponent = (double) maxIterationsSlider.value;
+      
+      maxIterationsValue.text = $"10<color=#FFFFFF><sup>{(int) maxIterationsExponent}</sup></color>";
+      if (_mdpManager != null)
+      {
+         _mdpManager.maximumIterations = (int) Math.Pow(10, maxIterationsExponent);
+         
+         Debug.Log($"Max Iter: {_mdpManager.maximumIterations}");
+      }
+      
    }
 
 }

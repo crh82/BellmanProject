@@ -13,21 +13,25 @@ public class State : MonoBehaviour
 
     [FormerlySerializedAs("_stateInformationText")] public TextMeshProUGUI stateInformationText;
     
-    public bool isStateInfoActive;
+    public bool             isStateInfoActive;
     
-    public float stateValue = 0f;
+    public float            stateValue = 0f;
 
-    public GameObject stateMesh;
+    public GameObject       stateMesh;
 
-    [FormerlySerializedAs("stateIDNum")] public int stateIndex;
+    public int              stateIndex;
 
-    public TextMeshPro hoveringText;
+    public TextMeshPro      hoveringText;
     
-    public GameObject textContainer;
+    public GameObject       textContainer;
 
-    public float hoverInfoOffset = 0.02f;
+    public float            hoverInfoOffset = 0.02f;
 
-    public GameObject stateQuad;
+    public GameObject       stateQuad;
+
+    public bool             selected;
+
+    public List<GameObject> ActionSprites;
 
 
     public GameObject GetStateCanvasHover()
@@ -62,8 +66,8 @@ public class State : MonoBehaviour
     
     public void ToggleStateInfo()
     {
-        textContainer.SetActive(!isStateInfoActive);
-        stateInformationText.text = $"V( {stateIndex} ) = {Math.Round(stateValue, 3)}";
+        // textContainer.SetActive(!isStateInfoActive);
+        // stateInformationText.text = $"V( {stateIndex} ) = {Math.Round(stateValue, 3)}";
     }
 
     public void UpdateHeight(float value)
@@ -73,10 +77,13 @@ public class State : MonoBehaviour
         var stateMeshTransformLocalScale = stateMesh.transform.localScale;
         var stateMeshTransformPosition = stateMesh.transform.position;
 
+        // TODO: Might be a bad solution.
+        float updateValue = -0.01 < value && value < 0.01 ? 0.01f : value;
+
         stateMeshTransform.localScale =
-            new Vector3(stateMeshTransformLocalScale.x, value, stateMeshTransformLocalScale.z);
+            new Vector3(stateMeshTransformLocalScale.x, updateValue, stateMeshTransformLocalScale.z);
         stateMeshTransform.position =
-            new Vector3(stateMeshTransformPosition.x, value / 2, stateMeshTransformPosition.z);
+            new Vector3(stateMeshTransformPosition.x, updateValue / 2, stateMeshTransformPosition.z);
         hoveringText.text = $"{Math.Round(stateValue, 4)}";
         
         UpdateStateValueVisual();
@@ -96,6 +103,21 @@ public class State : MonoBehaviour
     public void SetStateScale(Vector3 stateScale)
     {
         stateMesh.transform.localScale = stateScale;
-        stateQuad.transform.localScale = stateScale;
+        
+        // This isn't an error. Flipping z and y in the vector below is because of the 90 degree rotation from a quad's
+        // origin.
+        stateQuad.transform.localScale = new Vector3(stateScale.x,stateScale.z,stateScale.y);
+    }
+
+
+    public void UpdateVisibleActionFromPolicy(MarkovAction action) => UpdateVisibleActionFromPolicy((int) action.Action);
+    public void UpdateVisibleActionFromPolicy(GridAction action) => UpdateVisibleActionFromPolicy((int) action);
+    public void UpdateVisibleActionFromPolicy(int action)
+    {
+        foreach (var actionSprite in ActionSprites)
+        {
+            actionSprite.SetActive(false);
+        }
+        ActionSprites[action].SetActive(true);
     }
 }
