@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Codice.CM.Common;
 using TMPro;
 using UnityEditor.Timeline;
 using UnityEngine;
@@ -18,44 +19,52 @@ using Debug = UnityEngine.Debug;
 /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/MDPManager/*'/>
 public class MdpManager : MonoBehaviour
 {
-    public Transform           statePrefab;
+    public Transform                       statePrefab;
 
-    public Transform           stateSpacePrefab;
+    public Transform                       obstaclePrefab;
+
+    public Transform                       terminalPrefab;
+
+    public Transform                       goalPrefab;
+
+    public Transform                       stateSpacePrefab;
     
-    public TextAsset           mdpFileToLoad;
+    public TextAsset                       mdpFileToLoad;
 
-    public Vector2             dimensions = Vector2.one;
+    public Vector2                         dimensions = Vector2.one;
     
-    [Range(0, 1)] public float gapBetweenStates = 0.25f;
+    [Range(0, 1)] public float             gapBetweenStates = 0.25f;
 
-    public float               initialStateValueForTesting; // Todo remove after built
+    public float                           initialStateValueForTesting; // Todo remove after built
     
     // ┌─────────────────────────┐
     // │ MDP data and algorithms │
     // └─────────────────────────┘
     
-    public MDP                 mdp;
+    public MDP                             mdp;
 
-    public Algorithms          algorithms;
+    public Algorithms                      algorithms;
 
-    public Policy              CurrentPolicy;
+    public Policy                          CurrentPolicy;
 
-    public float               gamma = 1f;
+    public StateValueFunction              CurrentStateValueFunction;
 
-    public float               theta = 1e-10f;
+    public float                           gamma = 1f;
 
-    public bool                debugMode;
+    public float                           theta = 1e-10f;
 
-    public int                 maximumIterations = 10_000;
+    public bool                            debugMode;
 
-    public bool                boundIterations = false;
+    public int                             maximumIterations = 10_000;
+
+    public bool                            boundIterations = false;
     
 
-    private Vector2            _offsetToCenterVector;
+    private Vector2                        _offsetToCenterVector;
 
-    private readonly Vector2   _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
+    private readonly Vector2               _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
     
-    private GridAction[]       _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
+    private GridAction[]                   _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
     
@@ -69,7 +78,8 @@ public class MdpManager : MonoBehaviour
     {
         string mdpJsonRepresentation = File.ReadAllText(filepath);
         mdp = CreateFromJson(mdpJsonRepresentation);
-        InstantiateMdpVisualisation();
+        StartCoroutine(InstantiateMdpVisualisation());
+        // InstantiateMdpVisualisation();
     }
 
     public void Awake()
@@ -95,7 +105,7 @@ public class MdpManager : MonoBehaviour
         return transitions;
     }
 
-    public void InstantiateMdpVisualisation()
+    public IEnumerator InstantiateMdpVisualisation()
     {
         var id = 0;
         
@@ -114,57 +124,109 @@ public class MdpManager : MonoBehaviour
         {
             for (var x = 0; x < mdp.Width; x++)
             {
-                var state = InstantiateIndividualState(stateCubeDimensions, x, y, stateSpace, id);
+                var state = InstantiateIndividualState(mdp, stateCubeDimensions, x, y, stateSpace, id);
                 id++;
+                yield return null;
             }
         }
-       
-        // StateSpaceVisualStates[0].UpdateHeight(1.34567f);
-        // StateSpaceVisualStates[1].UpdateHeight(2.84357f);
-        
-        Debug.Log("Gridworld Instantiated"); // Todo remove after debug
     }
 
-    public Transform InstantiateIndividualState(float stateXandZDimensions, int x, int y, Transform stateSpace, int id)
+    public Transform InstantiateIndividualState(MDP mdp, float stateXandZDimensions, int x, int y, Transform stateSpace, int id)
     {
-        var scale = new Vector3(stateXandZDimensions, initialStateValueForTesting, stateXandZDimensions);
+        var stateType = mdp.States[id].TypeOfState;
+        
+        var   scale              = new Vector3(stateXandZDimensions, initialStateValueForTesting, stateXandZDimensions);
+        var   statePosition      = new Vector3(_offsetToCenterVector.x + x, (scale.y / 2), _offsetToCenterVector.y + y);
+          
+        var   obstacleScale      = new Vector3(stateXandZDimensions, 1f, stateXandZDimensions);
+        var   obstaclePosition   = new Vector3(_offsetToCenterVector.x + x, (obstacleScale.y / 2), _offsetToCenterVector.y + y);
+        
+        float terminalGoalScale  = mdp.States[id].Reward;
+        var   terminalScale      = new Vector3(stateXandZDimensions, terminalGoalScale, stateXandZDimensions);
+        var   terminalPosition   = new Vector3(_offsetToCenterVector.x + x, (terminalGoalScale / 2), _offsetToCenterVector.y + y);
+        
+        var   goalScale          = new Vector3(stateXandZDimensions, terminalGoalScale, stateXandZDimensions);
+        var   goalPosition       = new Vector3(_offsetToCenterVector.x + x, (terminalGoalScale / 2), _offsetToCenterVector.y + y);
+        
+        Transform state;
+        State fullStateObject;
+        
+        switch (stateType)
+        {
+            case StateType.Terminal:
+                state           = Instantiate(terminalPrefab, terminalPosition, Quaternion.Euler(Vector3.zero));
+                state.parent    = stateSpace;
+                state.name      = $"{x}{y}";
+                fullStateObject = state.GetComponent<State>();
+                fullStateObject.SetStateScale(terminalScale);
+                fullStateObject.UpdateHeight(terminalGoalScale);
+                break;
+            case StateType.Obstacle:
+                state           = Instantiate(obstaclePrefab, obstaclePosition, Quaternion.Euler(Vector3.zero));
+                state.parent    = stateSpace;
+                state.name      = $"{x}{y}";
+                fullStateObject = state.GetComponent<State>();
+                fullStateObject.SetStateScale(obstacleScale);
+                break;
+            case StateType.Goal:
+                state           = Instantiate(goalPrefab, goalPosition, Quaternion.Euler(Vector3.zero));
+                state.parent    = stateSpace;
+                state.name      = $"{x}{y}";
+                fullStateObject = state.GetComponent<State>();
+                fullStateObject.SetStateScale(goalScale);
+                fullStateObject.UpdateHeight(terminalGoalScale);
+                break;
+            case StateType.Standard:
+                state           = Instantiate(statePrefab, statePosition, Quaternion.Euler(Vector3.zero));
+                state.parent    = stateSpace;
+                state.name      = $"{x}{y}";
+                fullStateObject = state.GetComponent<State>();
+                fullStateObject.SetStateScale(scale);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
+        // var state = stateType switch
+        // {
+        //     StateType.Terminal => Instantiate(terminalPrefab, statePosition, Quaternion.Euler(Vector3.zero)),
+        //     StateType.Obstacle => Instantiate(obstaclePrefab, obstaclePosition, Quaternion.Euler(Vector3.zero)),
+        //     StateType.Goal     => Instantiate(goalPrefab,     statePosition, Quaternion.Euler(Vector3.zero)),
+        //     StateType.Standard => Instantiate(statePrefab,    statePosition, Quaternion.Euler(Vector3.zero)),
+        //     _ => throw new ArgumentOutOfRangeException(nameof(stateType), stateType, null)
+        // };
 
-        var statePosition = new Vector3(
-            _offsetToCenterVector.x + x,
-            (scale.y / 2),
-            _offsetToCenterVector.y + y);
-
-        Transform state = Instantiate(
-            statePrefab,
-            statePosition,
-            Quaternion.Euler(Vector3.zero));
-
-        // state.localScale = scale;
-
-        // state.Find("StateMesh").localScale = scale;
-
+        // ┌──────────┐
+        // │ SAFE ONE │
+        // └──────────┘
+        // var state = Instantiate(statePrefab, statePosition, Quaternion.Euler(Vector3.zero));
+        // var fullStateObject = state.GetComponent<State>();
+        // fullStateObject.SetStateScale(scale);
         state.parent = stateSpace;
-
-        state.name = $"{x}{y}";
-
-        // var currentStateGameObject = GameObject.Find($"{x}{y}");
         
-        var curSt = state.GetComponent<State>();
-        
-        curSt.SetStateScale(scale);
+        //
+        // state.name = $"{x}{y}";
+        //
+        // var curSt = state.GetComponent<State>();
+        //
+        // curSt.SetStateScale(scale);
+        //
+        // curSt.stateIndex = id;
+        //
+        // _stateSpaceVisualStates[id] = curSt;
 
-        curSt.stateIndex = id;
+        fullStateObject.stateIndex = id;
 
-        _stateSpaceVisualStates[id] = curSt;
+        _stateSpaceVisualStates[id] = fullStateObject;
 
         // if (mdp.States[id].IsObstacle()) currentStateGameObject.SetActive(false);
-        
+
         return state;
     }
 
     
     /// <summary>
-    /// TODO Improve because Temporary
+    /// TODO Improve because Temporary. Break this up into evaluation and visualization
     /// </summary>
     public void EvaluateAndVisualizeStateValues()
     {
@@ -179,13 +241,14 @@ public class MdpManager : MonoBehaviour
             maximumIterations,
             debugMode);
 
-        foreach (var stateKvp in _stateSpaceVisualStates)
+        foreach (var stateKvp in _stateSpaceVisualStates.Where(
+                     stateKvp => mdp.States[stateKvp.Key].IsStandard()))
         {
             stateKvp.Value.UpdateHeight(valueOfCurrentPolicy.Value(stateKvp.Key));
         }
     }
 
-    public void NullValuesCheck()
+    private void NullValuesCheck()
     {
         if (CurrentPolicy == null)
         {
@@ -196,6 +259,19 @@ public class MdpManager : MonoBehaviour
         if (mdp == null) throw new NullReferenceException("No MDP specified.");
     }
     
+    public IEnumerator ShowActionSpritesAtopStateValueVisuals()
+    {
+        if (CurrentPolicy == null) throw new ArgumentNullException();
+        
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        {
+            var currentAction      = CurrentPolicy.GetAction(state);
+            var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
+                currentStateVisual.UpdateVisibleActionFromPolicy(currentAction);
+                yield return null;
+        }
+    }
+       
     // ╔══════════════════════╗
     // ║ Not Currently In Use ║
     // ╚══════════════════════╝

@@ -125,7 +125,7 @@ public class UIController : MonoBehaviour
 
    public void ShowActionSpritesAtopStateValueVisuals()
    {
-      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
+      StartCoroutine(_mdpManager.ShowActionSpritesAtopStateValueVisuals());
    }
    
    

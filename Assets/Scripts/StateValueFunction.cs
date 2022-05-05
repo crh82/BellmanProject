@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.Assertions;
 using Random = UnityEngine.Random;
 
 public class StateValueFunction
 {
     private readonly Dictionary<int, float> _valueOfAState = new Dictionary<int, float>();
-
+    private readonly Dictionary<int, float> _changeInStateValue = new Dictionary<int, float>();
+    
     public StateValueFunction()
     {
     }
@@ -15,6 +17,8 @@ public class StateValueFunction
     {
         foreach (var state in mdp.States)
         {
+            
+            
             switch (state.TypeOfState)
             {
                 case StateType.Terminal:
@@ -24,13 +28,11 @@ public class StateValueFunction
                     break;
                 case StateType.Standard:
                     SetValue(state, 0f);
+                    _changeInStateValue[state.StateIndex] = float.PositiveInfinity;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            // if (state.IsObstacle() || state.IsGoal() || state.IsTerminal()) SetValue(state, state.Reward);
-            // else SetValue(state, Random.Range(lowerBoundOfValues, upperBoundOfValues));
-            
         }
     }
 
@@ -48,13 +50,11 @@ public class StateValueFunction
                     break;
                 case StateType.Standard:
                     SetValue(state, Random.Range(lowerBoundOfValues, upperBoundOfValues));
+                    _changeInStateValue[state.StateIndex] = float.PositiveInfinity;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            // if (state.IsObstacle() || state.IsGoal() || state.IsTerminal()) SetValue(state, state.Reward);
-            // else SetValue(state, Random.Range(lowerBoundOfValues, upperBoundOfValues));
-            
         }
     }
     
@@ -62,15 +62,7 @@ public class StateValueFunction
 
     public void SetValue(MarkovState state, float valueOfState)
     {
-        switch (_valueOfAState.ContainsKey(state.StateIndex))
-        {
-            case true:
-                _valueOfAState[state.StateIndex] = valueOfState;
-                break;
-            case false:
-                _valueOfAState.Add(state.StateIndex, valueOfState);
-                break;
-        }
+        SetValue(state.StateIndex, valueOfState);
     }
     
     public void SetValue(int stateIndex, float valueOfState)
@@ -78,6 +70,8 @@ public class StateValueFunction
         switch (_valueOfAState.ContainsKey(stateIndex))
         {
             case true:
+                float oldValueOfState = Value(stateIndex);
+                _changeInStateValue[stateIndex] = Math.Abs(oldValueOfState - valueOfState); 
                 _valueOfAState[stateIndex] = valueOfState;
                 break;
             case false:
@@ -88,14 +82,7 @@ public class StateValueFunction
 
     public float Value(MarkovState state)
     {
-        switch (_valueOfAState.ContainsKey(state.StateIndex))
-        {
-            case true:
-                return _valueOfAState[state.StateIndex];
-            case false:
-                SetValue(state, 0);
-                return 0;
-        }
+        return Value(state.StateIndex);
     }
     
     public float Value(int stateIndex)
@@ -128,5 +115,22 @@ public class StateValueFunction
         return newStateValues;
     }
 
-    
+    public float MaxChangeInValueOfStates()
+    {
+        return _changeInStateValue.Values.Max();
+    }
+
+    public float StateValueDeltaBetweenTMinusOneAndT(MarkovState state)
+    {
+        return StateValueDeltaBetweenTMinusOneAndT(state.StateIndex);
+    }
+
+    public float StateValueDeltaBetweenTMinusOneAndT(int stateIndex)
+    {
+        if (_changeInStateValue.ContainsKey(stateIndex))
+        {
+            return _changeInStateValue[stateIndex];
+        }
+        throw new ArgumentNullException(nameof(stateIndex), $"No state with index {stateIndex} in Dictionary.");
+    }
 }

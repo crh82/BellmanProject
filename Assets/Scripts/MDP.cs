@@ -305,7 +305,18 @@ public class MDP
     /// <exception cref="Exception"></exception>
     public float RewardFunction(MarkovState state)
     {
-        throw new Exception();
+        return state.Reward;
+    }
+
+    public float RewardFunction(int stateIndex)
+    {
+        return States[stateIndex].Reward;
+    }
+    
+
+    public void EditRewardForState(MarkovState state, float newReward)
+    {
+        state.Reward = newReward;
     }
 }
 

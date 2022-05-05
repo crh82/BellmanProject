@@ -32,6 +32,11 @@ public class Algorithms : MonoBehaviour
 
     [FormerlySerializedAs("iterations")] public int evaluationIterations;
 
+    
+    // ┌───────────────────┐
+    // │ Policy Evaluation │
+    // └───────────────────┘
+    
     public StateValueFunction PolicyEvaluation(
         MDP    mdp, 
         Policy policy, 
@@ -54,38 +59,38 @@ public class Algorithms : MonoBehaviour
                 
                 float valueBeforeUpdate = stateValueFunctionV.Value(state);     
                         
-                        // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
-                        float valueOfState = 0;
+                // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
+                float valueOfState = 0;
 
-                        // LINQ VERSION
-                        //
-                        // float valueOfState = (
-                        //     from transition in mdp.TransitionFunction(state, policy.GetAction(state)) 
-                        //     let probability = transition.Probability 
-                        //     let successorState = mdp.States[transition.SuccessorStateIndex] 
-                        //     let reward = transition.Reward 
-                        //     let valueOfSuccessor = stateValueFunctionV.Value(successorState) 
-                        //     let zeroIfTerminal = ZeroIfTerminal(successorState) 
-                        //     select probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal)
-                        // ).Sum();
-                            
-                        // foreach (var transition in P(state, policy.Pi(state))) <—— Precomputed transitions.
-                        foreach (var transition in mdp.TransitionFunction(state, policy.GetAction(state))) 
-                        {
-                            float          probability = transition.Probability;
-                            MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
-                            float               reward = transition.Reward;
-                            float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
-                            float       zeroIfTerminal = ZeroIfTerminal(successorState);
+                // LINQ VERSION
+                //
+                // float valueOfState = (
+                //     from transition in mdp.TransitionFunction(state, policy.GetAction(state)) 
+                //     let probability = transition.Probability 
+                //     let successorState = mdp.States[transition.SuccessorStateIndex] 
+                //     let reward = transition.Reward 
+                //     let valueOfSuccessor = stateValueFunctionV.Value(successorState) 
+                //     let zeroIfTerminal = ZeroIfTerminal(successorState) 
+                //     select probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal)
+                // ).Sum();
+                    
+                // foreach (var transition in P(state, policy.Pi(state))) <—— Precomputed transitions.
+                foreach (var transition in mdp.TransitionFunction(state, policy.GetAction(state))) 
+                {
+                    float          probability = transition.Probability;
+                    MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
+                    float               reward = transition.Reward;
+                    float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
+                    float       zeroIfTerminal = ZeroIfTerminal(successorState);
 
-                            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
-                            valueOfState += probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal);
-                        }
+                    //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
+                    valueOfState += probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal);
+                }
 
-                        stateValueFunctionV.SetValue(state, valueOfState);
-                        
-                        // Rather than running the L-inf norm on the full state set, this checks the change incrementally
-                        delta = Math.Max(delta, Math.Abs(valueBeforeUpdate - valueOfState));
+                stateValueFunctionV.SetValue(state, valueOfState);
+                
+                // Rather than running the L-inf norm on the full state set, this checks the change incrementally
+                delta = Math.Max(delta, Math.Abs(valueBeforeUpdate - valueOfState));
                         
             }
             
@@ -115,6 +120,55 @@ public class Algorithms : MonoBehaviour
         return stateValueFunctionV;
     }
 
+    private StateValueFunction SingleStateSweep(
+        MDP                mdp, 
+        Policy             policy, 
+        float              gamma,
+        StateValueFunction stateValueFunctionV)
+    {
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        {
+            float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
+            
+            stateValueFunctionV.SetValue(state, valueOfState);
+        }
+        
+        stateValueFunctionV.Iterations++;
+        
+        return stateValueFunctionV;
+    }
+    
+    private float BellmanBackUpValueOfState(
+        MDP                mdp, 
+        Policy             policy, 
+        float              gamma, 
+        MarkovState        state,
+        StateValueFunction stateValueFunctionV)
+    {
+        float valueOfState = 0;
+
+        var action = policy.GetAction(state);
+        
+        foreach (var transition in mdp.TransitionFunction(state, action))
+        {
+            float          probability = transition.Probability;
+            MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
+            float               reward = transition.Reward;
+            float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
+            float       zeroIfTerminal = ZeroIfTerminal(successorState);
+
+            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
+            valueOfState += ProbabilityTimesRewardPlusGammaTimesValueOfSuccessor(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal);
+        }
+
+        return valueOfState;
+    }
+    
+    private float ProbabilityTimesRewardPlusGammaTimesValueOfSuccessor(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
+    {
+        return prob * (reward + gamma * vSprime * zeroIfTerm);
+    }
+    
     public Policy PolicyImprovement(
         MDP                mdp, 
         StateValueFunction stateValueFunction, 
@@ -268,18 +322,25 @@ public class Algorithms : MonoBehaviour
             stateValueFunctionV.Iterations++;
         }
 
+        var policy = GeneratePolicyFromArgMaxActions(mdp, actionValueFunctionQ);
+
+        UpdateGameObjectFields(mdp, stateValueFunctionV, kIterations);
+
+        if (debugMode) GenerateDebugInformation(mdp, stateValueFunctionV, kIterations);
+        
+        return (stateValueFunctionV, policy);
+    }
+
+    private static Policy GeneratePolicyFromArgMaxActions(MDP mdp, ActionValueFunction actionValueFunctionQ)
+    {
         var policy = new Policy();
 
         foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
             policy.SetAction(state, actionValueFunctionQ.ArgMaxAction(state));
         }
-        
-        UpdateGameObjectFields(mdp, stateValueFunctionV, kIterations);
 
-        if (debugMode) GenerateDebugInformation(mdp, stateValueFunctionV, kIterations);
-        
-        return (stateValueFunctionV, policy);
+        return policy;
     }
 
     public float ZeroIfTerminal(MarkovState state)
@@ -421,10 +482,7 @@ public class Algorithms : MonoBehaviour
         return previousStateValueFunctionV;
     }
     
-    private float OneStepUpdate(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
-    {
-        return prob * (reward + gamma * vSprime * zeroIfTerm);
-    }
+    
     
     public static float MaxAbsoluteDifference(float[] prevValue, float[] value)
     {
