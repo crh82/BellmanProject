@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using UnityEditor;
+using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -23,6 +24,10 @@ public class UIController : MonoBehaviour
 
    private MdpManager        _mdpManager;
 
+   // ╔══════════════════════════════════════╗
+   // ║ POLICY EVALUATION LEFT CONTROL PANEL ║
+   // ╚══════════════════════════════════════╝
+   
    public HorizontalSelector uiMdpSelector;
 
    
@@ -40,6 +45,13 @@ public class UIController : MonoBehaviour
 
    public GameObject         maxIterationsControlPanel;
    
+   // ╔═══════════════════════════════════════╗
+   // ║ POLICY EVALUATION RIGHT CONTROL PANEL ║
+   // ╚═══════════════════════════════════════╝
+
+   public Slider             algorithmExecutionSpeedSlider;
+
+   public TextMeshProUGUI    algorithmExecutionSpeedValue;
    
 
    // ╔═════════╗
@@ -128,21 +140,20 @@ public class UIController : MonoBehaviour
       StartCoroutine(_mdpManager.ShowActionSpritesAtopStateValueVisuals());
    }
    
+   // ┌───────────────────────────┐
+   // │ Algorithm Control Related │
+   // └───────────────────────────┘
+
+   public void AdjustAlgorithmExecutionSpeed()
+   {
+      _mdpManager.algorithmExecutionSpeed = 1f;
+   }
    
    // ┌───────────────────────┐
    // │ MDP Parameter Related │
    // └───────────────────────┘
    public void UpdateGamma()
    {
-      // if (GammaInputField != null)
-      // {
-      //    string uiGamma = GammaInputField.text;
-      //    _mdpManager.gamma = float.Parse(uiGamma);
-      // }
-      // else
-      // {
-      //    _mdpManager.gamma = 1f;
-      // }
       _mdpManager.gamma = gammaSlider.currentValue;
    }
 
@@ -173,6 +184,7 @@ public class UIController : MonoBehaviour
       var maxIterationsExponent = (double) maxIterationsSlider.value;
       
       maxIterationsValue.text = $"10<color=#FFFFFF><sup>{(int) maxIterationsExponent}</sup></color>";
+      
       if (_mdpManager != null)
       {
          _mdpManager.maximumIterations = (int) Math.Pow(10, maxIterationsExponent);
@@ -180,6 +192,32 @@ public class UIController : MonoBehaviour
          Debug.Log($"Max Iter: {_mdpManager.maximumIterations}");
       }
       
+   }
+
+   public void UpdateAlgorithmExecutionSpeedValue()
+   {
+      var algSpeedExponent = (int) algorithmExecutionSpeedSlider.value;
+      
+      algorithmExecutionSpeedValue.text = $"10<color=#FFFFFF><sup>{algSpeedExponent}</sup></color>";
+      
+      if (_mdpManager != null)
+      {
+         _mdpManager.algorithmExecutionSpeed = (float) Math.Pow(10, algSpeedExponent);
+      }
+   }
+   
+   public void EvaluatePolicyByStateAndControlSpeed()
+   {
+      Assert.IsNotNull(_mdpManager.mdp);
+      // _mdpManager.PolicyEvaluationByState();
+      // StartCoroutine(nameof(_mdpManager.PolicyEvaluationByState));
+      
+      _mdpManager.RunPol();
+   }
+
+   public void StopPolicyEvaluationCoroutine()
+   {
+      StopCoroutine(nameof(_mdpManager.PolicyEvaluationByState));
    }
 
 }

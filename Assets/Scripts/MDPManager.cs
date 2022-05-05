@@ -58,7 +58,8 @@ public class MdpManager : MonoBehaviour
     public int                             maximumIterations = 10_000;
 
     public bool                            boundIterations = false;
-    
+
+    public float                           algorithmExecutionSpeed = 10e1f;
 
     private Vector2                        _offsetToCenterVector;
 
@@ -241,11 +242,15 @@ public class MdpManager : MonoBehaviour
             maximumIterations,
             debugMode);
 
-        foreach (var stateKvp in _stateSpaceVisualStates.Where(
-                     stateKvp => mdp.States[stateKvp.Key].IsStandard()))
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
-            stateKvp.Value.UpdateHeight(valueOfCurrentPolicy.Value(stateKvp.Key));
+            SetIndividualStateHeight(state, valueOfCurrentPolicy.Value(state));
         }
+        // foreach (var stateKvp in _stateSpaceVisualStates.Where(
+        //              stateKvp => mdp.States[stateKvp.Key].IsStandard()))
+        // {
+        //     stateKvp.Value.UpdateHeight(valueOfCurrentPolicy.Value(stateKvp.Key));
+        // }
     }
 
     private void NullValuesCheck()
@@ -271,7 +276,53 @@ public class MdpManager : MonoBehaviour
                 yield return null;
         }
     }
-       
+
+    public void RunPol()
+    {
+        StartCoroutine(nameof(PolicyEvaluationByState));
+    }
+    
+    public IEnumerable PolicyEvaluationByState()
+    {
+        Debug.Log("It ran");
+        NullValuesCheck();
+        
+        var stateValueFunctionV = new StateValueFunction(mdp);
+
+        // StartCoroutine(nameof(ShowActionSpritesAtopStateValueVisuals));
+        
+        while (true)
+        {
+            foreach (var state in mdp.States.Where(state => state.IsStandard()))
+            {
+                float valueOfState = algorithms.BellmanBackUpValueOfState(
+                    mdp, CurrentPolicy, gamma, state, stateValueFunctionV);
+                
+                stateValueFunctionV.SetValue(state, valueOfState);
+                
+                SetIndividualStateHeight(state, valueOfState);
+                
+                // yield return new WaitForSeconds(Time.deltaTime / algorithmExecutionSpeed);
+                yield return null;
+            }
+
+            if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
+        } 
+
+        CurrentStateValueFunction = stateValueFunctionV;
+        
+        // yield return null;
+    }
+
+    public void SetIndividualStateHeight(MarkovState state, float value)
+    {
+        SetIndividualStateHeight(state.StateIndex, value);
+    }
+    public void SetIndividualStateHeight(int stateIndex, float value)
+    {
+        _stateSpaceVisualStates[stateIndex].UpdateHeight(value);
+    }
+
     // ╔══════════════════════╗
     // ║ Not Currently In Use ║
     // ╚══════════════════════╝

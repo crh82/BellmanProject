@@ -120,7 +120,28 @@ public class Algorithms : MonoBehaviour
         return stateValueFunctionV;
     }
 
-    private StateValueFunction SingleStateSweep(
+    // public IEnumerator<StateValueFunction> PolicyEvaluationCR(
+    //     MDP mdp,
+    //     Policy policy,
+    //     float gamma,
+    //     float theta,
+    //     bool boundIterations = true,
+    //     int maxIterations = 10000,
+    //     bool debugMode = false)
+    // {
+    //     var stateValueFunctionV = new StateValueFunction(mdp);
+    //     
+    //     do
+    //     {
+    //         stateValueFunctionV = SingleStateSweep(mdp, policy, gamma, stateValueFunctionV);
+    //         yield return new WaitForSeconds();
+    //
+    //     } while (stateValueFunctionV.MaxChangeInValueOfStates() > theta);
+    //     
+    //     yield return stateValueFunctionV;
+    // }
+    
+    public StateValueFunction SingleStateSweep(
         MDP                mdp, 
         Policy             policy, 
         float              gamma,
@@ -138,7 +159,7 @@ public class Algorithms : MonoBehaviour
         return stateValueFunctionV;
     }
     
-    private float BellmanBackUpValueOfState(
+    public float BellmanBackUpValueOfState(
         MDP                mdp, 
         Policy             policy, 
         float              gamma, 
@@ -164,7 +185,7 @@ public class Algorithms : MonoBehaviour
         return valueOfState;
     }
     
-    private float ProbabilityTimesRewardPlusGammaTimesValueOfSuccessor(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
+    public float ProbabilityTimesRewardPlusGammaTimesValueOfSuccessor(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
     {
         return prob * (reward + gamma * vSprime * zeroIfTerm);
     }
