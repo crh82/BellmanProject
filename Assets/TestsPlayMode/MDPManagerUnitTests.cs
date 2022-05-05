@@ -460,14 +460,16 @@ namespace TestsPlayMode
             StateValueFunction randomPolicyValue = _algorithms.PolicyEvaluation(
                 _russellNorvigMdp, 
                 randomPolicy,
-                gamma: 1f,
-                theta: 1e-10f,
-                boundIterations: false);
+                0.99f,
+                1e-10f,
+                false,
+                1000,
+                true);
             
             var (optimalValue, optimalPolicy) = _algorithms.PolicyIteration(
                 _russellNorvigMdp, 
                 randomPolicy, 
-                1f,
+                0.99f,
                 1e-10f,
                 false,
                 1000,
@@ -485,7 +487,7 @@ namespace TestsPlayMode
 
             var vIoutcome = _algorithms.ValueIteration(
                 _russellNorvigMdp, 
-                1f,
+                0.99f,
                 1e-10f,
                 false,
                 1000,
@@ -844,6 +846,29 @@ namespace TestsPlayMode
             Assert.That(vI, Is.EquivalentTo(pI));
             
             Assert.That(File.Exists(saveFilePath), Is.True);
+        }
+    }
+    
+    public class StateValueFunctionTests
+    {
+        [Test]
+        public void StateValueChangeTest()
+        {
+            StateValueFunction vOfS = new StateValueFunction();
+            vOfS.SetValue(0, 2f);
+            vOfS.SetValue(0, 2.02f);
+            Assert.That(vOfS.StateValueDeltaBetweenTMinusOneAndT(0), Is.EqualTo(0.02f).Within(1e-7f));
+        }
+
+        [Test]
+        public void MaxDifferenceOfValuesTest()
+        {
+            StateValueFunction vOfS = new StateValueFunction();
+            vOfS.SetValue(0, 2f);
+            vOfS.SetValue(0, 2.02f);
+            vOfS.SetValue(1,10f);
+            vOfS.SetValue(1,20f);
+            Assert.That(vOfS.MaxChangeInValueOfStates(), Is.EqualTo(10f).Within(1e-7f));
         }
     }
 }
