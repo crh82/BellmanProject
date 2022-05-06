@@ -51,6 +51,8 @@ public class UIController : MonoBehaviour
    public Slider             algorithmExecutionSpeedSlider;
 
    public TextMeshProUGUI    algorithmExecutionSpeedValue;
+
+   public TextMeshProUGUI    numberOfIterationsDisplay;
    
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
@@ -74,7 +76,6 @@ public class UIController : MonoBehaviour
          _mdpManager.SetKeepGoingFalse();
          Debug.Log("Escape key was pressed");
       }
-
    }
 
    private void OnDisable()
@@ -148,6 +149,8 @@ public class UIController : MonoBehaviour
       currentPolicyString = newPolicy.PolicyToStringArray(_mdpManager.mdp.States);
 
       _mdpManager.CurrentPolicy = newPolicy;
+
+      numberOfIterationsDisplay.text = "0";
    }
 
    public void EvaluatePolicy()
@@ -183,7 +186,7 @@ public class UIController : MonoBehaviour
       
       if (_mdpManager != null)
       {
-         _mdpManager.theta = (1 / thetaSlider.value);
+         _mdpManager.theta = (float) (1 / Math.Pow(10, thetaSlider.value));
       }
    }
 
@@ -212,6 +215,11 @@ public class UIController : MonoBehaviour
          Debug.Log($"Max Iter: {_mdpManager.maximumIterations}");
       }
       
+   }
+
+   public void UpdateNumberOfIterations(int iterations)
+   {
+      numberOfIterationsDisplay.text = $"{iterations}";
    }
 
    public void UpdateAlgorithmExecutionSpeedValue()

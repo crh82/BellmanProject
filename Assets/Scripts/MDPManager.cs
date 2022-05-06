@@ -38,6 +38,10 @@ public class MdpManager : MonoBehaviour
     [Range(0, 1)] public float             gapBetweenStates = 0.25f;
 
     public float                           initialStateValueForTesting; // Todo remove after built
+
+    public Canvas                          currentUi;
+
+    public UIController                    uiController;
     
     // ┌─────────────────────────┐
     // │ MDP data and algorithms │
@@ -57,11 +61,11 @@ public class MdpManager : MonoBehaviour
 
     public bool                            debugMode;
 
-    public int                             maximumIterations = 10_000;
+    public int                             maximumIterations = 100_000;
 
-    public bool                            boundIterations = false;
+    public bool                            boundIterations = true;
 
-    public double                           algorithmExecutionSpeed = 0d;
+    public double                          algorithmExecutionSpeed = 0d;
 
     private Vector2                        _offsetToCenterVector;
 
@@ -80,6 +84,8 @@ public class MdpManager : MonoBehaviour
     public void Awake()
     {
         algorithms = gameObject.AddComponent<Algorithms>();
+        currentUi = GameObject.FindGameObjectWithTag("PolicyEvaluationUI").GetComponent<Canvas>();
+        uiController = currentUi.GetComponent<UIController>();
     }
 
     private void Start()
@@ -272,6 +278,12 @@ public class MdpManager : MonoBehaviour
 
     public async void PolicyEvaluationByState(CancellationToken cancellationToken, StateValueFunction stateValue = null)
     {
+        Debug.Log(
+            $"Theta : {theta} \n Gamma : {gamma}"
+            );
+        
+        var i = 0;  // Internal iteration count
+        
         EnsureMdpAndPolicyAreNotNull();
         
         var stateValueFunctionV = stateValue ?? new StateValueFunction(mdp);
@@ -294,15 +306,21 @@ public class MdpManager : MonoBehaviour
                 
                 CurrentStateValueFunction = stateValueFunctionV;
 
-                await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
+                if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
+                else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
+                
             }
 
             if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
+            
+            if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
 
+            i++; // Internal iteration count
+            
             stateValueFunctionV.Iterations++;
+            
+            uiController.UpdateNumberOfIterations(i);
         }
-        
-        
     }
 
     public void SetIndividualStateHeight(MarkovState state, float value)
