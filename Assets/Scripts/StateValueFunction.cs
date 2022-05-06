@@ -18,7 +18,6 @@ public class StateValueFunction
         foreach (var state in mdp.States)
         {
             
-            
             switch (state.TypeOfState)
             {
                 case StateType.Terminal:

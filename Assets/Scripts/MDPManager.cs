@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Codice.CM.Common;
 using TMPro;
 using UnityEditor.Timeline;
@@ -59,7 +61,7 @@ public class MdpManager : MonoBehaviour
 
     public bool                            boundIterations = false;
 
-    public float                           algorithmExecutionSpeed = 10e1f;
+    public double                           algorithmExecutionSpeed = 0d;
 
     private Vector2                        _offsetToCenterVector;
 
@@ -68,8 +70,28 @@ public class MdpManager : MonoBehaviour
     private GridAction[]                   _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
+
+    public bool                            keepGoing = true;
+    
+    // ╔════════════════════════╗
+    // ║ NORMAL UNITY FUNCTIONS ║
+    // ╚════════════════════════╝
+    
+    public void Awake()
+    {
+        algorithms = gameObject.AddComponent<Algorithms>();
+    }
+
+    private void Start()
+    {
+        // mdp = CreateFromJson(mdpFileToLoad.text);
+        // InstantiateMdpVisualisation();
+    }
     
     
+    // ╔═══════════════════════════════════╗
+    // ║ MDP SERIALIZATION/DESERIALIZATION ║
+    // ╚═══════════════════════════════════╝
     public MDP CreateFromJson(string jsonString)
     {
         return JsonUtility.FromJson<MDP>(jsonString);
@@ -81,29 +103,6 @@ public class MdpManager : MonoBehaviour
         mdp = CreateFromJson(mdpJsonRepresentation);
         StartCoroutine(InstantiateMdpVisualisation());
         // InstantiateMdpVisualisation();
-    }
-
-    public void Awake()
-    {
-        algorithms = gameObject.AddComponent<Algorithms>();
-    }
-
-    private void Start()
-    {
-        // mdp = CreateFromJson(mdpFileToLoad.text);
-        // InstantiateMdpVisualisation();
-    }
-
-    public List<MarkovTransition> CalculateTransitions(string transitionProbabilityRules)
-    {
-        List<MarkovTransition> transitions = new List<MarkovTransition>();
-        
-        switch (transitionProbabilityRules)
-        {
-                        
-        }
-
-        return transitions;
     }
 
     public IEnumerator InstantiateMdpVisualisation()
@@ -231,7 +230,7 @@ public class MdpManager : MonoBehaviour
     /// </summary>
     public void EvaluateAndVisualizeStateValues()
     {
-        NullValuesCheck();
+        EnsureMdpAndPolicyAreNotNull();
         
         StateValueFunction valueOfCurrentPolicy = algorithms.PolicyEvaluation(
             mdp, 
@@ -242,18 +241,12 @@ public class MdpManager : MonoBehaviour
             maximumIterations,
             debugMode);
 
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
-        {
-            SetIndividualStateHeight(state, valueOfCurrentPolicy.Value(state));
-        }
-        // foreach (var stateKvp in _stateSpaceVisualStates.Where(
-        //              stateKvp => mdp.States[stateKvp.Key].IsStandard()))
-        // {
-        //     stateKvp.Value.UpdateHeight(valueOfCurrentPolicy.Value(stateKvp.Key));
-        // }
+        SetAllStateHeights(valueOfCurrentPolicy);
     }
 
-    private void NullValuesCheck()
+    
+
+    public void EnsureMdpAndPolicyAreNotNull()
     {
         if (CurrentPolicy == null)
         {
@@ -264,7 +257,7 @@ public class MdpManager : MonoBehaviour
         if (mdp == null) throw new NullReferenceException("No MDP specified.");
     }
     
-    public IEnumerator ShowActionSpritesAtopStateValueVisuals()
+    public async void ShowActionSpritesAtopStateValueVisuals()
     {
         if (CurrentPolicy == null) throw new ArgumentNullException();
         
@@ -273,25 +266,22 @@ public class MdpManager : MonoBehaviour
             var currentAction      = CurrentPolicy.GetAction(state);
             var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
                 currentStateVisual.UpdateVisibleActionFromPolicy(currentAction);
-                yield return null;
+                await Task.Yield();
         }
     }
 
-    public void RunPol()
+    public async void PolicyEvaluationByState(CancellationToken cancellationToken, StateValueFunction stateValue = null)
     {
-        StartCoroutine(nameof(PolicyEvaluationByState));
-    }
-    
-    public IEnumerable PolicyEvaluationByState()
-    {
-        Debug.Log("It ran");
-        NullValuesCheck();
+        EnsureMdpAndPolicyAreNotNull();
         
-        var stateValueFunctionV = new StateValueFunction(mdp);
+        var stateValueFunctionV = stateValue ?? new StateValueFunction(mdp);
+        
+        SetAllStateHeights(stateValueFunctionV);
+        
+        // To reset the keepGoing field to true if the algorithm was previously killed due to an infinite loop
+        SetKeepGoingTrue();
 
-        // StartCoroutine(nameof(ShowActionSpritesAtopStateValueVisuals));
-        
-        while (true)
+        while (keepGoing)
         {
             foreach (var state in mdp.States.Where(state => state.IsStandard()))
             {
@@ -302,16 +292,17 @@ public class MdpManager : MonoBehaviour
                 
                 SetIndividualStateHeight(state, valueOfState);
                 
-                // yield return new WaitForSeconds(Time.deltaTime / algorithmExecutionSpeed);
-                yield return null;
+                CurrentStateValueFunction = stateValueFunctionV;
+
+                await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
             }
 
             if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
-        } 
 
-        CurrentStateValueFunction = stateValueFunctionV;
+            stateValueFunctionV.Iterations++;
+        }
         
-        // yield return null;
+        
     }
 
     public void SetIndividualStateHeight(MarkovState state, float value)
@@ -323,6 +314,34 @@ public class MdpManager : MonoBehaviour
         _stateSpaceVisualStates[stateIndex].UpdateHeight(value);
     }
 
+    private void SetAllStateHeights(StateValueFunction valueOfCurrentPolicy)
+    {
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        {
+            SetIndividualStateHeight(state, valueOfCurrentPolicy.Value(state));
+        }
+    }
+
+    public void ResetPolicy()
+    {
+        CurrentPolicy = null;
+    }
+
+    public void GenerateRandomStateValueFunction()
+    {
+        CurrentStateValueFunction = new StateValueFunction(mdp, -3f, 3f);
+    }
+
+    public void SetKeepGoingFalse()
+    {
+        keepGoing = false;
+    }
+
+    public void SetKeepGoingTrue()
+    {
+        keepGoing = true;
+    }
+    
     // ╔══════════════════════╗
     // ║ Not Currently In Use ║
     // ╚══════════════════════╝
@@ -365,5 +384,17 @@ public class MdpManager : MonoBehaviour
             GridAction.Up => mdp.Width,
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
+    }
+    
+    public List<MarkovTransition> CalculateTransitions(string transitionProbabilityRules)
+    {
+        List<MarkovTransition> transitions = new List<MarkovTransition>();
+        
+        switch (transitionProbabilityRules)
+        {
+                        
+        }
+
+        return transitions;
     }
 }

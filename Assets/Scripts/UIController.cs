@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
@@ -12,16 +13,14 @@ using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-   public TMP_Dropdown        mdpMenu;
+   public TMP_Dropdown       mdpMenu;
    
-   public GameObject          mdpGameObject;
-   
-   // public Policy CurrentPolicy;
+   public GameObject         mdpGameObject;
 
+   public string[]           currentPolicyString;
+   
    public Canvas             mainUserInterface;
-
-   public string[]           CurrentPolicy;
-
+   
    private MdpManager        _mdpManager;
 
    // ╔══════════════════════════════════════╗
@@ -53,6 +52,10 @@ public class UIController : MonoBehaviour
 
    public TextMeshProUGUI    algorithmExecutionSpeedValue;
    
+   // ╔═══════════════╗
+   // ║ ASYNC RELATED ║
+   // ╚═══════════════╝
+   private CancellationTokenSource  _cancellationTokenSource;
 
    // ╔═════════╗
    // ║ Methods ║
@@ -61,6 +64,22 @@ public class UIController : MonoBehaviour
    private void Awake()
    {
       _mdpManager = mdpGameObject.GetComponent<MdpManager>();
+      _cancellationTokenSource = new CancellationTokenSource();
+   }
+
+   private void Update()
+   {
+      if (Input.GetKeyDown(KeyCode.Escape))
+      {
+         _mdpManager.SetKeepGoingFalse();
+         Debug.Log("Escape key was pressed");
+      }
+
+   }
+
+   private void OnDisable()
+   {
+      _cancellationTokenSource.Cancel();
    }
 
    public void LoadMdpFromDropdown()
@@ -71,6 +90,7 @@ public class UIController : MonoBehaviour
       if (existingStateSpace != null)
       {
          Destroy(existingStateSpace);
+         _mdpManager.ResetPolicy();
       }
       
       string mdpString;
@@ -125,7 +145,7 @@ public class UIController : MonoBehaviour
 
       newPolicy.PrintPolicyToDebugLog();
       
-      CurrentPolicy = newPolicy.PolicyToStringArray(_mdpManager.mdp.States);
+      currentPolicyString = newPolicy.PolicyToStringArray(_mdpManager.mdp.States);
 
       _mdpManager.CurrentPolicy = newPolicy;
    }
@@ -137,7 +157,7 @@ public class UIController : MonoBehaviour
 
    public void ShowActionSpritesAtopStateValueVisuals()
    {
-      StartCoroutine(_mdpManager.ShowActionSpritesAtopStateValueVisuals());
+      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
    }
    
    // ┌───────────────────────────┐
@@ -196,28 +216,34 @@ public class UIController : MonoBehaviour
 
    public void UpdateAlgorithmExecutionSpeedValue()
    {
-      var algSpeedExponent = (int) algorithmExecutionSpeedSlider.value;
+      var algSpeed = (double) algorithmExecutionSpeedSlider.value;
       
-      algorithmExecutionSpeedValue.text = $"10<color=#FFFFFF><sup>{algSpeedExponent}</sup></color>";
+      algorithmExecutionSpeedValue.text = $"<color=#FFFFFF>{algSpeed}</color>ms";
       
       if (_mdpManager != null)
       {
-         _mdpManager.algorithmExecutionSpeed = (float) Math.Pow(10, algSpeedExponent);
+         _mdpManager.algorithmExecutionSpeed = algSpeed;
       }
    }
    
    public void EvaluatePolicyByStateAndControlSpeed()
    {
       Assert.IsNotNull(_mdpManager.mdp);
-      // _mdpManager.PolicyEvaluationByState();
-      // StartCoroutine(nameof(_mdpManager.PolicyEvaluationByState));
+
+      var cancellationToken = _cancellationTokenSource.Token;
       
-      _mdpManager.RunPol();
+      _mdpManager.EnsureMdpAndPolicyAreNotNull();
+      
+      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
+      
+      _mdpManager.PolicyEvaluationByState(cancellationToken);
    }
 
-   public void StopPolicyEvaluationCoroutine()
+   public void StopPolicyEvaluation()
    {
-      StopCoroutine(nameof(_mdpManager.PolicyEvaluationByState));
+      _cancellationTokenSource.Cancel();
+      _cancellationTokenSource.Dispose();
+      _cancellationTokenSource = new CancellationTokenSource();
    }
 
 }
