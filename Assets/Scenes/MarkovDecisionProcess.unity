@@ -2475,10 +2475,10 @@ MonoBehaviour:
     terminalStates: 
     goalStates: 
   algorithms: {fileID: 0}
-  gamma: 0
+  gamma: 1
   theta: 1e-10
   debugMode: 0
-  maximumIterations: 0
+  maximumIterations: 100000
   boundIterations: 1
   algorithmExecutionSpeed: 100
   keepGoing: 1

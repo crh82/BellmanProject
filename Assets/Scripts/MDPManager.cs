@@ -1,18 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Codice.CM.Common;
-using TMPro;
-using UnityEditor.Timeline;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.Serialization;
+using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
 
@@ -43,6 +37,10 @@ public class MdpManager : MonoBehaviour
 
     public UIController                    uiController;
     
+    private Vector2                        _offsetToCenterVector;
+
+    private readonly Vector2               _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
+    
     // ┌─────────────────────────┐
     // │ MDP data and algorithms │
     // └─────────────────────────┘
@@ -67,15 +65,19 @@ public class MdpManager : MonoBehaviour
 
     public double                          algorithmExecutionSpeed = 0d;
 
-    private Vector2                        _offsetToCenterVector;
-
-    private readonly Vector2               _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
+    public int                             algorithmViewLevel = 2;
     
     private GridAction[]                   _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
 
     public bool                            keepGoing = true;
+
+    private const int                      BySweep = 0;
+    
+    private const int                      ByState = 1;
+    
+    private const int                      ByTransition = 2;
     
     // ╔════════════════════════╗
     // ║ NORMAL UNITY FUNCTIONS ║
@@ -284,8 +286,6 @@ public class MdpManager : MonoBehaviour
         
         var i = 0;  // Internal iteration count
         
-        EnsureMdpAndPolicyAreNotNull();
-        
         var stateValueFunctionV = stateValue ?? new StateValueFunction(mdp);
         
         SetAllStateHeights(stateValueFunctionV);
@@ -308,7 +308,6 @@ public class MdpManager : MonoBehaviour
 
                 if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
                 else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
-                
             }
 
             if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
@@ -321,6 +320,122 @@ public class MdpManager : MonoBehaviour
             
             uiController.UpdateNumberOfIterations(i);
         }
+    }
+
+    public async void PolicyEvaluationFullControl(CancellationToken cancellationToken, StateValueFunction stateValue = null)
+    {
+        Debug.Log($"Started with speed of: {algorithmExecutionSpeed}");
+        
+        var i = 0;  // Internal iteration count
+        
+        var stateValueFunctionV = stateValue ?? new StateValueFunction(mdp);
+        
+        SetAllStateHeights(stateValueFunctionV);
+        
+        // To reset the keepGoing field to true if the algorithm was previously killed due to an infinite loop
+        SetKeepGoingTrue();
+        
+        while (keepGoing)
+        {
+            switch (algorithmViewLevel)
+            {
+                case BySweep:
+                    
+                    Debug.Log("BySweep started");
+                    
+                    stateValueFunctionV =
+                        algorithms.SingleStateSweep(mdp, CurrentPolicy, gamma, stateValueFunctionV);
+                    
+                    // SetAllStateHeights(stateValueFunctionV);
+                    
+                    if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
+                    else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
+
+                    i++;
+                    
+                    Debug.Log("BySweep Worked");
+                    
+                    break;
+                
+                case ByState:
+                    
+                    Debug.Log("ByState Started");
+                    
+                    foreach (var state in mdp.States.Where(state => state.IsStandard()))
+                    {
+                        float valueOfState = algorithms.BellmanBackUpValueOfState(
+                            mdp, CurrentPolicy, gamma, state, stateValueFunctionV);
+                
+                        stateValueFunctionV.SetValue(state, valueOfState);
+                
+                        SetIndividualStateHeight(state, valueOfState);
+                        
+                        if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
+                        else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
+                    }
+                    
+                    stateValueFunctionV.Iterations++;
+
+                    i++;
+                    
+                    Debug.Log("ByState Worked");
+                    
+                    break;
+                
+                case ByTransition:
+                    
+                    Debug.Log("ByTransition Started");
+                    
+                    foreach (var state in mdp.States.Where(state => state.IsStandard()))
+                    {
+                        float valueOfState = 0;
+                        
+                        var action = CurrentPolicy.GetAction(state);
+                        
+                        foreach (var transition in mdp.TransitionFunction(state, action))
+                        {
+                            float          probability = transition.Probability;
+                            MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
+                            float               reward = transition.Reward;
+                            float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
+                            float       zeroIfTerminal = successorState.IsTerminal() ? 0 : 1;
+
+                            valueOfState += algorithms.SingleTransitionBackup(
+                                probability, reward, gamma, valueOfSuccessor, zeroIfTerminal);
+                            
+                            stateValueFunctionV.SetValue(state, valueOfState);
+                            
+                            SetIndividualStateHeight(state, valueOfState);
+                            
+                            if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
+                            else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
+                        }
+                    }
+                    
+                    stateValueFunctionV.Iterations++;
+
+                    i++;
+                    
+                    Debug.Log("ByTransition Worked");
+                    
+                    break;
+            }
+            
+            SetAllStateHeights(stateValueFunctionV);
+                    
+            if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
+            else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
+            
+            if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
+            
+            if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
+
+            uiController.UpdateNumberOfIterations(stateValueFunctionV.Iterations);
+            
+            Debug.Log("PolicyEval Full Control Done");
+        }
+
+        CurrentStateValueFunction = stateValueFunctionV;
     }
 
     public void SetIndividualStateHeight(MarkovState state, float value)

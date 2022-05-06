@@ -53,6 +53,8 @@ public class UIController : MonoBehaviour
    public TextMeshProUGUI    algorithmExecutionSpeedValue;
 
    public TextMeshProUGUI    numberOfIterationsDisplay;
+
+   public HorizontalSelector algorithmViewLevelSelector;
    
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
@@ -66,6 +68,7 @@ public class UIController : MonoBehaviour
    private void Awake()
    {
       _mdpManager = mdpGameObject.GetComponent<MdpManager>();
+      _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.defaultIndex;
       _cancellationTokenSource = new CancellationTokenSource();
    }
 
@@ -171,6 +174,13 @@ public class UIController : MonoBehaviour
    {
       _mdpManager.algorithmExecutionSpeed = 1f;
    }
+
+   // Controls the execution of policy evaluation by state space sweep, individual state, or individual transition.
+   public void SendLevelInformationToMdp()
+   {
+      _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.index;
+
+   }
    
    // ┌───────────────────────┐
    // │ MDP Parameter Related │
@@ -245,6 +255,19 @@ public class UIController : MonoBehaviour
       _mdpManager.ShowActionSpritesAtopStateValueVisuals();
       
       _mdpManager.PolicyEvaluationByState(cancellationToken);
+   }
+
+   public void EvaluatePolicyFullControl()
+   {
+      Assert.IsNotNull(_mdpManager.mdp);
+
+      var cancellationToken = _cancellationTokenSource.Token;
+      
+      _mdpManager.EnsureMdpAndPolicyAreNotNull();
+      
+      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
+      
+      _mdpManager.PolicyEvaluationFullControl(cancellationToken);
    }
 
    public void StopPolicyEvaluation()

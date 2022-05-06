@@ -243,13 +243,13 @@ public class Algorithms : MonoBehaviour
             float       zeroIfTerminal = ZeroIfTerminal(successorState);
 
             //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
-            valueOfState += ProbabilityTimesRewardPlusGammaTimesValueOfSuccessor(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal);
+            valueOfState += SingleTransitionBackup(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal);
         }
 
         return valueOfState;
     }
     
-    public float ProbabilityTimesRewardPlusGammaTimesValueOfSuccessor(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
+    public float SingleTransitionBackup(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
     {
         return prob * (reward + gamma * vSprime * zeroIfTerm);
     }
