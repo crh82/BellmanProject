@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
@@ -79,6 +80,34 @@ public class UIController : MonoBehaviour
          _mdpManager.SetKeepGoingFalse();
          Debug.Log("Escape key was pressed");
       }
+      
+      if (Input.GetKeyDown(KeyCode.KeypadPlus))
+      {
+         _mdpManager.playSpeed += 10;
+      }
+
+      if (Input.GetKeyDown(KeyCode.KeypadMultiply))
+      {
+         _mdpManager.playSpeed += 100;
+      }
+        
+      if (Input.GetKeyDown(KeyCode.KeypadMinus))
+      { 
+         if (_mdpManager.playSpeed > 11) _mdpManager.playSpeed -= 10;
+      } 
+        
+      if (Input.GetKeyDown(KeyCode.KeypadDivide))
+      {
+         if (_mdpManager.playSpeed > 110) _mdpManager.playSpeed -= 100;
+      }
+      if (Input.GetKeyDown(KeyCode.Keypad4))
+      {
+         if (_mdpManager.cat > 0) _mdpManager.cat--;
+      }
+      if (Input.GetKeyDown(KeyCode.Keypad6))
+      {
+         if (_mdpManager.cat < 3) _mdpManager.cat++;
+      }
    }
 
    private void OnDisable()
@@ -118,6 +147,14 @@ public class UIController : MonoBehaviour
             break;
          case 4:
             mdpString = "Assets/Resources/TestMDPs/RussellNorvigGridworldTest.json";
+            _mdpManager.LoadMdpFromFilePath(mdpString);
+            break;
+         case 5:
+            mdpString = "Assets/Resources/TestMDPs/MonsterWorld.json";
+            _mdpManager.LoadMdpFromFilePath(mdpString);
+            break;
+         case 6:
+            mdpString = "Assets/Resources/TestMDPs/WidowMaker.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             break;
          default:
@@ -166,9 +203,10 @@ public class UIController : MonoBehaviour
       _mdpManager.ShowActionSpritesAtopStateValueVisuals();
    }
    
-   // ┌───────────────────────────┐
-   // │ Algorithm Control Related │
-   // └───────────────────────────┘
+
+   // ╔═══════════════════════════╗
+   // ║ Algorithm Control Related ║
+   // ╚═══════════════════════════╝
 
    public void AdjustAlgorithmExecutionSpeed()
    {
@@ -179,8 +217,60 @@ public class UIController : MonoBehaviour
    public void SendLevelInformationToMdp()
    {
       _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.index;
-
+      Debug.Log(_mdpManager.algorithmViewLevel);
    }
+   
+   public void UpdateAlgorithmExecutionSpeedValue()
+   {
+      var algSpeed = (int) algorithmExecutionSpeedSlider.value;
+      
+      algorithmExecutionSpeedValue.text = $"<color=#FFFFFF>{algSpeed}</color>ms";
+      
+      if (_mdpManager != null)
+      {
+         // _mdpManager.algorithmExecutionSpeed = algSpeed;
+         _mdpManager.playSpeed = algSpeed;
+      }
+   }
+   
+   
+   // ┌───────────────────────────┐
+   // │ Policy Evaluation Control │
+   // └───────────────────────────┘
+   
+   public void EvaluatePolicyByStateAndControlSpeed()
+   {
+      Assert.IsNotNull(_mdpManager.mdp);
+
+      var cancellationToken = _cancellationTokenSource.Token;
+      
+      _mdpManager.EnsureMdpAndPolicyAreNotNull();
+      
+      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
+      
+      _mdpManager.PolicyEvaluationByState(cancellationToken);
+   }
+
+   public async void EvaluatePolicyFullControl()
+   {
+      Assert.IsNotNull(_mdpManager.mdp);
+      
+      var cancellationToken = _cancellationTokenSource.Token;
+      
+      _mdpManager.EnsureMdpAndPolicyAreNotNull();
+      
+      await _mdpManager.ShowActionSpritesAtopStateValueVisuals();
+      
+      await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
+   }
+
+   public void StopPolicyEvaluation()
+   {
+      _cancellationTokenSource.Cancel();
+      _cancellationTokenSource.Dispose();
+      _cancellationTokenSource = new CancellationTokenSource();
+   }
+
    
    // ┌───────────────────────┐
    // │ MDP Parameter Related │
@@ -232,49 +322,11 @@ public class UIController : MonoBehaviour
       numberOfIterationsDisplay.text = $"{iterations}";
    }
 
-   public void UpdateAlgorithmExecutionSpeedValue()
+   public Task UpdateNumberOfIterationsAsync(int iterations)
    {
-      var algSpeed = (double) algorithmExecutionSpeedSlider.value;
-      
-      algorithmExecutionSpeedValue.text = $"<color=#FFFFFF>{algSpeed}</color>ms";
-      
-      if (_mdpManager != null)
-      {
-         _mdpManager.algorithmExecutionSpeed = algSpeed;
-      }
-   }
-   
-   public void EvaluatePolicyByStateAndControlSpeed()
-   {
-      Assert.IsNotNull(_mdpManager.mdp);
+      numberOfIterationsDisplay.text = $"{iterations}";
 
-      var cancellationToken = _cancellationTokenSource.Token;
-      
-      _mdpManager.EnsureMdpAndPolicyAreNotNull();
-      
-      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
-      
-      _mdpManager.PolicyEvaluationByState(cancellationToken);
-   }
-
-   public void EvaluatePolicyFullControl()
-   {
-      Assert.IsNotNull(_mdpManager.mdp);
-
-      var cancellationToken = _cancellationTokenSource.Token;
-      
-      _mdpManager.EnsureMdpAndPolicyAreNotNull();
-      
-      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
-      
-      _mdpManager.PolicyEvaluationFullControl(cancellationToken);
-   }
-
-   public void StopPolicyEvaluation()
-   {
-      _cancellationTokenSource.Cancel();
-      _cancellationTokenSource.Dispose();
-      _cancellationTokenSource = new CancellationTokenSource();
+      return Task.CompletedTask;
    }
 
 }

@@ -211,6 +211,8 @@ namespace TestsPlayMode
             new [] {1},
             new []{2}
         );
+        
+        
 
         [Test]
         public void TestGridWorldRules()
@@ -325,6 +327,35 @@ namespace TestsPlayMode
                 .Transitions[0]
                 .Reward, Is.InRange(0.0f, 0.01f));
         }
+
+        [Test]
+        public void MonsterGridWorldGeneration()
+        {
+            MDP monsterWorld = MdpAdmin.GenerateMdp(
+                "MonsterWorld", 
+                MdpRules.RussellAndNorvig,
+                new[] {10, 10},
+                new[] {13, 24, 41, 52, 77, 83},
+                new int[] {44,45},
+                new[] {9, 90},
+                -0.01f,
+                0f,
+                1f);
+            MdpAdmin.SaveMdpToFile(monsterWorld, "Assets/Resources/TestMDPs");
+            
+            MDP widowMaker = MdpAdmin.GenerateMdp(
+                "WidowMaker", 
+                MdpRules.RussellAndNorvig,
+                new[] {10, 10},
+                new int[] {},
+                new int[] {},
+                new[] {45},
+                -0.01f,
+                0f,
+                10f);
+            MdpAdmin.SaveMdpToFile(widowMaker, "Assets/Resources/TestMDPs");
+        }
+        
     }
 
     public class AlgorithmsTests

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -87,6 +88,26 @@ public class State : MonoBehaviour
         hoveringText.text = $"{Math.Round(stateValue, 4)}";
         
         UpdateStateValueVisual();
+    }
+
+    public Task UpdateHeightAsync(float value)
+    {
+        stateValue = value;
+        var stateMeshTransform = stateMesh.transform;
+        var stateMeshTransformLocalScale = stateMesh.transform.localScale;
+        var stateMeshTransformPosition = stateMesh.transform.position;
+
+        // TODO: Might be a bad solution.
+        float updateValue = -0.01 < value && value < 0.01 ? 0.01f : value;
+
+        stateMeshTransform.localScale =
+            new Vector3(stateMeshTransformLocalScale.x, updateValue, stateMeshTransformLocalScale.z);
+        stateMeshTransform.position =
+            new Vector3(stateMeshTransformPosition.x, updateValue / 2, stateMeshTransformPosition.z);
+        hoveringText.text = $"{Math.Round(stateValue, 4)}";
+        
+        UpdateStateValueVisual();
+        return Task.CompletedTask;
     }
 
     private void UpdateStateValueVisual()

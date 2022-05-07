@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -223,6 +224,7 @@ public class Algorithms : MonoBehaviour
         return stateValueFunctionV;
     }
     
+
     public float BellmanBackUpValueOfState(
         MDP                mdp, 
         Policy             policy, 
@@ -462,6 +464,70 @@ public class Algorithms : MonoBehaviour
         editorDisplayStateValue = stateValueFunctionV.StateValuesToFloatArray(mdp.StateCount);
 
         evaluationIterations = kIterations;
+    }
+    
+    // ╔═════════════════════════╗
+    // ║ Asynchronous Algorithms ║
+    // ╚═════════════════════════╝
+    
+    public Task<StateValueFunction> SingleStateSweepAsync(
+        MDP                mdp, 
+        Policy             policy, 
+        float              gamma,
+        StateValueFunction stateValueFunctionV)
+    {
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        {
+            float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
+            
+            stateValueFunctionV.SetValue(state, valueOfState);
+        }
+        
+        stateValueFunctionV.Iterations++;
+        
+        return Task.FromResult(stateValueFunctionV);
+    }
+    
+    public Task<float>BellmanBackUpValueOfStateAsync(
+        MDP                mdp, 
+        Policy             policy, 
+        float              gamma, 
+        MarkovState        state,
+        StateValueFunction stateValueFunctionV)
+    {
+        float valueOfState = 0;
+
+        var action = policy.GetAction(state);
+        
+        foreach (var transition in mdp.TransitionFunction(state, action))
+        {
+            float          probability = transition.Probability;
+            MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
+            float               reward = transition.Reward;
+            float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
+            float       zeroIfTerminal = ZeroIfTerminal(successorState);
+
+            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
+            valueOfState += SingleTransitionBackup(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal);
+        }
+
+        return Task.FromResult(valueOfState);
+    }
+    
+    public Task<float>SingleTransitionBackupAsync(MDP mdp, float gamma, MarkovTransition transition, StateValueFunction stateValueFunction)
+    {
+        float          probability = transition.Probability;
+        MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
+        float               reward = transition.Reward;
+        float     valueOfSuccessor = stateValueFunction.Value(successorState);
+        float       zeroIfTerminal = successorState.IsTerminal() ? 0 : 1;
+        
+        return Task.FromResult(probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal));
+    }
+
+    public Task<float> IncrementValueAsync(float currentStateValue, float valueFromSuccessor)
+    {
+        return Task.FromResult(currentStateValue + valueFromSuccessor);
     }
 
     private void Awake()

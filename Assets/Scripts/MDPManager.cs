@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
@@ -41,6 +42,21 @@ public class MdpManager : MonoBehaviour
 
     private readonly Vector2               _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
     
+    public int                             playSpeed = 100;
+
+    public int                             cat;
+    
+    public bool                            keepGoing = true;
+
+    private const int                      BySweep = 0;
+    
+    private const int                      ByState = 1;
+    
+    private const int                      ByTransition = 2;
+
+    private const int                      Suspended = 3;
+    
+    
     // ┌─────────────────────────┐
     // │ MDP data and algorithms │
     // └─────────────────────────┘
@@ -65,19 +81,16 @@ public class MdpManager : MonoBehaviour
 
     public double                          algorithmExecutionSpeed = 0d;
 
+    
+
     public int                             algorithmViewLevel = 2;
     
     private GridAction[]                   _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
-
-    public bool                            keepGoing = true;
-
-    private const int                      BySweep = 0;
     
-    private const int                      ByState = 1;
+
     
-    private const int                      ByTransition = 2;
     
     // ╔════════════════════════╗
     // ║ NORMAL UNITY FUNCTIONS ║
@@ -95,8 +108,13 @@ public class MdpManager : MonoBehaviour
         // mdp = CreateFromJson(mdpFileToLoad.text);
         // InstantiateMdpVisualisation();
     }
-    
-    
+
+    private void Update()
+    {
+        
+    }
+
+
     // ╔═══════════════════════════════════╗
     // ║ MDP SERIALIZATION/DESERIALIZATION ║
     // ╚═══════════════════════════════════╝
@@ -162,7 +180,7 @@ public class MdpManager : MonoBehaviour
         switch (stateType)
         {
             case StateType.Terminal:
-                state           = Instantiate(terminalPrefab, terminalPosition, Quaternion.Euler(Vector3.zero));
+                state           = Instantiate(terminalPrefab, terminalPosition, Quaternion.identity);
                 state.parent    = stateSpace;
                 state.name      = $"{x}{y}";
                 fullStateObject = state.GetComponent<State>();
@@ -170,14 +188,14 @@ public class MdpManager : MonoBehaviour
                 fullStateObject.UpdateHeight(terminalGoalScale);
                 break;
             case StateType.Obstacle:
-                state           = Instantiate(obstaclePrefab, obstaclePosition, Quaternion.Euler(Vector3.zero));
+                state           = Instantiate(obstaclePrefab, obstaclePosition, Quaternion.identity);
                 state.parent    = stateSpace;
                 state.name      = $"{x}{y}";
                 fullStateObject = state.GetComponent<State>();
                 fullStateObject.SetStateScale(obstacleScale);
                 break;
             case StateType.Goal:
-                state           = Instantiate(goalPrefab, goalPosition, Quaternion.Euler(Vector3.zero));
+                state           = Instantiate(goalPrefab, goalPosition, Quaternion.identity);
                 state.parent    = stateSpace;
                 state.name      = $"{x}{y}";
                 fullStateObject = state.GetComponent<State>();
@@ -185,7 +203,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject.UpdateHeight(terminalGoalScale);
                 break;
             case StateType.Standard:
-                state           = Instantiate(statePrefab, statePosition, Quaternion.Euler(Vector3.zero));
+                state           = Instantiate(statePrefab, statePosition, Quaternion.identity);
                 state.parent    = stateSpace;
                 state.name      = $"{x}{y}";
                 fullStateObject = state.GetComponent<State>();
@@ -265,7 +283,7 @@ public class MdpManager : MonoBehaviour
         if (mdp == null) throw new NullReferenceException("No MDP specified.");
     }
     
-    public async void ShowActionSpritesAtopStateValueVisuals()
+    public Task ShowActionSpritesAtopStateValueVisuals()
     {
         if (CurrentPolicy == null) throw new ArgumentNullException();
         
@@ -274,8 +292,9 @@ public class MdpManager : MonoBehaviour
             var currentAction      = CurrentPolicy.GetAction(state);
             var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
                 currentStateVisual.UpdateVisibleActionFromPolicy(currentAction);
-                await Task.Yield();
         }
+
+        return Task.CompletedTask;
     }
 
     public async void PolicyEvaluationByState(CancellationToken cancellationToken, StateValueFunction stateValue = null)
@@ -330,7 +349,7 @@ public class MdpManager : MonoBehaviour
         
         var stateValueFunctionV = stateValue ?? new StateValueFunction(mdp);
         
-        SetAllStateHeights(stateValueFunctionV);
+        await SetAllStateHeightsAsync(stateValueFunctionV);
         
         // To reset the keepGoing field to true if the algorithm was previously killed due to an infinite loop
         SetKeepGoingTrue();
@@ -345,8 +364,8 @@ public class MdpManager : MonoBehaviour
                     
                     stateValueFunctionV =
                         algorithms.SingleStateSweep(mdp, CurrentPolicy, gamma, stateValueFunctionV);
-                    
-                    // SetAllStateHeights(stateValueFunctionV);
+
+                    await SetAllStateHeightsAsync(stateValueFunctionV);
                     
                     if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
                     else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
@@ -438,6 +457,125 @@ public class MdpManager : MonoBehaviour
         CurrentStateValueFunction = stateValueFunctionV;
     }
 
+    public async Task PolicyEvaluationControlAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
+    {
+
+        var stateValueFunctionV = stateValueFunction ?? new StateValueFunction(mdp);
+
+        // var debugIterations = 0;
+
+        Debug.Log("Commenced \n" +
+                  $"Gamma : {gamma} \n");
+
+        var i = 0;
+        
+        foreach (float value in stateValueFunctionV.StateValuesToFloatArray(mdp.StateCount))
+        {
+           Debug.Log($"V(s{i}) = {value}");
+           i++;
+        }
+        
+        await SetAllStateHeightsAsync(stateValueFunctionV);
+        
+        SetKeepGoingTrue();
+
+        while (keepGoing)
+        {
+            switch (algorithmViewLevel)
+            {
+                case BySweep:
+
+                    stateValueFunctionV =
+                        await algorithms.SingleStateSweepAsync(mdp, CurrentPolicy, gamma, stateValueFunctionV);
+
+                    await SetAllStateHeightsAsync(stateValueFunctionV);
+                    
+                    await Task.Delay(playSpeed, cancellationToken);
+                    
+                    // Note: Iterations are incremented inside of algorithms.SingleStateSweepAsync
+                    
+                    break;
+                
+                case ByState:
+                    
+                    foreach (var state in mdp.States.Where(state => state.IsStandard()))
+                    {
+                        float valueOfState = await algorithms.BellmanBackUpValueOfStateAsync(
+                            mdp, CurrentPolicy, gamma, state, stateValueFunctionV);
+                
+                        stateValueFunctionV.SetValue(state, valueOfState);
+                
+                        await SetIndividualStateHeightAsync(state, valueOfState);
+                        
+                        await Task.Delay(playSpeed, cancellationToken);
+                    }
+                    
+                    await Task.Delay(playSpeed, cancellationToken);
+                    
+                    stateValueFunctionV.Iterations++;
+
+                    break;
+                
+                case ByTransition:
+                    
+                    foreach (var state in mdp.States.Where(state => state.IsStandard()))
+                    {
+                        float valueOfState = 0;
+                        
+                        await SetIndividualStateHeightAsync(state, valueOfState);
+                        
+                        var action = CurrentPolicy.GetAction(state);
+                        
+                        foreach (var transition in mdp.TransitionFunction(state, action))
+                        {
+                            
+                            float valueFromSuccessor = 
+                                await algorithms.SingleTransitionBackupAsync(mdp, gamma, transition, stateValueFunctionV);
+
+                            valueOfState = await algorithms.IncrementValueAsync(valueOfState, valueFromSuccessor);
+
+                            // Debug.Log(valueOfState);
+                            
+                            stateValueFunctionV.SetValue(state, valueOfState);
+                            
+                            await SetIndividualStateHeightAsync(state, stateValueFunctionV.Value(state));
+
+                            await Task.Delay(playSpeed, cancellationToken);
+                        }
+                    }
+                    
+                    await Task.Delay(playSpeed, cancellationToken);
+                    
+                    stateValueFunctionV.Iterations++;
+                    
+                    break;
+                
+                case Suspended:
+                    
+                    await Task.Delay(playSpeed, cancellationToken);
+                    
+                    break;
+            }
+            
+            // // FOR DEBUG 
+            //
+            // if (debugIterations % 10 == 0) Debug.Log(debugIterations);
+            //
+            // debugIterations++;
+            //
+            // // END DEBUG
+            
+            
+            if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
+            
+            if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
+
+            await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
+        }
+        
+        // CurrentStateValueFunction = stateValueFunctionV;
+    }
+
     public void SetIndividualStateHeight(MarkovState state, float value)
     {
         SetIndividualStateHeight(state.StateIndex, value);
@@ -452,6 +590,24 @@ public class MdpManager : MonoBehaviour
         foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
             SetIndividualStateHeight(state, valueOfCurrentPolicy.Value(state));
+        }
+    }
+    
+    public Task SetIndividualStateHeightAsync(MarkovState state, float value)
+    {
+        var setHeight = SetIndividualStateHeightAsync(state.StateIndex, value);
+        return setHeight;
+    }
+    public Task SetIndividualStateHeightAsync(int stateIndex, float value)
+    {
+        return _stateSpaceVisualStates[stateIndex].UpdateHeightAsync(value);
+    }
+    
+    private async Task SetAllStateHeightsAsync(StateValueFunction valueOfCurrentPolicy)
+    {
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        {
+            await SetIndividualStateHeightAsync(state, valueOfCurrentPolicy.Value(state));
         }
     }
 
