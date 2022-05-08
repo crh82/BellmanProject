@@ -344,15 +344,16 @@ namespace TestsPlayMode
             MdpAdmin.SaveMdpToFile(monsterWorld, "Assets/Resources/TestMDPs");
             
             MDP widowMaker = MdpAdmin.GenerateMdp(
-                "WidowMaker", 
-                MdpRules.RussellAndNorvig,
-                new[] {10, 10},
+                "BigRandomWalk", 
+                MdpRules.RandomWalk,
+                new[] {20, 20},
                 new int[] {},
-                new int[] {},
-                new[] {45},
-                -0.01f,
+                new int[] {0},
+                new[] {399},
                 0f,
-                10f);
+                0f,
+                5f,
+                false);
             MdpAdmin.SaveMdpToFile(widowMaker, "Assets/Resources/TestMDPs");
         }
         

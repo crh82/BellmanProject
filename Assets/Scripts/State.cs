@@ -32,7 +32,11 @@ public class State : MonoBehaviour
 
     public bool             selected;
 
-    public List<GameObject> ActionSprites;
+    [FormerlySerializedAs("ActionSprites")] public List<GameObject> actionSprites;
+
+    private MdpManager      _mdpManager;
+
+    private StateInteractions _stateInteractionsScript;
 
 
     public GameObject GetStateCanvasHover()
@@ -47,17 +51,30 @@ public class State : MonoBehaviour
 
     private void Awake()
     {
+        
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        
     }
 
     // Update is called once per frame
     void Update()
     {
 
+    }
+
+    public void DistributeMdpManagerReferenceToComponents(MdpManager mdpManager)
+    {
+        if (_stateInteractionsScript == null)
+        {
+            _stateInteractionsScript = GetComponent<StateInteractions>();
+        }
+        
+        _mdpManager = mdpManager;
+        // _stateInteractionsScript.AssignMdpManager(mdpManager);
     }
     
     
@@ -135,10 +152,10 @@ public class State : MonoBehaviour
     public void UpdateVisibleActionFromPolicy(GridAction action) => UpdateVisibleActionFromPolicy((int) action);
     public void UpdateVisibleActionFromPolicy(int action)
     {
-        foreach (var actionSprite in ActionSprites)
+        foreach (var actionSprite in actionSprites)
         {
             actionSprite.SetActive(false);
         }
-        ActionSprites[action].SetActive(true);
+        actionSprites[action].SetActive(true);
     }
 }

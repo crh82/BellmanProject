@@ -33,11 +33,11 @@ public static class MdpAdmin
     
     private const int SeedValue = 5;
     // public static Random RandomValueGenerator = new Random(SeedValue);
-    
-    
+
+
     /// <summary>
     /// Todo Deal with the problems that could arise form the obstacle, terminal, and goal arrays
-    ///
+    /// 
     /// 
     /// </summary>
     /// <param name="name"><c>string</c>
@@ -50,6 +50,7 @@ public static class MdpAdmin
     /// <param name="standardReward"></param>
     /// <param name="terminalReward"></param>
     /// <param name="goalReward"></param>
+    /// <param name="computeTransitions">Sets whether to precompute all transitions in state space</param>
     /// <returns></returns>
     public static MDP GenerateMdp( 
         string   name,
@@ -60,7 +61,8 @@ public static class MdpAdmin
         int[]    goalStates,
         float    standardReward = 0,
         float    terminalReward = 0,
-        float    goalReward     = 1
+        float    goalReward     = 1,
+        bool     computeTransitions = true
     )
     {
         
@@ -78,7 +80,7 @@ public static class MdpAdmin
         
         InitializeStateObjects(newMdp, standardReward, terminalReward, goalReward);
         
-        InitializeActionsAndTransitions(newMdp);
+        InitializeActionsAndTransitions(newMdp, computeTransitions);
         
         return newMdp;
     }
@@ -128,7 +130,7 @@ public static class MdpAdmin
         }
     }
 
-    private static void InitializeActionsAndTransitions(MDP newMdp)
+    private static void InitializeActionsAndTransitions(MDP newMdp, bool computeTransitions)
     {
         foreach (MarkovState markovState in newMdp.States)
         {
@@ -144,7 +146,10 @@ public static class MdpAdmin
                     StateAction = stateActionPair
                 };
 
-                actionToAdd.Transitions = GenerateTransitions(newMdp, markovState, actionToAdd);
+                if (computeTransitions)
+                {
+                    actionToAdd.Transitions = GenerateTransitions(newMdp, markovState, actionToAdd);
+                }
 
                 markovState.ApplicableActions.Add(actionToAdd);
             }

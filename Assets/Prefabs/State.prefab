@@ -58,7 +58,7 @@ MonoBehaviour:
   hoverInfoOffset: 0.02
   stateQuad: {fileID: 5122305160405309365}
   selected: 0
-  ActionSprites:
+  actionSprites:
   - {fileID: 3905228869313053937}
   - {fileID: 6395892107134356214}
   - {fileID: 4456677100207708003}
@@ -705,6 +705,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stateMesh: {fileID: 2729783304473936585}
+  stateInformationWindow: {fileID: 0}
   highlighted: {fileID: 2100000, guid: d67b76aa6a314ee499ed479b93aab73f, type: 2}
   normalColor: {fileID: 2100000, guid: 0ee5403a4ec3b4309882795b799f1ff2, type: 2}
 --- !u!1 &6395892107134356214
@@ -973,7 +974,7 @@ GameObject:
   - component: {fileID: 9078198412572108241}
   - component: {fileID: 8607733623482277991}
   m_Layer: 0
-  m_Name: StateTestText
+  m_Name: ValueOfStateText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

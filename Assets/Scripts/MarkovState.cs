@@ -12,9 +12,6 @@ using UnityEngine.Serialization;
 [Serializable]
 public class MarkovState
 {
-    
-    // public int State;
-    // public List<MarkovAction> ApplicableActions;
 
     [SerializeField] private int                stateIndex;
     [SerializeField] private List<MarkovAction> applicableActions;
@@ -72,12 +69,7 @@ public class MarkovState
     {
         return typeOfState.Equals(StateType.Standard);
     }
-
-    public override bool Equals(object obj)
-    {
-        return base.Equals(obj);
-    }
-
+    
     public override string ToString()
     {
         return $"s{stateIndex}";

@@ -9,6 +9,8 @@ TagManager:
   - MDP GameObject
   - Policy Input
   - PolicyEvaluationUI
+  - StateInformationWindow
+  - MdpManager
   layers:
   - Default
   - TransparentFX

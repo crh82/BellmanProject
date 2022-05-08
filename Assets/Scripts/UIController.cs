@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
@@ -56,6 +57,19 @@ public class UIController : MonoBehaviour
    public TextMeshProUGUI    numberOfIterationsDisplay;
 
    public HorizontalSelector algorithmViewLevelSelector;
+   
+   // ╔═════════════════════════════════════════════════╗
+   // ║ CENTER CONTROL PANEL — STATE INFORMATION WINDOW ║
+   // ╚═════════════════════════════════════════════════╝
+   public ModalWindowManager stateInformationWindow;
+   
+   public HorizontalSelector actionEdit;
+
+   public GameObject         actionToEditPanel;
+
+   private int               _currentStateToEdit;
+
+   public TMP_InputField     rewardEditor;
    
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
@@ -124,6 +138,7 @@ public class UIController : MonoBehaviour
       {
          Destroy(existingStateSpace);
          _mdpManager.ResetPolicy();
+         _mdpManager.ResetCurrentStateValueFunction();
       }
       
       string mdpString;
@@ -157,6 +172,10 @@ public class UIController : MonoBehaviour
             mdpString = "Assets/Resources/TestMDPs/WidowMaker.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             break;
+         case 7:
+            mdpString = "Assets/Resources/TestMDPs/BigRandomWalk.json";
+            _mdpManager.LoadMdpFromFilePath(mdpString);
+            break;
          default:
             break;
       }
@@ -176,7 +195,7 @@ public class UIController : MonoBehaviour
       
       for (var index = 0; index < textInput.Length; index++)
       {
-         string action = textInput[index].ToString().ToLower() ?? throw new ArgumentNullException("textInput[index].ToString().ToUpper()");
+         string action = textInput[index].ToString().ToLower();
          newPolicy.SetAction(index, action);
       }
       
@@ -207,11 +226,7 @@ public class UIController : MonoBehaviour
    // ╔═══════════════════════════╗
    // ║ Algorithm Control Related ║
    // ╚═══════════════════════════╝
-
-   public void AdjustAlgorithmExecutionSpeed()
-   {
-      _mdpManager.algorithmExecutionSpeed = 1f;
-   }
+   
 
    // Controls the execution of policy evaluation by state space sweep, individual state, or individual transition.
    public void SendLevelInformationToMdp()
@@ -328,5 +343,53 @@ public class UIController : MonoBehaviour
 
       return Task.CompletedTask;
    }
+   
+   // ┌───────────────────────────────────┐
+   // │ Display and Edit State and Policy │
+   // └───────────────────────────────────┘
 
+   public async void OpenStateInformationEditorAndDisplay(int stateIndex)
+   {
+      stateInformationWindow.useCustomValues = true;
+      
+      stateInformationWindow.OpenWindow();
+      
+      var stateInfoFromManager = _mdpManager.GetStateAndActionInformationForDisplayAndEdit(stateIndex);
+      
+      stateInformationWindow.windowTitle.text = stateInfoFromManager["state"] + " Information";
+      
+      var displayInfo = new StringBuilder(string.Join("\n", stateInfoFromManager.Values));
+      
+      stateInformationWindow.windowDescription.text = displayInfo.ToString();
+      
+      await Task.Yield();
+   }
+   
+   public void SetStateToEdit(int stateIndex)
+   {
+      _currentStateToEdit = stateIndex;
+      Debug.Log(_currentStateToEdit);
+   }
+
+   public void EditPolicyActionInSelectedState()
+   {
+      if (_mdpManager.CurrentPolicy == null) return;
+
+      actionEdit.defaultIndex = (int) _mdpManager.CurrentPolicy.GetAction(_currentStateToEdit);
+      
+      actionToEditPanel.SetActive(true);
+   }
+
+   public void CommitPolicyEdit()
+   {
+      _mdpManager.EditCurrentPolicy(_currentStateToEdit, actionEdit.index);
+      _mdpManager.UpdateActionVisual(_currentStateToEdit);
+      actionToEditPanel.SetActive(false);
+   }
+
+   public void EditReward()
+   {
+      float newReward = float.Parse(rewardEditor.text);
+      _mdpManager.EditRewardOfState(_currentStateToEdit, newReward);
+   }
 }

@@ -116,6 +116,15 @@ public class Policy
         
         return stringDisplayOfPolicy;
     }
+
+    public GridAction GetAction(int stateIndex)
+    {
+        return _policy.ContainsKey(stateIndex) switch
+        {
+            true => _policy[stateIndex],
+            false => throw new ArgumentOutOfRangeException($"s{stateIndex} has no assigned action")
+        };
+    }
     
     public GridAction GetAction(MarkovState state)
     {
@@ -125,7 +134,7 @@ public class Policy
             false => throw new ArgumentOutOfRangeException(nameof(state), state, null)
         };
     }
-
+    
     public Policy Copy()
     {
         var copyOfPolicy = new Policy();
