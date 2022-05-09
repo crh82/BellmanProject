@@ -1,7 +1,7 @@
 StartPolicyValues,EndPolicyValues,StartPolicyActions,EndPolicyActions
--0.3042868,0.8715254,Up,Left
+0.07691586,0.8715254,Down,Left
 0,0,Term Act N/A,Term Act N/A
 1,1,Goal Act N/A,Goal Act N/A
--0.707411,0.8979356,Up,Up
-0.1849283,0.9251462,Down,Up
-2.664307,0.9803917,Down,Right
+2.707281,0.8979356,Left,Up
+-1.489813,0.9251462,Down,Up
+2.201337,0.9803917,Up,Right

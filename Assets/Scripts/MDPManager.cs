@@ -83,7 +83,7 @@ public class MdpManager : MonoBehaviour
 
     public double                          algorithmExecutionSpeed = 0d;
 
-    private int                            _CurrentAlgorithmExecutionIterations; // Reset after each alg execution.
+    private int                            _currentAlgorithmExecutionIterations; // Reset after each alg execution.
 
     
 
@@ -129,6 +129,12 @@ public class MdpManager : MonoBehaviour
     // ┌──────────────────────────────────────┐
     // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
     // └──────────────────────────────────────┘
+    
+    public float Gamma
+    {
+        get => gamma;
+        set => gamma = value;
+    }
 
     public MarkovState GetStateFromCurrentMdp(int stateIndex)
     {
@@ -155,7 +161,7 @@ public class MdpManager : MonoBehaviour
             {"state"     , stateName},
             {"reward"    , stateReward},
             {"value"     , stateValue},
-            {"iterations", $"Iteration: T + {_CurrentAlgorithmExecutionIterations}"},
+            {"iterations", $"Iteration: T + {_currentAlgorithmExecutionIterations}"},
             {"action"    , ActionInStateFormatted(stateIndex)}
         };
         
@@ -366,51 +372,7 @@ public class MdpManager : MonoBehaviour
         return Task.CompletedTask;
     }
 
-    public async void PolicyEvaluationByState(CancellationToken cancellationToken, StateValueFunction stateValue = null)
-    {
-        Debug.Log(
-            $"Theta : {theta} \n Gamma : {gamma}"
-            );
-        
-        var i = 0;  // Internal iteration count
-        
-        var stateValueFunctionV = stateValue ?? new StateValueFunction(mdp);
-        
-        SetAllStateHeights(stateValueFunctionV);
-        
-        // To reset the keepGoing field to true if the algorithm was previously killed due to an infinite loop
-        SetKeepGoingTrue();
 
-        while (keepGoing)
-        {
-            foreach (var state in mdp.States.Where(state => state.IsStandard()))
-            {
-                float valueOfState = algorithms.BellmanBackUpValueOfState(
-                    mdp, CurrentPolicy, gamma, state, stateValueFunctionV);
-                
-                stateValueFunctionV.SetValue(state, valueOfState);
-                
-                SetIndividualStateHeight(state, valueOfState);
-                
-                CurrentStateValueFunction = stateValueFunctionV;
-
-                if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
-                else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
-            }
-
-            if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
-            
-            if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
-
-            i++; // Internal iteration count
-            
-            stateValueFunctionV.Iterations++;
-            
-            uiController.UpdateNumberOfIterations(i);
-        }
-    }
-
-    
     /// <summary>
     /// Todo Properly comment this
     /// </summary>
@@ -419,7 +381,7 @@ public class MdpManager : MonoBehaviour
     public async Task PolicyEvaluationControlAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
     {
 
-        _CurrentAlgorithmExecutionIterations = 0;
+        _currentAlgorithmExecutionIterations = 0;
         
         // Todo Fix this
         
@@ -525,12 +487,12 @@ public class MdpManager : MonoBehaviour
 
             await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
             
-            if (algorithmViewLevel != Suspended) _CurrentAlgorithmExecutionIterations++;
+            if (algorithmViewLevel != Suspended) _currentAlgorithmExecutionIterations++;
         }
         
         CurrentStateValueFunction = stateValueFunctionV;
 
-        _CurrentAlgorithmExecutionIterations = 0;
+        _currentAlgorithmExecutionIterations = 0;
     }
 
     public void SetIndividualStateHeight(MarkovState state, float value)
@@ -808,3 +770,4 @@ public class MdpManager : MonoBehaviour
     //     return transitions;
     // }
 }
+// 0.0, 0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99, 0.999

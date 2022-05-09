@@ -256,6 +256,10 @@ public class Algorithms : MonoBehaviour
         return prob * (reward + gamma * vSprime * zeroIfTerm);
     }
     
+    // ┌────────────────────┐
+    // │ Policy Improvement │
+    // └────────────────────┘
+    
     public Policy PolicyImprovement(
         MDP                mdp, 
         StateValueFunction stateValueFunction, 
@@ -311,6 +315,11 @@ public class Algorithms : MonoBehaviour
         return policyPrime;
     }
 
+    
+    // ┌──────────────────┐
+    // │ Policy Iteration │
+    // └──────────────────┘
+    
     public (StateValueFunction, Policy) PolicyIteration(
         MDP    mdp,
         Policy policy          = null, 
@@ -340,6 +349,10 @@ public class Algorithms : MonoBehaviour
         
         return (valueOfPolicy, newPolicy);
     }
+    
+    // ┌─────────────────┐
+    // │ Value Iteration │
+    // └─────────────────┘
 
     public (StateValueFunction, Policy) ValueIteration(
         MDP    mdp,

@@ -1,13 +1,13 @@
 StartPolicyValues,EndPolicyValues,StartPolicyActions,EndPolicyActions
--0.7076547,0.73894,Down,Up
--0.7387312,0.6898261,Left,Left
-0.02192358,0.6713133,Right,Up
--0.01678502,0.5730276,Down,Down
--0.7387312,0.7998638,Up,Up
+-2.305163,0.73894,Up,Up
+-2.085113,0.6898261,Up,Left
+-1.994873,0.6713133,Left,Up
+-1.900043,0.5730276,Left,Down
+-2.31632,0.7998638,Down,Up
 0,0,Obs Act N/A,Obs Act N/A
-0.6974432,0.7402661,Up,Left
+-1.110819,0.7402661,Right,Left
 -1,-1,Term Act N/A,Term Act N/A
--0.7076547,0.8503672,Left,Right
-0.08169109,0.9128716,Down,Right
-0.9600965,0.9648017,Right,Right
+-2.497713,0.8503672,Right,Right
+-2.506469,0.9128716,Left,Right
+-1.063909,0.9648017,Down,Right
 1,1,Goal Act N/A,Goal Act N/A

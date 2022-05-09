@@ -25,6 +25,10 @@ public class UIController : MonoBehaviour
    
    private MdpManager        _mdpManager;
 
+   
+   
+   private readonly int[]  _playSpeedValues = new int[] {1, 10, 100, 500, 1000, 2000};
+
    // ╔══════════════════════════════════════╗
    // ║ POLICY EVALUATION LEFT CONTROL PANEL ║
    // ╚══════════════════════════════════════╝
@@ -32,7 +36,14 @@ public class UIController : MonoBehaviour
    public HorizontalSelector uiMdpSelector;
 
    
-   public RadialSlider       gammaSlider;
+   // public RadialSlider       gammaSlider;
+   
+   public Slider             gammaSlider;
+   
+   public CanvasGroup        gammaSliderContainer;
+   
+   public TextMeshProUGUI    gammaValue;
+
    
    
    public TextMeshProUGUI    thetaValue;
@@ -45,6 +56,18 @@ public class UIController : MonoBehaviour
    public TextMeshProUGUI    maxIterationsValue;
 
    public GameObject         maxIterationsControlPanel;
+
+   private bool              _gammaIsOn;
+   
+   private readonly float[]  _gammaValues = new float[] 
+   {
+      0.0f , 0.001f , 0.01f , 0.05f  , 
+      0.1f , 0.15f  , 0.2f  , 0.25f  , 
+      0.3f , 0.35f  , 0.4f  , 0.45f  , 
+      0.5f , 0.55f  , 0.6f  , 0.65f  , 
+      0.7f , 0.75f  , 0.8f  , 0.85f  , 
+      0.9f , 0.95f  , 0.99f , 0.999f
+   };
    
    // ╔═══════════════════════════════════════╗
    // ║ POLICY EVALUATION RIGHT CONTROL PANEL ║
@@ -252,19 +275,6 @@ public class UIController : MonoBehaviour
    // ┌───────────────────────────┐
    // │ Policy Evaluation Control │
    // └───────────────────────────┘
-   
-   public void EvaluatePolicyByStateAndControlSpeed()
-   {
-      Assert.IsNotNull(_mdpManager.mdp);
-
-      var cancellationToken = _cancellationTokenSource.Token;
-      
-      _mdpManager.EnsureMdpAndPolicyAreNotNull();
-      
-      _mdpManager.ShowActionSpritesAtopStateValueVisuals();
-      
-      _mdpManager.PolicyEvaluationByState(cancellationToken);
-   }
 
    public async void EvaluatePolicyFullControl()
    {
@@ -290,9 +300,29 @@ public class UIController : MonoBehaviour
    // ┌───────────────────────┐
    // │ MDP Parameter Related │
    // └───────────────────────┘
+   public void SwitchGammaOn()
+   {
+      _gammaIsOn = true;
+      gammaSliderContainer.alpha = 1;
+   }
+
+   public void SwitchGammaOff()
+   {
+      _gammaIsOn = false;
+      gammaSliderContainer.alpha = 0.25f;
+      _mdpManager.Gamma = 1f;
+   }
+
    public void UpdateGamma()
    {
-      _mdpManager.gamma = gammaSlider.currentValue;
+      if (_gammaIsOn) _mdpManager.Gamma = _gammaValues[(int) gammaSlider.value];
+      UpdateGameDisplay();
+      // _mdpManager.gamma = gammaSlider.currentValue;
+   }
+   
+   private void UpdateGameDisplay()
+   {
+      gammaValue.text =  $"<color=#FFFFFF>{_gammaValues[(int) gammaSlider.value]}</color>";
    }
 
    public void UpdateTheta()
