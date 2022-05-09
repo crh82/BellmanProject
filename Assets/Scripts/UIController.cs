@@ -29,9 +29,9 @@ public class UIController : MonoBehaviour
    
    private readonly int[]  _playSpeedValues = new int[] {1, 10, 100, 500, 1000, 2000};
 
-   // ╔══════════════════════════════════════╗
-   // ║ POLICY EVALUATION LEFT CONTROL PANEL ║
-   // ╚══════════════════════════════════════╝
+   // ╔════════════════════╗
+   // ║ LEFT CONTROL PANEL ║
+   // ╚════════════════════╝
    
    public HorizontalSelector uiMdpSelector;
 
@@ -69,9 +69,9 @@ public class UIController : MonoBehaviour
       0.9f , 0.95f  , 0.99f , 0.999f
    };
    
-   // ╔═══════════════════════════════════════╗
-   // ║ POLICY EVALUATION RIGHT CONTROL PANEL ║
-   // ╚═══════════════════════════════════════╝
+   // ╔═════════════════════╗
+   // ║ RIGHT CONTROL PANEL ║
+   // ╚═════════════════════╝
 
    public Slider             algorithmExecutionSpeedSlider;
 
@@ -80,6 +80,8 @@ public class UIController : MonoBehaviour
    public TextMeshProUGUI    numberOfIterationsDisplay;
 
    public HorizontalSelector algorithmViewLevelSelector;
+
+   public HorizontalSelector algorithmSelector;
    
    // ╔═════════════════════════════════════════════════╗
    // ║ CENTER CONTROL PANEL — STATE INFORMATION WINDOW ║
@@ -270,23 +272,41 @@ public class UIController : MonoBehaviour
          _mdpManager.playSpeed = algSpeed;
       }
    }
+
+   public void RunAlgorithm()
+   {
+
+      var cancellationToken = _cancellationTokenSource.Token;
+      
+      switch (algorithmSelector.index)
+      {
+         case 0:
+            EvaluatePolicyFullControl(cancellationToken);
+            break;
+         case 1:
+            ImprovePolicyFullControlAsync(cancellationToken);
+            break;
+
+      }
+   }
    
    
    // ┌───────────────────────────┐
    // │ Policy Evaluation Control │
    // └───────────────────────────┘
 
-   public async void EvaluatePolicyFullControl()
+   private async void EvaluatePolicyFullControl(CancellationToken cancellationToken)
    {
-      Assert.IsNotNull(_mdpManager.mdp);
-      
-      var cancellationToken = _cancellationTokenSource.Token;
-      
       _mdpManager.EnsureMdpAndPolicyAreNotNull();
       
       await _mdpManager.ShowActionSpritesAtopStateValueVisuals();
       
       await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
+   }
+
+   private async void ImprovePolicyFullControlAsync(CancellationToken cancellationToken)
+   {
+      await _mdpManager.PolicyImprovementControlledAsync(cancellationToken);
    }
 
    public void StopPolicyEvaluation()
@@ -413,7 +433,7 @@ public class UIController : MonoBehaviour
    public void CommitPolicyEdit()
    {
       _mdpManager.EditCurrentPolicy(_currentStateToEdit, actionEdit.index);
-      _mdpManager.UpdateActionVisual(_currentStateToEdit);
+      _mdpManager.SetActionImage(_currentStateToEdit, actionEdit.index);
       actionToEditPanel.SetActive(false);
    }
 

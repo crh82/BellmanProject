@@ -232,8 +232,10 @@ public class Algorithms : MonoBehaviour
         MarkovState        state,
         StateValueFunction stateValueFunctionV)
     {
-        float valueOfState = 0;
-
+        float valueOfState = 0; // Sutton & Barto
+        
+        // float valueOfState = state.Reward; // Russell & Norvig
+        
         var action = policy.GetAction(state);
         
         foreach (var transition in mdp.TransitionFunction(state, action))
@@ -244,8 +246,12 @@ public class Algorithms : MonoBehaviour
             float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
             float       zeroIfTerminal = ZeroIfTerminal(successorState);
 
+            // Sutton & Barto
             //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
-            valueOfState += SingleTransitionBackup(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal);
+            valueOfState += SingleTransitionBackup(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal); 
+            
+            // Russell & Norvig
+            // valueOfState += gamma * probability * valueOfSuccessor;
         }
 
         return valueOfState;
@@ -274,17 +280,6 @@ public class Algorithms : MonoBehaviour
         {
             foreach (var action in state.ApplicableActions)
             {
-                // LINQ VERSION
-                // var stateActionValueQsa = (
-                //     from transition in mdp.TransitionFunction(state, action.Action) 
-                //     let probability = transition.Probability 
-                //     let nextState = mdp.States[transition.SuccessorStateIndex]
-                //     let reward = transition.Reward
-                //     let valueSprime = stateValueFunction.Value(nextState)
-                //     select probability * (reward + gamma * valueSprime * ZeroIfTerminal(nextState))
-                //     ).Sum();
-                
-                
                 var stateActionValueQsa = 0.0f;
 
                 // foreach (var transition in action.Transitions) <—— Precomputed transitions.
@@ -501,7 +496,7 @@ public class Algorithms : MonoBehaviour
         return Task.FromResult(stateValueFunctionV);
     }
     
-    public Task<float>BellmanBackUpValueOfStateAsync(
+    public Task<float> BellmanBackUpValueOfStateAsync(
         MDP                mdp, 
         Policy             policy, 
         float              gamma, 
@@ -527,7 +522,31 @@ public class Algorithms : MonoBehaviour
         return Task.FromResult(valueOfState);
     }
     
-    public Task<float>SingleTransitionBackupAsync(MDP mdp, float gamma, MarkovTransition transition, StateValueFunction stateValueFunction)
+    public Task<float> BellmanBackUpAsync(
+        MDP                mdp,
+        GridAction         action,
+        float              gamma, 
+        MarkovState        state,
+        StateValueFunction stateValueFunctionV)
+    {
+        var value = 0.0f;
+
+        foreach (var transition in mdp.TransitionFunction(state, action))
+        {
+            float          probability = transition.Probability;
+            MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
+            float               reward = transition.Reward;
+            float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
+            float       zeroIfTerminal = ZeroIfTerminal(successorState);
+
+            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
+            value += SingleTransitionBackup(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal);
+        }
+
+        return Task.FromResult(value);
+    }
+    
+    public Task<float> SingleTransitionBackupAsync(MDP mdp, float gamma, MarkovTransition transition, StateValueFunction stateValueFunction)
     {
         float          probability = transition.Probability;
         MarkovState successorState = mdp.States[transition.SuccessorStateIndex];

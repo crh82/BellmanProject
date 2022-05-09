@@ -124,6 +124,7 @@ public class State : MonoBehaviour
         hoveringText.text = $"{Math.Round(stateValue, 4)}";
         
         UpdateStateValueVisual();
+        
         return Task.CompletedTask;
     }
 
