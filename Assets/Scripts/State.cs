@@ -32,6 +32,8 @@ public class State : MonoBehaviour
 
     public bool             selected;
 
+    public Canvas hoverCanvas;
+
     [FormerlySerializedAs("ActionSprites")] public List<GameObject> actionSprites;
 
     private MdpManager      _mdpManager;
@@ -57,13 +59,32 @@ public class State : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        // SetupStateVisualisation();
     }
 
     // Update is called once per frame
     void Update()
     {
 
+    }
+    
+    private void SetupStateVisualisation()
+    {
+        // (Canvases) 
+        // Canvas hoverCanvas = gameObject.GetComponentInChildren<Canvas>();
+        hoverCanvas.worldCamera = Camera.main;
+        
+        // foreach (Canvas canvas in _stateCanvasArray)
+        // {
+        //     canvas.worldCamera = Camera.main;
+        // }
+        //
+        // _stateCanvasHover = _stateCanvasArray[0];
+        // _stateCanvasFlat  = _stateCanvasArray[1];
+        //
+        // _stateCanvasHover.gameObject.SetActive(false);
+        // _stateCanvasFlat.gameObject.SetActive(false);
+        // (Canvases end)
     }
 
     public void DistributeMdpManagerReferenceToComponents(MdpManager mdpManager)
@@ -121,7 +142,8 @@ public class State : MonoBehaviour
             new Vector3(stateMeshTransformLocalScale.x, updateValue, stateMeshTransformLocalScale.z);
         stateMeshTransform.position =
             new Vector3(stateMeshTransformPosition.x, updateValue / 2, stateMeshTransformPosition.z);
-        hoveringText.text = $"{Math.Round(stateValue, 4)}";
+        
+        hoveringText.text = _mdpManager.mdp.StateCount > 50 ? $"{Math.Round(stateValue, 2)}" : $"{Math.Round(stateValue, 4)}";
         
         UpdateStateValueVisual();
         

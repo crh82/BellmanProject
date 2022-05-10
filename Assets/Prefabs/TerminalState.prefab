@@ -58,6 +58,8 @@ MonoBehaviour:
   hoverInfoOffset: 0.02
   stateQuad: {fileID: 5122305160405309365}
   selected: 0
+  hoverCanvas: {fileID: 0}
+  actionSprites: []
 --- !u!65 &4438065504006725371
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -700,6 +702,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stateMesh: {fileID: 2729783304473936585}
+  stateInformationWindow: {fileID: 0}
   highlighted: {fileID: 2100000, guid: d67b76aa6a314ee499ed479b93aab73f, type: 2}
   normalColor: {fileID: 2100000, guid: 0ee5403a4ec3b4309882795b799f1ff2, type: 2}
 --- !u!1 &6395892107134356214

@@ -484,9 +484,21 @@ public class Algorithms : MonoBehaviour
         float              gamma,
         StateValueFunction stateValueFunctionV)
     {
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
+            // foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
-            float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
+            // var valueOfState = 0f;
+            // float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
+            var action = policy.GetAction(state);
+            float valueOfState = (
+                from transition in mdp.TransitionFunction(state, action) 
+                let probability = transition.Probability 
+                let successorState = mdp.States[transition.SuccessorStateIndex] 
+                let reward = transition.Reward 
+                let valueOfSuccessor = stateValueFunctionV.Value(successorState) 
+                let zeroIfTerminal = ZeroIfTerminal(successorState) 
+                select probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal)
+            ).Sum();
             
             stateValueFunctionV.SetValue(state, valueOfState);
         }
@@ -495,6 +507,25 @@ public class Algorithms : MonoBehaviour
         
         return Task.FromResult(stateValueFunctionV);
     }
+    
+    // public Task<StateValueFunction> SingleStateSweepAsync(
+    //     MDP                mdp, 
+    //     Policy             policy, 
+    //     float              gamma,
+    //     StateValueFunction stateValueFunctionV)
+    // {
+    //     foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
+    //     // foreach (var state in mdp.States.Where(state => state.IsStandard()))
+    //     {
+    //         float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
+    //         
+    //         stateValueFunctionV.SetValue(state, valueOfState);
+    //     }
+    //     
+    //     stateValueFunctionV.Iterations++;
+    //     
+    //     return Task.FromResult(stateValueFunctionV);
+    // }
     
     public Task<float> BellmanBackUpValueOfStateAsync(
         MDP                mdp, 

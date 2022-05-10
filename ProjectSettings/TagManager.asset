@@ -11,6 +11,11 @@ TagManager:
   - PolicyEvaluationUI
   - StateInformationWindow
   - MdpManager
+  - StateHoverCanvas
+  - Left
+  - Down
+  - Right
+  - Up
   layers:
   - Default
   - TransparentFX

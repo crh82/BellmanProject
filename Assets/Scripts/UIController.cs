@@ -9,6 +9,7 @@ using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using UnityEditor;
+using UnityEngine.Android;
 using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -275,13 +276,12 @@ public class UIController : MonoBehaviour
 
    public void RunAlgorithm()
    {
-
       var cancellationToken = _cancellationTokenSource.Token;
       
       switch (algorithmSelector.index)
       {
          case 0:
-            EvaluatePolicyFullControl(cancellationToken);
+            EvaluatePolicyFullControlAsync(cancellationToken);
             break;
          case 1:
             ImprovePolicyFullControlAsync(cancellationToken);
@@ -289,32 +289,63 @@ public class UIController : MonoBehaviour
 
       }
    }
-   
-   
-   // ┌───────────────────────────┐
-   // │ Policy Evaluation Control │
-   // └───────────────────────────┘
 
-   private async void EvaluatePolicyFullControl(CancellationToken cancellationToken)
+   public void PauseAlgorithm()
    {
-      _mdpManager.EnsureMdpAndPolicyAreNotNull();
-      
-      await _mdpManager.ShowActionSpritesAtopStateValueVisuals();
-      
-      await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
+      if (_mdpManager.paused)
+      {
+         _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.index;
+         _mdpManager.paused = false;
+      }
+      else
+      {
+         _mdpManager.paused = true;
+         _mdpManager.algorithmViewLevel = -1;
+      }
    }
-
-   private async void ImprovePolicyFullControlAsync(CancellationToken cancellationToken)
-   {
-      await _mdpManager.PolicyImprovementControlledAsync(cancellationToken);
-   }
-
+   
    public void StopPolicyEvaluation()
    {
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
    }
+   
+   
+   // ┌───────────────────────────┐
+   // │ Policy Evaluation Control │
+   // └───────────────────────────┘
+
+   private async void EvaluatePolicyFullControlAsync(CancellationToken cancellationToken)
+   {
+
+      _mdpManager.EnsureMdpAndPolicyAreNotNull();
+      
+      await _mdpManager.ShowActionSpritesAtopStateValueVisuals();
+      
+      try
+      {
+         await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
+      }
+      catch
+      {
+         Debug.Log("Algorithm execution cancelled with cancellation token.");
+      }
+   }
+
+   private async void ImprovePolicyFullControlAsync(CancellationToken cancellationToken)
+   {
+      try
+      {
+         await _mdpManager.PolicyImprovementControlledAsync(cancellationToken);
+      }
+      catch
+      {
+         Debug.Log("Algorithm execution cancelled with cancellation token.");
+      }
+   }
+
+   
 
    
    // ┌───────────────────────┐
