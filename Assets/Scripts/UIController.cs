@@ -240,7 +240,8 @@ public class UIController : MonoBehaviour
 
    public void EvaluatePolicy()
    {
-      _mdpManager.EvaluateAndVisualizeStateValues();
+      throw new Exception("Figure out what called this.");
+      // _mdpManager.EvaluateAndVisualizeStateValues();
    }
 
    public void ShowActionSpritesAtopStateValueVisuals()
@@ -258,7 +259,6 @@ public class UIController : MonoBehaviour
    public void SendLevelInformationToMdp()
    {
       _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.index;
-      Debug.Log(_mdpManager.algorithmViewLevel);
    }
    
    public void UpdateAlgorithmExecutionSpeedValue()
@@ -446,11 +446,7 @@ public class UIController : MonoBehaviour
       await Task.Yield();
    }
    
-   public void SetStateToEdit(int stateIndex)
-   {
-      _currentStateToEdit = stateIndex;
-      Debug.Log(_currentStateToEdit);
-   }
+   public void SetStateToEdit(int stateIndex) => _currentStateToEdit = stateIndex;
 
    public void EditPolicyActionInSelectedState()
    {
@@ -473,4 +469,9 @@ public class UIController : MonoBehaviour
       float newReward = float.Parse(rewardEditor.text);
       _mdpManager.EditRewardOfState(_currentStateToEdit, newReward);
    }
+   
+   // ┌──────────┐
+   // │ Settings │
+   // └──────────┘
+   public void ToggleActionsVisuals(string toBeToggled) => _mdpManager.Toggle(toBeToggled);
 }

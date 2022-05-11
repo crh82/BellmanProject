@@ -41,7 +41,7 @@ Material:
     - _Specular: 0.5
     - __dirty: 1
     m_Colors:
-    - _Color: {r: 0.7735849, g: 0.20069422, b: 0.20069422, a: 0.90588236}
+    - _Color: {r: 0.7735849, g: 0.20069422, b: 0.20069422, a: 0.2784314}
     - _FresnelColor: {r: 0.26, g: 0.19, b: 0.16, a: 0}
     - _Specular: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

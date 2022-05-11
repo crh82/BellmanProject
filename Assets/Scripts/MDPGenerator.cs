@@ -143,7 +143,7 @@ public class MDPGenerator : MonoBehaviour
             }
         }
 
-        StateSpaceVisualStates[1].UpdateHeight(2.3456f);
+        // StateSpaceVisualStates[1].UpdateHeight(2.3456f);
         Debug.Log("Gridworld Instantiated"); // Todo remove after debug
     }
 
