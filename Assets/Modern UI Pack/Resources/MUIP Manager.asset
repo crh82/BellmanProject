@@ -33,14 +33,14 @@ MonoBehaviour:
   dropdownThemeType: 0
   dropdownFont: {fileID: 11400000, guid: 4bd810f1cbcb0f446a8f5a31453e243f, type: 2}
   dropdownFontSize: 25
-  dropdownColor: {r: 0.21568628, g: 0.29411766, b: 0.37254903, a: 1}
-  dropdownTextColor: {r: 1, g: 1, b: 1, a: 1}
+  dropdownColor: {r: 0, g: 0, b: 0, a: 1}
+  dropdownTextColor: {r: 0.015686275, g: 0.7490196, b: 0.40784314, a: 1}
   dropdownIconColor: {r: 1, g: 1, b: 1, a: 1}
-  dropdownItemColor: {r: 0.13725491, g: 0.21568628, b: 0.29411766, a: 1}
-  dropdownItemTextColor: {r: 1, g: 1, b: 1, a: 1}
+  dropdownItemColor: {r: 0, g: 0, b: 0, a: 1}
+  dropdownItemTextColor: {r: 0.015686275, g: 0.7490196, b: 0.40784314, a: 1}
   dropdownItemIconColor: {r: 255, g: 255, b: 255, a: 1}
   selectorFont: {fileID: 11400000, guid: 4bd810f1cbcb0f446a8f5a31453e243f, type: 2}
-  hSelectorFontSize: 28
+  hSelectorFontSize: 24
   selectorColor: {r: 0.015686275, g: 0.7490196, b: 0.40784314, a: 1}
   selectorHighlightedColor: {r: 0.1764706, g: 0.25490198, b: 0.33333334, a: 1}
   hSelectorInvertAnimation: 0

@@ -426,7 +426,7 @@ public class Algorithms : MonoBehaviour
         return (stateValueFunctionV, policy);
     }
 
-    private static Policy GeneratePolicyFromArgMaxActions(MDP mdp, ActionValueFunction actionValueFunctionQ)
+    public Policy GeneratePolicyFromArgMaxActions(MDP mdp, ActionValueFunction actionValueFunctionQ)
     {
         var policy = new Policy();
 

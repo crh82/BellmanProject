@@ -16,6 +16,7 @@ TagManager:
   - Down
   - Right
   - Up
+  - SettingsDropdown
   layers:
   - Default
   - TransparentFX

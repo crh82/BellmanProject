@@ -13,13 +13,12 @@ public class StateInteractions : MonoBehaviour
     private State             _state;
     public GameObject         stateMesh;
     private Material          _stateMaterial;
-    private bool              _selected = false;
     public ModalWindowManager stateInformationWindow;
     private MdpManager        _mdpManager;
     private UIController      _uiController;
 
     public Material highlighted;
-    [FormerlySerializedAs("unhighlighted")] public Material normalColor;
+    public Material normalColor;
 
     // Start is called before the first frame update
     void Start()
@@ -64,26 +63,13 @@ public class StateInteractions : MonoBehaviour
         
         
         
-        _state.ToggleStateInfo();
         _state.selected = !_state.selected;
         
-        _selected = !_selected;
-        gameObject.GetComponent<MeshRenderer>().material = _selected ? highlighted : normalColor;
-
+        // _selected = !_selected;
         
         _uiController.SetStateToEdit(_state.stateIndex);
+        
         _uiController.OpenStateInformationEditorAndDisplay(_state.stateIndex);
-        
-         // Task task = SetDisplayInfo();
-
-         // task.Start();
-
-         Debug.Log(_mdpManager.mdp.Name);
-        
-        //
-        // // GameObject.Find("OriginTarget").transform.position = _state.GetStateCanvas().transform.position;
-        // CameraController orbiter = GameObject.Find("Orbiter").gameObject.GetComponent<CameraController>();
-        // orbiter.target = _state.GetStateCanvasHover().transform;
     }
 
     private string GetStateInformationText()

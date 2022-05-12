@@ -25,10 +25,8 @@ public class UIController : MonoBehaviour
    public Canvas             mainUserInterface;
    
    private MdpManager        _mdpManager;
-
    
-   
-   private readonly int[]  _playSpeedValues = new int[] {1, 10, 100, 500, 1000, 2000};
+   private readonly int[]  _algorithmDelayValues = {1, 10, 100, 500, 1000, 2000};
 
    // ╔════════════════════╗
    // ║ LEFT CONTROL PANEL ║
@@ -60,14 +58,14 @@ public class UIController : MonoBehaviour
 
    private bool              _gammaIsOn;
    
-   private readonly float[]  _gammaValues = new float[] 
+   private readonly float[]  _gammaValues = 
    {
       0.0f , 0.001f , 0.01f , 0.05f  , 
       0.1f , 0.15f  , 0.2f  , 0.25f  , 
       0.3f , 0.35f  , 0.4f  , 0.45f  , 
       0.5f , 0.55f  , 0.6f  , 0.65f  , 
       0.7f , 0.75f  , 0.8f  , 0.85f  , 
-      0.9f , 0.95f  , 0.99f , 0.999f
+      0.9f , 0.95f  , 0.99f
    };
    
    // ╔═════════════════════╗
@@ -83,6 +81,14 @@ public class UIController : MonoBehaviour
    public HorizontalSelector algorithmViewLevelSelector;
 
    public HorizontalSelector algorithmSelector;
+
+   private DropdownMultiSelect     _settingsItemsDropdown;
+
+   public GameObject         settingsItemsDropdownPanel;
+
+   public Button             runButton;
+   
+   
    
    // ╔═════════════════════════════════════════════════╗
    // ║ CENTER CONTROL PANEL — STATE INFORMATION WINDOW ║
@@ -96,6 +102,8 @@ public class UIController : MonoBehaviour
    private int               _currentStateToEdit;
 
    public TMP_InputField     rewardEditor;
+
+   public ProgressBar        progressBar;
    
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
@@ -118,7 +126,7 @@ public class UIController : MonoBehaviour
       if (Input.GetKeyDown(KeyCode.Escape))
       {
          _mdpManager.SetKeepGoingFalse();
-         Debug.Log("Escape key was pressed");
+         // Debug.Log("Escape key was pressed");
       }
       
       if (Input.GetKeyDown(KeyCode.KeypadPlus))
@@ -205,6 +213,8 @@ public class UIController : MonoBehaviour
          default:
             break;
       }
+      
+     InitializeSettingsPanel();
    }
 
    // ┌────────────────┐
@@ -263,14 +273,14 @@ public class UIController : MonoBehaviour
    
    public void UpdateAlgorithmExecutionSpeedValue()
    {
-      var algSpeed = (int) algorithmExecutionSpeedSlider.value;
+
+      int algorithmDelay = _algorithmDelayValues[(int) algorithmExecutionSpeedSlider.value];
       
-      algorithmExecutionSpeedValue.text = $"<color=#FFFFFF>{algSpeed}</color>ms";
+      algorithmExecutionSpeedValue.text = $"<color=#FFFFFF>{algorithmDelay}</color>ms";
       
       if (_mdpManager != null)
       {
-         // _mdpManager.algorithmExecutionSpeed = algSpeed;
-         _mdpManager.playSpeed = algSpeed;
+         _mdpManager.playSpeed = algorithmDelay;
       }
    }
 
@@ -286,7 +296,12 @@ public class UIController : MonoBehaviour
          case 1:
             ImprovePolicyFullControlAsync(cancellationToken);
             break;
-
+         case 2:
+            Debug.Log("Policy Iteration not implemented");
+            break;
+         case 3:
+            ValueIterateFullControlAsync(cancellationToken);
+            break;
       }
    }
 
@@ -310,6 +325,19 @@ public class UIController : MonoBehaviour
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
    }
+
+   public void DisableProblematicFeaturesWhileAlgorithmIsRunning()
+   {
+      runButton.interactable = false;
+      runButton.GetComponent<CanvasGroup>().alpha = 0.3f;
+   }
+
+   public void ReenableProblematicFeaturesWhileAlgorithmIsRunning()
+   {
+      runButton.interactable = true;
+      runButton.GetComponent<CanvasGroup>().alpha = 1f;
+   }
+   
    
    
    // ┌───────────────────────────┐
@@ -321,16 +349,16 @@ public class UIController : MonoBehaviour
 
       _mdpManager.EnsureMdpAndPolicyAreNotNull();
       
-      await _mdpManager.ShowActionSpritesAtopStateValueVisuals();
+      await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
       
-      try
-      {
-         await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
-      }
-      catch
-      {
-         Debug.Log("Algorithm execution cancelled with cancellation token.");
-      }
+      // try
+      // {
+      //    await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
+      // }
+      // catch
+      // {
+      //    Debug.Log("Algorithm execution cancelled with cancellation token.");
+      // }
    }
 
    private async void ImprovePolicyFullControlAsync(CancellationToken cancellationToken)
@@ -343,6 +371,11 @@ public class UIController : MonoBehaviour
       {
          Debug.Log("Algorithm execution cancelled with cancellation token.");
       }
+   }
+
+   private async void ValueIterateFullControlAsync(CancellationToken cancellationToken)
+   {
+      await _mdpManager.ValueIterationControlledAsync(cancellationToken);
    }
 
    
@@ -431,6 +464,8 @@ public class UIController : MonoBehaviour
 
    public async void OpenStateInformationEditorAndDisplay(int stateIndex)
    {
+      _mdpManager.ToggleStateHighlight(stateIndex);
+      
       stateInformationWindow.useCustomValues = true;
       
       stateInformationWindow.OpenWindow();
@@ -463,7 +498,8 @@ public class UIController : MonoBehaviour
       _mdpManager.SetActionImage(_currentStateToEdit, actionEdit.index);
       actionToEditPanel.SetActive(false);
    }
-
+   
+   
    public void EditReward()
    {
       float newReward = float.Parse(rewardEditor.text);
@@ -473,5 +509,16 @@ public class UIController : MonoBehaviour
    // ┌──────────┐
    // │ Settings │
    // └──────────┘
+
+   public void InitializeSettingsPanel()
+   {
+      settingsItemsDropdownPanel.SetActive(true);
+
+      if (_mdpManager.mdp != null)
+      {
+         _settingsItemsDropdown = settingsItemsDropdownPanel.GetComponent<DropdownMultiSelect>();
+         _settingsItemsDropdown.SetupDropdown();
+      }
+   }
    public void ToggleActionsVisuals(string toBeToggled) => _mdpManager.Toggle(toBeToggled);
 }

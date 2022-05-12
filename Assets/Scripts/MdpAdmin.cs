@@ -137,8 +137,6 @@ public static class MdpAdmin
             foreach (GridAction action in Enum.GetValues(typeof(GridAction)))
             {
                 int[] stateActionPair = {markovState.StateIndex, (int) action};
-
-                Debug.Log($"S_{markovState.StateIndex} A_{action.ToString()}");
                 
                 var actionToAdd = new MarkovAction
                 {

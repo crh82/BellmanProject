@@ -184,4 +184,9 @@ public class Policy
             Debug.Log($"s{kvp.Key} : {kvp.Value}");
         }
     }
+
+    public Dictionary<int, GridAction> GetPolicyDictionary()
+    {
+        return _policy;
+    }
 }
