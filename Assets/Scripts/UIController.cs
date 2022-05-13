@@ -87,6 +87,8 @@ public class UIController : MonoBehaviour
    public GameObject         settingsItemsDropdownPanel;
 
    public Button             runButton;
+
+   public GameObject         runButtonContainer;
    
    
    
@@ -103,8 +105,10 @@ public class UIController : MonoBehaviour
 
    public TMP_InputField     rewardEditor;
 
-   public ProgressBar        progressBar;
-   
+   public GameObject         progressBar;
+
+   public GameObject         pauseBanner;
+
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
    // ╚═══════════════╝
@@ -286,6 +290,8 @@ public class UIController : MonoBehaviour
 
    public void RunAlgorithm()
    {
+      if (!_mdpManager.mdpLoaded) return;
+      
       var cancellationToken = _cancellationTokenSource.Token;
       
       switch (algorithmSelector.index)
@@ -311,34 +317,66 @@ public class UIController : MonoBehaviour
       {
          _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.index;
          _mdpManager.paused = false;
+         pauseBanner.SetActive(false);
       }
       else
       {
          _mdpManager.paused = true;
          _mdpManager.algorithmViewLevel = -1;
+         pauseBanner.SetActive(true);
       }
    }
    
    public void StopPolicyEvaluation()
    {
+      _mdpManager.SetKeepGoingFalse();
+      
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
+
+      if (_mdpManager.paused) // If stopped while paused this unpauses
+      {
+         PauseAlgorithm();
+      }
+      
+      SetRunFeaturesActive();
    }
 
-   public void DisableProblematicFeaturesWhileAlgorithmIsRunning()
+   public async void DisableRunFeatures()
+   {
+      await Task.Delay(400);
+      await RunButtonVisibility(0.3f);
+      await SetRunButtonInteractableOff(); // OFF
+      progressBar.SetActive(true);
+   
+   }
+
+   public async void SetRunFeaturesActive()
+   {
+      await Task.Delay(400);
+      await RunButtonVisibility(1f);
+      progressBar.SetActive(false);
+      await SetRunButtonInteractableOn(); // ON
+   }
+
+   private Task RunButtonVisibility(float alpha)
+   {
+      runButtonContainer.GetComponent<CanvasGroup>().alpha = alpha;
+      return Task.CompletedTask;
+   }
+
+   private Task SetRunButtonInteractableOff()
    {
       runButton.interactable = false;
-      runButton.GetComponent<CanvasGroup>().alpha = 0.3f;
+      return Task.CompletedTask;
    }
-
-   public void ReenableProblematicFeaturesWhileAlgorithmIsRunning()
+   
+   private Task SetRunButtonInteractableOn()
    {
       runButton.interactable = true;
-      runButton.GetComponent<CanvasGroup>().alpha = 1f;
+      return Task.CompletedTask;
    }
-   
-   
    
    // ┌───────────────────────────┐
    // │ Policy Evaluation Control │

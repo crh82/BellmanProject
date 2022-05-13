@@ -152,22 +152,25 @@ public class State : MonoBehaviour
         
         await UpdateObjectHeight(stateMesh, value);
 
-        hoveringText.text = $"{Math.Round(stateValue, 4)}";
-        // hoveringText.text = _mdpManager.mdp.StateCount switch
-        // {
-        //     var i when i < 50             => $"{Math.Round(stateValue, 4)}",
-        //     var i when i > 50 && i <= 100 => $"{Math.Round(stateValue, 3)}",
-        //     var i when i > 100            => $"{Math.Round(stateValue, 2)}",
-        //     _ => hoveringText.text
-        // };
+        if (stateType == StateType.Standard)
+        {
+            hoveringText.text = _mdpManager.mdp.StateCount switch
+            {
+                var i1 when i1 < 50 => $"{Math.Round(stateValue, 4)}",
+                var i2 when (i2 > 50 && i2 <= 100) => $"{Math.Round(stateValue, 3)}",
+                var i3 when i3 > 100 => $"{Math.Round(stateValue, 2)}",
+                _ => $"{Math.Round(stateValue, 4)}"
+            };
+        }
+        else
+        {
+            hoveringText.text = $"{Math.Round(stateValue, 4)}";
+        }
 
-        // hoveringText.text = 2 > 50 
-        // hoveringText.text = _mdpManager.mdp.StateCount > 50 
-        //     ? $"{Math.Round(stateValue, 2)}" : $"{Math.Round(stateValue, 4)}";
-        
         await UpdateTextThatHoversAboveState();
         
     }
+    
     
     private Task UpdateTextThatHoversAboveState()
     {

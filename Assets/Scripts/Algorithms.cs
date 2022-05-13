@@ -485,9 +485,10 @@ public class Algorithms : MonoBehaviour
         StateValueFunction stateValueFunctionV)
     {
         foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
-            // foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
-            // var valueOfState = 0f;
+            // This LINQ implementation replaces the BellmanBackUpValueOfState method to leverage the performance gains
+            // that come from PLINQ (parallel) the on larger state spaces.
+            
             // float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
             var action = policy.GetAction(state);
             float valueOfState = (
@@ -506,6 +507,39 @@ public class Algorithms : MonoBehaviour
         stateValueFunctionV.Iterations++;
         
         return Task.FromResult(stateValueFunctionV);
+    }
+    
+    public async Task SingleSweepValueIteration(
+        MDP mdp, 
+        StateValueFunction stateValueFunction,
+        ActionValueFunction actionValueFunction, 
+        float gamma)
+    {
+        foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
+        {
+            float valueOfState = await BellmanBackupMaxActionValue(
+                mdp, stateValueFunction, actionValueFunction, state, gamma);
+
+            stateValueFunction.SetValue(state, valueOfState);
+        }
+    }
+    
+    public async Task<float> BellmanBackupMaxActionValue(
+        MDP                 mdp, 
+        StateValueFunction  stateValueFunction,
+        ActionValueFunction actionValueFunction, 
+        MarkovState         state, 
+        float               gamma)
+    {
+        foreach (var action in state.ApplicableActions)
+        {
+            float stateActionValueQsa =
+                await CalculateActionValueAsync(mdp, state, action.Action, gamma, stateValueFunction);
+
+            actionValueFunction.SetValue(state, action, stateActionValueQsa);
+        }
+
+        return actionValueFunction.MaxValue(state);
     }
     
     // public Task<StateValueFunction> SingleStateSweepAsync(
@@ -553,12 +587,12 @@ public class Algorithms : MonoBehaviour
         return Task.FromResult(valueOfState);
     }
     
-    public Task<float> BellmanBackUpAsync(
+    public Task<float> CalculateActionValueAsync(
         MDP                mdp,
+        MarkovState        state,
         GridAction         action,
         float              gamma, 
-        MarkovState        state,
-        StateValueFunction stateValueFunctionV)
+        StateValueFunction stateValueFunction)
     {
         var value = 0.0f;
 
@@ -567,7 +601,7 @@ public class Algorithms : MonoBehaviour
             float          probability = transition.Probability;
             MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
             float               reward = transition.Reward;
-            float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
+            float     valueOfSuccessor = stateValueFunction.Value(successorState);
             float       zeroIfTerminal = ZeroIfTerminal(successorState);
 
             //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
@@ -577,7 +611,11 @@ public class Algorithms : MonoBehaviour
         return Task.FromResult(value);
     }
     
-    public Task<float> SingleTransitionBackupAsync(MDP mdp, float gamma, MarkovTransition transition, StateValueFunction stateValueFunction)
+    public Task<float> CalculateSingleTransitionAsync(
+        MDP mdp, 
+        float gamma, 
+        MarkovTransition transition, 
+        StateValueFunction stateValueFunction)
     {
         float          probability = transition.Probability;
         MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
