@@ -5,15 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TMPro;
-using UnityEditor.AppleTV;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
-using Object = System.Object;
-
 
 // Creates the model of the environment — the underlying MDP data rather than the physical/visual MDP.
 /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/MDPManager/*'/>
@@ -53,7 +46,7 @@ public class MdpManager : MonoBehaviour
 
     public int                             cat;
     
-    public  int                            algorithmViewLevel = 0;
+    public  int                            algorithmViewLevel;
     
     public bool                            keepGoing = true;
 
@@ -78,11 +71,11 @@ public class MdpManager : MonoBehaviour
 
     public  Algorithms                     algorithms;
 
-    public  Policy                         CurrentPolicy;
+    public  Policy                         currentPolicy;
 
-    public  StateValueFunction             CurrentStateValueFunction;
+    public  StateValueFunction             currentStateValueFunction;
 
-    public ActionValueFunction             CurrentActionValueFunction;
+    public  ActionValueFunction            currentActionValueFunction;
 
     public  float                          gamma = 1f;
 
@@ -96,9 +89,11 @@ public class MdpManager : MonoBehaviour
 
     private int                            _currentAlgorithmExecutionIterations; // Reset after each alg execution.
 
-    public bool                            mdpLoaded;
+    public  bool                           mdpLoaded;
 
-    
+    public List<StateValueFunction>        valueFunctionsHistory = new List<StateValueFunction>();
+
+    public List<Policy>                    policiesHistory = new List<Policy>();
 
     
     
@@ -110,14 +105,6 @@ public class MdpManager : MonoBehaviour
 
     private Stack<Policy>                  _previousPolicyStack = new Stack<Policy>();
 
-
-    // ╔═══════════════════════╗
-    // ║ TODO For Debug REMOVE ║
-    // ╚═══════════════════════╝
-
-    public bool suspendForDebug;
-    
-    
     // ╔════════════════════════╗
     // ║ NORMAL UNITY FUNCTIONS ║
     // ╚════════════════════════╝
@@ -129,20 +116,6 @@ public class MdpManager : MonoBehaviour
         uiController = currentUi.GetComponent<UIController>();
     }
 
-    private void Start()
-    {
-        // mdp = CreateFromJson(mdpFileToLoad.text);
-        // InstantiateMdpVisualisation();
-    }
-
-    private void Update()
-    {
-        if (suspendForDebug)
-        {
-            suspendForDebug = false;
-        }
-    }
-    
     // ┌──────────────────────────────────────┐
     // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
     // └──────────────────────────────────────┘
@@ -190,7 +163,7 @@ public class MdpManager : MonoBehaviour
 
     public string ActionInStateFormatted(int stateIndex)
     {
-        string action = CurrentPolicy != null ? CurrentPolicy.GetAction(stateIndex).ToString() : "n/a";
+        string action = currentPolicy != null ? currentPolicy.GetAction(stateIndex).ToString() : "n/a";
         return $"π({StateNameFormatted(stateIndex)}) = {action}";
     }
 
@@ -251,11 +224,11 @@ public class MdpManager : MonoBehaviour
         await Task.WhenAll(tasks);
     }
 
-    public void ResetPolicy() => CurrentPolicy = null;
+    public void ResetPolicy() => currentPolicy = null;
 
-    public void ResetCurrentStateValueFunction() => CurrentStateValueFunction = null;
+    public void ResetCurrentStateValueFunction() => currentStateValueFunction = null;
 
-    public void GenerateRandomStateValueFunction() => CurrentStateValueFunction = new StateValueFunction(mdp, -3f, 3f);
+    public void GenerateRandomStateValueFunction() => currentStateValueFunction = new StateValueFunction(mdp, -3f, 3f);
 
     public void SetKeepGoingFalse() => keepGoing = false;
 
@@ -263,9 +236,9 @@ public class MdpManager : MonoBehaviour
 
     public MDP GetCurrentMdp() => mdp;
 
-    public void EditCurrentPolicy(MarkovState state, MarkovAction action) => CurrentPolicy.SetAction(state, action.Action);
-    public void EditCurrentPolicy(MarkovState state, GridAction action)   => CurrentPolicy.SetAction(state, action);
-    public void EditCurrentPolicy(int stateIndex, int action)             => CurrentPolicy.SetAction(stateIndex, (GridAction) action);
+    public void EditCurrentPolicy(MarkovState state, MarkovAction action) => currentPolicy.SetAction(state, action.Action);
+    public void EditCurrentPolicy(MarkovState state, GridAction action)   => currentPolicy.SetAction(state, action);
+    public void EditCurrentPolicy(int stateIndex, int action)             => currentPolicy.SetAction(stateIndex, (GridAction) action);
 
 
     public void SetActionImage(MarkovState state, MarkovAction action)    => SetActionImage(state.StateIndex, (int) action.Action);
@@ -317,6 +290,83 @@ public class MdpManager : MonoBehaviour
         }
     }
     
+    private async Task RunPauseLoop(CancellationToken cancellationToken)
+    {
+        while (algorithmViewLevel == Paused)
+        {
+            Debug.Log("Value Iteration paused");
+            await Task.Delay(1000, cancellationToken);
+        }
+    }
+
+    public void EnsureMdpAndPolicyAreNotNull()
+    {
+        if (currentPolicy == null)
+        {
+            currentPolicy = new Policy(mdp);
+
+            ShowActionSpritesAtopStateValueVisuals();
+            
+            Debug.Log("No Policy specified, evaluating a random policy.");
+        }
+        
+        if (mdp == null) throw new NullReferenceException("No MDP specified.");
+    }
+    
+    public Task ShowActionSpritesAtopStateValueVisuals()
+    {
+        if (currentPolicy == null) throw new ArgumentNullException();
+        
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        {
+            var currentAction      = currentPolicy.GetAction(state);
+            var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
+            currentStateVisual.UpdateActionSprite(currentAction);
+        }
+
+        return Task.CompletedTask;
+    }
+    
+    private StateValueFunction AssignStateValueFunction(StateValueFunction stateValueFunction)
+    {
+        StateValueFunction stateValueFunctionV;
+
+        if (stateValueFunction != null)
+        {
+            stateValueFunctionV = stateValueFunction;
+        }
+        else if (currentStateValueFunction != null)
+        {
+            stateValueFunctionV = currentStateValueFunction;
+        }
+        else
+        {
+            stateValueFunctionV = new StateValueFunction(mdp);
+        }
+
+        return stateValueFunctionV;
+    }
+    
+    private Policy AssignPolicy(Policy policy)
+    {
+        Policy policyPi;
+
+        if (policy != null)
+        {
+            policyPi = policy;
+        }
+        else if (currentPolicy != null)
+        {
+            policyPi = currentPolicy;
+        }
+        else
+        {
+            policyPi = new Policy(mdp);
+        }
+
+        return policyPi;
+    }
+
 
     // ╔═══════════════════════════════════╗
     // ║ MDP SERIALIZATION/DESERIALIZATION ║
@@ -461,34 +511,7 @@ public class MdpManager : MonoBehaviour
     }
 
     
-    public void EnsureMdpAndPolicyAreNotNull()
-    {
-        if (CurrentPolicy == null)
-        {
-            CurrentPolicy = new Policy(mdp);
-
-            ShowActionSpritesAtopStateValueVisuals();
-            
-            Debug.Log("No Policy specified, evaluating a random policy.");
-        }
-        
-        if (mdp == null) throw new NullReferenceException("No MDP specified.");
-    }
     
-    public Task ShowActionSpritesAtopStateValueVisuals()
-    {
-        if (CurrentPolicy == null) throw new ArgumentNullException();
-        
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
-        {
-            var currentAction      = CurrentPolicy.GetAction(state);
-            var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
-                currentStateVisual.UpdateActionSprite(currentAction);
-        }
-
-        return Task.CompletedTask;
-    }
-
     // ╔══════════════════════════════════════╗
     // ║ Main Execution Controlled Algorithms ║
     // ╚══════════════════════════════════════╝
@@ -502,32 +525,18 @@ public class MdpManager : MonoBehaviour
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <param name="stateValueFunction"></param>
-    public async Task PolicyEvaluationControlAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
+    public async Task<StateValueFunction> PolicyEvaluationControlAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
     {
 
         uiController.DisableRunFeatures();
         
         _currentAlgorithmExecutionIterations = 0;  // TODO problems with the iterations. Needs fixing
-        
-        // Todo Fix this
+
+        currentPolicy = AssignPolicy(policy);
         
         // Checks which V(s) to use. Either a new one, a continuation of current one, or a specific inputted one (for
         // showing monotonic convergence, for example).
-        
-        StateValueFunction stateValueFunctionV;
-
-        if (stateValueFunction != null)
-        {
-            stateValueFunctionV = stateValueFunction;
-        }
-        else if (CurrentStateValueFunction != null)
-        {
-            stateValueFunctionV = CurrentStateValueFunction;
-        }
-        else
-        {
-            stateValueFunctionV = new StateValueFunction(mdp);
-        }
+        var stateValueFunctionV = AssignStateValueFunction(stateValueFunction);
         
         await SetAllStateHeightsAsync(stateValueFunctionV);
         
@@ -544,13 +553,11 @@ public class MdpManager : MonoBehaviour
                     if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
                     
                     stateValueFunctionV =
-                        await algorithms.SingleStateSweepAsync(mdp, CurrentPolicy, gamma, stateValueFunctionV);
+                        await algorithms.SingleStateSweepAsync(mdp, currentPolicy, Gamma, stateValueFunctionV);
 
                     await SetAllStateHeightsAsync(stateValueFunctionV);
                     
                     await Task.Delay(playSpeed, cancellationToken);
-                    
-                    // Note: Iterations are incremented inside of algorithms.SingleStateSweepAsync
                     
                     break;
                 
@@ -566,14 +573,14 @@ public class MdpManager : MonoBehaviour
 
                         float actualValueOfState =
                             await algorithms.BellmanBackUpValueOfStateAsync(
-                                mdp, CurrentPolicy, Gamma, state, stateValueFunctionV);
+                                mdp, currentPolicy, Gamma, state, stateValueFunctionV);
                         
                         if (algorithmViewLevel == ByTransition)
                         {
                             await SetIndividualStateHeightAsync(state, actualValueOfState);
                         }
                         
-                        var action = CurrentPolicy.GetAction(state);
+                        var action = currentPolicy.GetAction(state);
                         
                         if (algorithmViewLevel == ByTransition)
                         {
@@ -616,180 +623,73 @@ public class MdpManager : MonoBehaviour
             await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
         }
         
-        CurrentStateValueFunction = stateValueFunctionV;
+        currentStateValueFunction = stateValueFunctionV;
 
         // _currentAlgorithmExecutionIterations = 0;
         
         uiController.SetRunFeaturesActive();
+
+        return stateValueFunctionV;
     }
     
     // ────────────────────
     //  Policy Improvement 
     // ────────────────────
-
-    // public async Task<Policy> PolicyImprovementControlledAsync(CancellationToken cancellationToken)
-    // {
-    //     var stateValueFunction = CurrentStateValueFunction ?? new StateValueFunction(mdp);
-    //     
-    //     var improvedPolicy = new Policy();
-    //
-    //     var actionValueFunctionQ = new ActionValueFunction();
-    //
-    //     switch (algorithmViewLevel)
-    //     {
-    //         // case BySweep:
-    //         //     
-    //         //     improvedPolicy = algorithms.PolicyImprovement(mdp, stateValueFunction, gamma);
-    //         //     
-    //         //     
-    //         //
-    //         //     break;
-    //         
-    //         case ByState:
-    //             
-    //             foreach (var state in mdp.States.Where(state => state.IsStandard()))
-    //             {
-    //                 var oldAction = CurrentPolicy.GetAction(state);
-    //                 
-    //                 foreach (var action in state.ApplicableActions)
-    //                 {
-    //                     float stateActionValueQsa = await algorithms.CalculateActionValueAsync(
-    //                         mdp, state, action.Action, gamma, stateValueFunction);
-    //                     
-    //                     actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
-    //                 }
-    //
-    //                 await SetAllActionHeightsAsync(state, actionValueFunctionQ);
-    //                 
-    //                 var argMaxAction = actionValueFunctionQ.ArgMaxAction(state);
-    //                 
-    //                 improvedPolicy.SetAction(state, argMaxAction);
-    //                 
-    //                 if (oldAction != argMaxAction) SetActionImage(state, argMaxAction);
-    //
-    //                 await Task.Delay(playSpeed, cancellationToken);
-    //             }
-    //             
-    //             break;
-    //         
-    //         case ByAction:
-    //             
-    //             
-    //             foreach (var state in mdp.States.Where(state => state.IsStandard()))
-    //             {
-    //                 var oldAction = CurrentPolicy.GetAction(state);
-    //                 
-    //                 foreach (var action in state.ApplicableActions)
-    //                 {
-    //                     float stateActionValueQsa = await algorithms.CalculateActionValueAsync(
-    //                         mdp, state, action.Action, gamma, stateValueFunction);
-    //                     
-    //                     actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
-    //                     
-    //                     await SetIndividualActionHeightAsync(state, action, stateActionValueQsa);
-    //                     
-    //                     await Task.Delay(playSpeed, cancellationToken);
-    //                 }
-    //                 
-    //                 var argMaxAction = actionValueFunctionQ.ArgMaxAction(state);
-    //                 
-    //                 improvedPolicy.SetAction(state, argMaxAction);
-    //                 
-    //                 if (oldAction != argMaxAction) SetActionImage(state, argMaxAction);
-    //             }
-    //             
-    //             break;
-    //         
-    //         case ByTransition:
-    //
-    //             foreach (var state in mdp.States.Where(state => state.IsStandard()))
-    //             {
-    //                 foreach (var action in state.ApplicableActions)
-    //                 {
-    //                     var stateActionValueQsa = 0f;
-    //
-    //                     foreach (var transition in mdp.TransitionFunction(state, action))
-    //                     {
-    //                         float actionValueFromSuccessor =
-    //                             await algorithms.CalculateSingleTransitionAsync(mdp, Gamma, transition,
-    //                                 stateValueFunction);
-    //                         
-    //                         stateActionValueQsa += actionValueFromSuccessor;
-    //                         
-    //                         // Todo await SetIndividualActionHeightAsync(state, action, stateActionValueQsa);
-    //
-    //                         await Task.Delay(playSpeed, cancellationToken);
-    //                     }
-    //                     
-    //                     actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
-    //                 }
-    //                 
-    //                 var argMaxAction = actionValueFunctionQ.ArgMaxAction(state);
-    //                 
-    //                 improvedPolicy.SetAction(state, argMaxAction);
-    //                 
-    //                 if (CurrentPolicy.GetAction(state) != argMaxAction) SetActionImage(state, argMaxAction);
-    //             }
-    //             
-    //             break;
-    //     }
-    //     
-    //     _previousPolicyStack.Push(CurrentPolicy);
-    //
-    //     CurrentPolicy = improvedPolicy;
-    //
-    //     return improvedPolicy;
-    // }
-
-    // // todo Delete if doesn't work
-    public async Task<Policy> PolicyImprovementControlledAsync(CancellationToken cancellationToken)
+    // 
+    public async Task<Policy> PolicyImprovementControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
     {
-        var stateValueFunction = CurrentStateValueFunction ?? new StateValueFunction(mdp);
-    
+        
+        
+        uiController.DisableRunFeatures();
+        
+        var stateValueFunctionV = AssignStateValueFunction(stateValueFunction);
+
         var improvedPolicy = new Policy();
     
         var actionValueFunctionQ = new ActionValueFunction();
         
         foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
+            if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
+            
             foreach (var action in state.ApplicableActions)
             {
-                // var stateActionValueQsa = 0f;
-    
-                float stateActionValueQsa = await algorithms.CalculateActionValueAsync(
-                mdp, state, action.Action, gamma, stateValueFunction);
+                if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
                 
-                // foreach (var transition in mdp.TransitionFunction(state, action))
-                // {
-                //     float actionValueFromSuccessor =
-                //         await algorithms.CalculateSingleTransitionAsync(mdp, Gamma, transition,
-                //             stateValueFunction);
-                //             
-                //     stateActionValueQsa += actionValueFromSuccessor;
-                //
-                //
-                //     if (algorithmViewLevel == ByTransition)
-                //     {
-                //        // Todo await SetIndividualActionHeightAsync(state, action, stateActionValueQsa);
-                //         await Task.Delay(playSpeed, cancellationToken);
-                //     }
-                // }
+                float stateActionValueQsa = await algorithms.CalculateActionValueAsync(
+                mdp, state, action.Action, Gamma, stateValueFunctionV);
+
+                if (algorithmViewLevel == ByTransition)
+                {
+                    foreach (var transition in mdp.TransitionFunction(state, action))
+                    {
+                        // TODO fire off fading coroutine highlighting the transition
+                        // transition.SuccessorStateIndex
                         
+                        if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
+                            
+                        float valueFromSuccessor = 
+                            await algorithms.CalculateSingleTransitionAsync(mdp, Gamma, transition, stateValueFunctionV);
+                        
+                        await Task.Delay(playSpeed, cancellationToken);
+                    }  
+                    
+                    // Todo action value coroutine
+                }
+                
                 actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
     
-                if (algorithmViewLevel == ByAction)
-                {
-                    await SetIndividualActionHeightAsync(state, action, stateActionValueQsa);
-    
-                    await Task.Delay(playSpeed, cancellationToken);
-                }
+                await SetIndividualActionHeightAsync(state, action, stateActionValueQsa);
+                
+                if (algorithmViewLevel == ByAction) await Task.Delay(playSpeed, cancellationToken);
+                
             }
     
             var argMaxAction = actionValueFunctionQ.ArgMaxAction(state);
                     
             improvedPolicy.SetAction(state, argMaxAction);
                     
-            if (CurrentPolicy.GetAction(state) != argMaxAction) SetActionImage(state, argMaxAction);
+            if (currentPolicy.GetAction(state) != argMaxAction) SetActionImage(state, argMaxAction);
     
             if (algorithmViewLevel == ByState)
             {
@@ -798,23 +698,76 @@ public class MdpManager : MonoBehaviour
             }
         }
         
-        _previousPolicyStack.Push(CurrentPolicy);
+        // _previousPolicyStack.Push(currentPolicy);
     
-        CurrentPolicy = improvedPolicy;
+        currentPolicy = improvedPolicy;
     
+        uiController.SetRunFeaturesActive();
+        
         return improvedPolicy;
     }
-    
     
     // ──────────────────
     //  Policy Iteration 
     // ──────────────────
     
-    // public async Task PolicyIterationControlledAsync()
-    // {
-    //     
-    // }
+    public async Task PolicyIterationControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
+    {
+        ResetPolicyRecord();
+        
+        ResetStateValueRecord();
+
+        var internalIterations = 0;
+        
+        var valueOfPolicy = AssignStateValueFunction(stateValueFunction);
+
+        var newPolicy = AssignPolicy(policy);
+
+        await SetAllStateHeightsAsync(valueOfPolicy);
+
+        SetKeepGoingTrue();
+        
+        while (keepGoing)
+        {
+            if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
+            
+            // Todo add pseudocode thing
+            var oldPolicy = newPolicy.Copy();
+            
+            valueOfPolicy = await PolicyEvaluationControlAsync(cancellationToken, valueOfPolicy, oldPolicy);
+
+            if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
+            
+            newPolicy     = await PolicyImprovementControlledAsync(cancellationToken, valueOfPolicy);
+
+            if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
+            
+            if (oldPolicy.Equals(newPolicy)) break;
+
+            if (boundIterations && internalIterations >= maximumIterations) break;
+
+            valueOfPolicy.Iterations++;
+            
+            internalIterations++;
+            
+            valueFunctionsHistory.Add(valueOfPolicy);
+            
+            policiesHistory.Add(newPolicy);
+        }
+
+    }
+
+    private void ResetPolicyRecord()
+    {
+        if (policiesHistory.Count > 0) policiesHistory = new List<Policy>();
+    }
     
+    private void ResetStateValueRecord() 
+    {
+        if (valueFunctionsHistory.Count > 0) valueFunctionsHistory = new List<StateValueFunction>();
+    }
+
+
     // ─────────────────
     //  Value Iteration 
     // ─────────────────
@@ -825,22 +778,9 @@ public class MdpManager : MonoBehaviour
         // algorithm runs asynchronously.
         uiController.DisableRunFeatures();
         
-        _currentAlgorithmExecutionIterations = 0;  // TODO problems with the iterations. Needs fixing
+        _currentAlgorithmExecutionIterations = 0;
 
-        StateValueFunction stateValueFunctionV;
-
-        if (stateValueFunction != null)
-        {
-            stateValueFunctionV = stateValueFunction;
-        }
-        else if (CurrentStateValueFunction != null)
-        {
-            stateValueFunctionV = CurrentStateValueFunction;
-        }
-        else
-        {
-            stateValueFunctionV = new StateValueFunction(mdp);
-        }
+        var stateValueFunctionV = AssignStateValueFunction(stateValueFunction);
 
         await SetAllStateHeightsAsync(stateValueFunctionV);
         
@@ -918,34 +858,9 @@ public class MdpManager : MonoBehaviour
                         await Task.Delay(playSpeed, cancellationToken);
                     }
                     break;
-                default:
-                    break;
             }
-            
-            
-            
-            
 
-
-            
-            //
-            // if (algorithmViewLevel == BySweep)
-            // {
-            //     var tasks = new List<Task>();
-            //     
-            //     foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
-            //     {
-            //         tasks.Add(SetAllActionHeightsAsync(state, actionValueFunctionQ));
-            //         
-            //         tasks.Add(SetIndividualStateHeightAsync(state, stateValueFunctionV.Value(state)));
-            //     }
-            //
-            //     // await Task.WhenAll(tasks);
-            //     
-            //     await Task.Delay(playSpeed, cancellationToken);
-            // }
-            
-            CurrentActionValueFunction = actionValueFunctionQ;
+            currentActionValueFunction = actionValueFunctionQ;
 
             if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
             
@@ -957,23 +872,16 @@ public class MdpManager : MonoBehaviour
 
         }
         
-        CurrentPolicy = algorithms.GeneratePolicyFromArgMaxActions(mdp, actionValueFunctionQ);
+        currentPolicy = algorithms.GeneratePolicyFromArgMaxActions(mdp, actionValueFunctionQ);
         
-        SetAllActionSprites(CurrentPolicy);
+        SetAllActionSprites(currentPolicy);
         
-        CurrentStateValueFunction = stateValueFunctionV;
+        currentStateValueFunction = stateValueFunctionV;
         
         uiController.SetRunFeaturesActive();
     }
 
-    private async Task RunPauseLoop(CancellationToken cancellationToken)
-    {
-        while (algorithmViewLevel == Paused)
-        {
-            Debug.Log("Value Iteration paused");
-            await Task.Delay(1000, cancellationToken);
-        }
-    }
+   
 
 
     // ╔══════════════════════╗

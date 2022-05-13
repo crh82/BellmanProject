@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -148,21 +149,20 @@ public class Policy
     // TODO This is currently too strict to function as a check of policy equality—given that it effectively checks the equality of two dictionaries.
     public bool Equals(Policy policyPrime)
     {
-        if (null == policyPrime) 
-            return _policy == null;
-        if (null == _policy) 
-            return false;
-        if (ReferenceEquals(_policy, policyPrime._policy)) 
-            return true;
-        if (_policy.Count != policyPrime._policy.Count) 
-            return false;
+        // PolicyToStringArray()
+        // return _policy.All(item => item.Value.Equals(policyPrime.GetAction(item.Key)));
 
+        if (null == policyPrime)                           return _policy == null;
+        if (null == _policy)                               return false;
+        if (ReferenceEquals(_policy, policyPrime._policy)) return true;
+        if (_policy.Count != policyPrime._policy.Count)    return false;
+        
         foreach (int k in _policy.Keys)
         {
             if (!policyPrime._policy.ContainsKey(k))        return false;
             if (!_policy[k].Equals(policyPrime._policy[k])) return false;
         }
-
+        
         return true;
     }
 

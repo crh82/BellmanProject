@@ -247,7 +247,7 @@ public class UIController : MonoBehaviour
       
       currentPolicyString = newPolicy.PolicyToStringArray(_mdpManager.mdp.States);
 
-      _mdpManager.CurrentPolicy = newPolicy;
+      _mdpManager.currentPolicy = newPolicy;
 
       numberOfIterationsDisplay.text = "0";
    }
@@ -303,7 +303,7 @@ public class UIController : MonoBehaviour
             ImprovePolicyFullControlAsync(cancellationToken);
             break;
          case 2:
-            Debug.Log("Policy Iteration not implemented");
+            PolicyIterateFullControllAsync(cancellationToken);
             break;
          case 3:
             ValueIterateFullControlAsync(cancellationToken);
@@ -384,19 +384,16 @@ public class UIController : MonoBehaviour
 
    private async void EvaluatePolicyFullControlAsync(CancellationToken cancellationToken)
    {
-
       _mdpManager.EnsureMdpAndPolicyAreNotNull();
       
-      await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
-      
-      // try
-      // {
-      //    await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
-      // }
-      // catch
-      // {
-      //    Debug.Log("Algorithm execution cancelled with cancellation token.");
-      // }
+      try
+      {
+         await _mdpManager.PolicyEvaluationControlAsync(cancellationToken);
+      }
+      catch (TaskCanceledException)
+      {
+         Debug.Log("Policy evaluation execution cancelled with cancellation token.");
+      }
    }
 
    private async void ImprovePolicyFullControlAsync(CancellationToken cancellationToken)
@@ -405,15 +402,35 @@ public class UIController : MonoBehaviour
       {
          await _mdpManager.PolicyImprovementControlledAsync(cancellationToken);
       }
-      catch
+      catch (TaskCanceledException)
       {
-         Debug.Log("Algorithm execution cancelled with cancellation token.");
+         Debug.Log("Policy improvement execution cancelled with cancellation token.");
+      }
+   }
+
+   private async void PolicyIterateFullControllAsync(CancellationToken cancellationToken)
+   {
+
+      try
+      {
+         await _mdpManager.PolicyIterationControlledAsync(cancellationToken);
+      }
+      catch (TaskCanceledException)
+      {
+         Debug.Log("Policy iteration execution cancelled with cancellation token.");
       }
    }
 
    private async void ValueIterateFullControlAsync(CancellationToken cancellationToken)
    {
-      await _mdpManager.ValueIterationControlledAsync(cancellationToken);
+      try
+      {
+         await _mdpManager.ValueIterationControlledAsync(cancellationToken);
+      }
+      catch (TaskCanceledException)
+      {
+         Debug.Log("Value iteration execution cancelled with cancellation token.");
+      }
    }
 
    
@@ -523,9 +540,9 @@ public class UIController : MonoBehaviour
 
    public void EditPolicyActionInSelectedState()
    {
-      if (_mdpManager.CurrentPolicy == null) return;
+      if (_mdpManager.currentPolicy == null) return;
 
-      actionEdit.defaultIndex = (int) _mdpManager.CurrentPolicy.GetAction(_currentStateToEdit);
+      actionEdit.defaultIndex = (int) _mdpManager.currentPolicy.GetAction(_currentStateToEdit);
       
       actionToEditPanel.SetActive(true);
    }
