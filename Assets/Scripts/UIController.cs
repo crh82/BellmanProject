@@ -26,7 +26,7 @@ public class UIController : MonoBehaviour
    
    private MdpManager        _mdpManager;
    
-   private readonly int[]  _algorithmDelayValues = {1, 10, 100, 500, 1000, 2000};
+   private readonly int[]  _algorithmDelayValues = {1, 10, 100, 300, 500, 1000};
 
    // ╔════════════════════╗
    // ║ LEFT CONTROL PANEL ║

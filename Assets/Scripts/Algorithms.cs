@@ -504,7 +504,7 @@ public class Algorithms : MonoBehaviour
             stateValueFunctionV.SetValue(state, valueOfState);
         }
         
-        stateValueFunctionV.Iterations++;
+        // stateValueFunctionV.Iterations++;
         
         return Task.FromResult(stateValueFunctionV);
     }

@@ -3881,7 +3881,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114356758122408890, guid: 206739ec74e396e439ed908b0005e631, type: 3}
       propertyPath: itemList.Array.size
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 114356758122408890, guid: 206739ec74e396e439ed908b0005e631, type: 3}
       propertyPath: itemList.Array.data[0].itemIcon
@@ -3901,15 +3901,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114356758122408890, guid: 206739ec74e396e439ed908b0005e631, type: 3}
       propertyPath: itemList.Array.data[1].itemTitle
-      value: Individual State
+      value: State
       objectReference: {fileID: 0}
     - target: {fileID: 114356758122408890, guid: 206739ec74e396e439ed908b0005e631, type: 3}
       propertyPath: itemList.Array.data[2].itemTitle
-      value: By Transition
+      value: Action
       objectReference: {fileID: 0}
     - target: {fileID: 114356758122408890, guid: 206739ec74e396e439ed908b0005e631, type: 3}
       propertyPath: itemList.Array.data[3].itemTitle
-      value: Suspended
+      value: Transition
       objectReference: {fileID: 0}
     - target: {fileID: 114356758122408890, guid: 206739ec74e396e439ed908b0005e631, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
@@ -21529,7 +21529,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114834600668242832, guid: 9a60df9613db369469bef8dd75f3f75e, type: 3}
       propertyPath: clickEvent.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value:DisableRunFeatures      objectReference: {fileID: 0}
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 114834600668242832, guid: 9a60df9613db369469bef8dd75f3f75e, type: 3}
       propertyPath: clickEvent.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: UIController, ScriptTests
@@ -21664,7 +21665,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8356180942443613770}
   m_Enabled: 1
-  m_Alpha: 0.3
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0

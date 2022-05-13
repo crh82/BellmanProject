@@ -60,16 +60,14 @@ public class MdpManager : MonoBehaviour
     public bool                            paused;
 
     private const int                      BySweep = 0;
-    
-    private const int                      ByStatePE = 1;
-    
+
+    private const int                      ByState = 1;
+
+    private const int                      ByAction = 2;
+
     private const int                      ByTransition = 3;
 
     private const int                      Paused = -1;
-
-    private const int                      ByStatePI = 1;
-
-    private const int                      ByActionPI = 2;
     
     
     // ┌─────────────────────────┐
@@ -556,102 +554,71 @@ public class MdpManager : MonoBehaviour
                     
                     break;
                 
-                case ByStatePE:
-                    
-                    foreach (var state in mdp.States.Where(state => state.IsStandard()))
-                    {
-                        
-                        float valueOfState = await algorithms.CalculateActionValueAsync(
-                            mdp, state, CurrentPolicy.GetAction(state), gamma, stateValueFunctionV);
-
-                        stateValueFunctionV.SetValue(state, valueOfState);
-                
-                        await SetIndividualStateHeightAsync(state, valueOfState);
-                        
-                        await Task.Delay(playSpeed, cancellationToken);
-                    }
-                    
-                    await Task.Delay(playSpeed, cancellationToken);
-                    
-                    stateValueFunctionV.Iterations++;
-
-                    break;
-                
+                case ByState:
+                case ByAction:
                 case ByTransition:
+
+                    if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
                     
                     foreach (var state in mdp.States.Where(state => state.IsStandard()))
                     {
-                        // var vS = new Value {TheValue = 0f};
+                        if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
+
+                        float actualValueOfState =
+                            await algorithms.BellmanBackUpValueOfStateAsync(
+                                mdp, CurrentPolicy, Gamma, state, stateValueFunctionV);
                         
-                        float valueOfState = 0;
-                        
-                        await SetIndividualStateHeightAsync(state, valueOfState);
+                        if (algorithmViewLevel == ByTransition)
+                        {
+                            await SetIndividualStateHeightAsync(state, actualValueOfState);
+                        }
                         
                         var action = CurrentPolicy.GetAction(state);
                         
-                        foreach (var transition in mdp.TransitionFunction(state, action))
+                        if (algorithmViewLevel == ByTransition)
                         {
+                            foreach (var transition in mdp.TransitionFunction(state, action))
+                            {
+                                if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
                             
-                            float valueFromSuccessor = 
-                                await algorithms.CalculateSingleTransitionAsync(mdp, gamma, transition, stateValueFunctionV);
+                                float valueFromSuccessor = 
+                                    await algorithms.CalculateSingleTransitionAsync(mdp, gamma, transition, stateValueFunctionV);
 
-                            valueOfState = await algorithms.IncrementValueAsync(valueOfState, valueFromSuccessor);
+                                // actualValueOfState = await algorithms.IncrementValueAsync(actualValueOfState, valueFromSuccessor);
                             
-                            // vS.AdjustValue(valueFromSuccessor);
-                            
-                            await SetIndividualStateHeightAsync(state, valueOfState);
-                            
-                            // await SetIndividualStateHeightAsync(state, vS.TheValue);
+                                await SetIndividualStateHeightAsync(state, valueFromSuccessor);
 
+                                await Task.Delay(playSpeed, cancellationToken);
+                            }  
+                        }
+
+                        stateValueFunctionV.SetValue(state, actualValueOfState);
+                        
+                        await SetIndividualStateHeightAsync(state, actualValueOfState);
+
+                        if (algorithmViewLevel <= ByAction)
+                        {
                             await Task.Delay(playSpeed, cancellationToken);
                         }
-                        
-                        stateValueFunctionV.SetValue(state, valueOfState);
-                        
-                        await SetIndividualStateHeightAsync(state, valueOfState);
-
-                        await Task.Delay(playSpeed, cancellationToken);
-                        
                     }
-                    
-                    // await Task.Delay(playSpeed, cancellationToken);
-                    
-                    stateValueFunctionV.Iterations++;
-                    
                     break;
-                
-                case Paused:
-                    
-                    await Task.Delay(playSpeed, cancellationToken);
-                    
-                    break;
-                
-                // case var i when i < 0:
-                //     await Task.Delay(playSpeed, cancellationToken);
-                //     break;
             }
-            
-            // // FOR DEBUG 
-            //
-            // if (debugIterations % 10 == 0) Debug.Log(debugIterations);
-            //
-            // debugIterations++;
-            //
-            // // END DEBUG
-            
+           
             
             if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
             
             if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
-
-            await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
             
-            if (algorithmViewLevel != Paused) _currentAlgorithmExecutionIterations++;
+            _currentAlgorithmExecutionIterations = stateValueFunctionV.Iterations;
+
+            stateValueFunctionV.Iterations++;
+            
+            await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
         }
         
         CurrentStateValueFunction = stateValueFunctionV;
 
-        _currentAlgorithmExecutionIterations = 0;
+        // _currentAlgorithmExecutionIterations = 0;
         
         uiController.SetRunFeaturesActive();
     }
@@ -678,7 +645,7 @@ public class MdpManager : MonoBehaviour
     //         //
     //         //     break;
     //         
-    //         case ByStatePI:
+    //         case ByState:
     //             
     //             foreach (var state in mdp.States.Where(state => state.IsStandard()))
     //             {
@@ -705,7 +672,7 @@ public class MdpManager : MonoBehaviour
     //             
     //             break;
     //         
-    //         case ByActionPI:
+    //         case ByAction:
     //             
     //             
     //             foreach (var state in mdp.States.Where(state => state.IsStandard()))
@@ -810,7 +777,7 @@ public class MdpManager : MonoBehaviour
                         
                 actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
     
-                if (algorithmViewLevel == ByActionPI)
+                if (algorithmViewLevel == ByAction)
                 {
                     await SetIndividualActionHeightAsync(state, action, stateActionValueQsa);
     
@@ -824,7 +791,7 @@ public class MdpManager : MonoBehaviour
                     
             if (CurrentPolicy.GetAction(state) != argMaxAction) SetActionImage(state, argMaxAction);
     
-            if (algorithmViewLevel == ByStatePI)
+            if (algorithmViewLevel == ByState)
             {
                 await SetAllActionHeightsAsync(state, actionValueFunctionQ);
                 await Task.Delay(playSpeed, cancellationToken);
@@ -911,8 +878,8 @@ public class MdpManager : MonoBehaviour
                     
                     break;
                 
-                case ByStatePE:
-                case ByActionPI:
+                case ByState:
+                case ByAction:
                 case ByTransition:
                     
                     foreach (var state in mdp.States.Where(state => state.IsStandard()))
@@ -929,7 +896,7 @@ public class MdpManager : MonoBehaviour
             
                             await SetIndividualActionHeightAsync(state, action, stateActionValueQsa);
                     
-                            if (algorithmViewLevel == ByActionPI)
+                            if (algorithmViewLevel == ByAction)
                             {
                                 await Task.Delay(playSpeed, cancellationToken);
                             }
@@ -937,7 +904,7 @@ public class MdpManager : MonoBehaviour
             
                         float valueOfState = actionValueFunctionQ.MaxValue(state);
             
-                        if (algorithmViewLevel == ByStatePI)
+                        if (algorithmViewLevel == ByState)
                         {
                             await SetAllActionHeightsAsync(state, actionValueFunctionQ);
             
