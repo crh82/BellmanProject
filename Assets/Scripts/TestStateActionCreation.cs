@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -20,6 +21,12 @@ public class TestStateActionCreation : MonoBehaviour
     public Transform stateActionPrefab;
     
     public float testHeight;
+
+    public List<GameObject> things;
+
+    public GameObject mum;
+
+    public TEXDraw stuff;
     
     // Start is called before the first frame update
     void Start()
@@ -77,9 +84,32 @@ public class TestStateActionCreation : MonoBehaviour
                 
                 stateAction.SetInitialHeights(scale);
                 
+                things.Add(state.gameObject);
+                
                 id++;
             }
         }
         // await Task.Yield();
+        
+        // var try = " + $"{ }" + @";
+        StringBuilder inj = new StringBuilder();
+        inj.Append(@"\[\sum_{");
+        inj.Append(VariableInjector(id)).Append(Ender());
+        
+        var amount = id * 2;
+        stuff.text = @"\[\sum_{" + $"{id}" + @"}^{" + $"{amount}" + @"}\]";
+        stuff.text = inj.ToString();
+    }
+
+    public string VariableInjector<T>(T injection)
+    {
+        return "{" + $"{injection}";
+    }
+
+    public string Ender()
+    {
+        return @"}\]";
     }
 }
+// Injector
+// " + $"{ }" + @"

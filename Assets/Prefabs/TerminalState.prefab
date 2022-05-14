@@ -159,6 +159,8 @@ MonoBehaviour:
   hoverCanvas: {fileID: 642255839676516912}
   hoveringText: {fileID: 3394947889861406035}
   selected: 0
+  highlighted: {fileID: 2100000, guid: d67b76aa6a314ee499ed479b93aab73f, type: 2}
+  normalColor: {fileID: 2100000, guid: 92a8cfbefd7f98a488a0817297e733e2, type: 2}
   actionSpritesContainer: {fileID: 0}
   actionMeshesContainer: {fileID: 0}
   previousActionSpritesContainer: {fileID: 0}

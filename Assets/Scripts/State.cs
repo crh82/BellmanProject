@@ -116,6 +116,7 @@ public class State : MonoBehaviour
     
     public void StateHighlightToggle()
     {
+        
         stateMesh.GetComponent<MeshRenderer>().material = selected ? highlighted : normalColor;
     }
     

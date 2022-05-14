@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Michsky.UI.ModernUIPack;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -55,18 +56,10 @@ public class StateInteractions : MonoBehaviour
     
     private void OnMouseDown()
     {
-        // if (_state == null)
-        // {
-        //     _state = gameObject.GetComponentInParent<State>();
-        //     _stateMaterial = stateMesh.gameObject.GetComponent<MeshRenderer>().material;
-        // }
-        
-        
-        
+        if (EventSystem.current.IsPointerOverGameObject()) return;
+            
         _state.selected = !_state.selected;
-        
-        // _selected = !_selected;
-        
+
         _uiController.SetStateToEdit(_state.stateIndex);
         
         _uiController.OpenStateInformationEditorAndDisplay(_state.stateIndex);

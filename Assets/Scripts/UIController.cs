@@ -76,8 +76,6 @@ public class UIController : MonoBehaviour
 
    public TextMeshProUGUI    algorithmExecutionSpeedValue;
 
-   public TextMeshProUGUI    numberOfIterationsDisplay;
-
    public HorizontalSelector algorithmViewLevelSelector;
 
    public HorizontalSelector algorithmSelector;
@@ -108,6 +106,8 @@ public class UIController : MonoBehaviour
    public GameObject         progressBar;
 
    public GameObject         pauseBanner;
+   
+   public TextMeshProUGUI    numberOfIterationsDisplay;
 
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
@@ -132,34 +132,6 @@ public class UIController : MonoBehaviour
          _mdpManager.SetKeepGoingFalse();
          // Debug.Log("Escape key was pressed");
       }
-      
-      if (Input.GetKeyDown(KeyCode.KeypadPlus))
-      {
-         _mdpManager.playSpeed += 10;
-      }
-
-      if (Input.GetKeyDown(KeyCode.KeypadMultiply))
-      {
-         _mdpManager.playSpeed += 100;
-      }
-        
-      if (Input.GetKeyDown(KeyCode.KeypadMinus))
-      { 
-         if (_mdpManager.playSpeed > 11) _mdpManager.playSpeed -= 10;
-      } 
-        
-      if (Input.GetKeyDown(KeyCode.KeypadDivide))
-      {
-         if (_mdpManager.playSpeed > 110) _mdpManager.playSpeed -= 100;
-      }
-      if (Input.GetKeyDown(KeyCode.Keypad4))
-      {
-         if (_mdpManager.cat > 0) _mdpManager.cat--;
-      }
-      if (Input.GetKeyDown(KeyCode.Keypad6))
-      {
-         if (_mdpManager.cat < 3) _mdpManager.cat++;
-      }
    }
 
    private void OnDisable()
@@ -174,9 +146,11 @@ public class UIController : MonoBehaviour
 
       if (existingStateSpace != null)
       {
+         StopAlgorithm();
          Destroy(existingStateSpace);
          _mdpManager.ResetPolicy();
          _mdpManager.ResetCurrentStateValueFunction();
+         UpdateNumberOfIterations(0);
       }
       
       string mdpString;
@@ -251,13 +225,7 @@ public class UIController : MonoBehaviour
 
       numberOfIterationsDisplay.text = "0";
    }
-
-   public void EvaluatePolicy()
-   {
-      throw new Exception("Figure out what called this.");
-      // _mdpManager.EvaluateAndVisualizeStateValues();
-   }
-
+   
    public void ShowActionSpritesAtopStateValueVisuals()
    {
       _mdpManager.ShowActionSpritesAtopStateValueVisuals();
@@ -311,6 +279,8 @@ public class UIController : MonoBehaviour
       }
    }
 
+   public void AdvanceStep() => _mdpManager.stepped = true;
+
    public void PauseAlgorithm()
    {
       if (_mdpManager.paused)
@@ -327,7 +297,7 @@ public class UIController : MonoBehaviour
       }
    }
    
-   public void StopPolicyEvaluation()
+   public void StopAlgorithm()
    {
       _mdpManager.SetKeepGoingFalse();
       
@@ -345,7 +315,7 @@ public class UIController : MonoBehaviour
 
    public async void DisableRunFeatures()
    {
-      await Task.Delay(400);
+      await Task.Delay(100);
       await RunButtonVisibility(0.3f);
       await SetRunButtonInteractableOff(); // OFF
       progressBar.SetActive(true);
@@ -354,7 +324,7 @@ public class UIController : MonoBehaviour
 
    public async void SetRunFeaturesActive()
    {
-      await Task.Delay(400);
+      await Task.Delay(100);
       await RunButtonVisibility(1f);
       progressBar.SetActive(false);
       await SetRunButtonInteractableOn(); // ON
@@ -377,14 +347,10 @@ public class UIController : MonoBehaviour
       runButton.interactable = true;
       return Task.CompletedTask;
    }
-   
-   // ┌───────────────────────────┐
-   // │ Policy Evaluation Control │
-   // └───────────────────────────┘
 
    private async void EvaluatePolicyFullControlAsync(CancellationToken cancellationToken)
    {
-      _mdpManager.EnsureMdpAndPolicyAreNotNull();
+      // _mdpManager.EnsureMdpAndPolicyAreNotNull();
       
       try
       {

@@ -40,6 +40,10 @@ public class TestUIControl : MonoBehaviour
 
     public GameObject stateSpace;
 
+    public TEXDraw      testTexDraw;
+
+    public TestStateActionCreation creation;
+    
     private void Start()
     {
         // cubeScript = cube.GetComponent<CubeScript>();
