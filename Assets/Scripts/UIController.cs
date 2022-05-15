@@ -89,7 +89,6 @@ public class UIController : MonoBehaviour
    public GameObject         runButtonContainer;
    
    
-   
    // ╔═════════════════════════════════════════════════╗
    // ║ CENTER CONTROL PANEL — STATE INFORMATION WINDOW ║
    // ╚═════════════════════════════════════════════════╝
@@ -108,21 +107,32 @@ public class UIController : MonoBehaviour
    public GameObject         pauseBanner;
    
    public TextMeshProUGUI    numberOfIterationsDisplay;
+   
+   
+   // ╔═══════════════════════╗
+   // ║ CORNER CAMERA CONTROL ║
+   // ╚═══════════════════════╝
+   private CornerCameraController         _focusCam;
 
+   public GameObject                     cornerCameraRig;
+   
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
    // ╚═══════════════╝
    private CancellationTokenSource  _cancellationTokenSource;
 
-   // ╔═════════╗
-   // ║ Methods ║
-   // ╚═════════╝
-
+   // ———————————————————————————————————————————————————————
+   //                       ╔═════════╗
+   //                       ║ Methods ║
+   //                       ╚═════════╝
+   // ———————————————————————————————————————————————————————
+   
    private void Awake()
    {
       _mdpManager = mdpGameObject.GetComponent<MdpManager>();
       _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.defaultIndex;
       _cancellationTokenSource = new CancellationTokenSource();
+      _focusCam = cornerCameraRig.GetComponent<CornerCameraController>();
    }
 
    private void Update()
@@ -150,6 +160,8 @@ public class UIController : MonoBehaviour
          Destroy(existingStateSpace);
          _mdpManager.ResetPolicy();
          _mdpManager.ResetCurrentStateValueFunction();
+         _mdpManager.ResetStateQuadDictionary();
+         
          UpdateNumberOfIterations(0);
       }
       
@@ -231,10 +243,15 @@ public class UIController : MonoBehaviour
       _mdpManager.ShowActionSpritesAtopStateValueVisuals();
    }
    
+   // ┌───────────────────────┐
+   // │ Corner Camera Methods │
+   // └───────────────────────┘
 
-   // ╔═══════════════════════════╗
-   // ║ Algorithm Control Related ║
-   // ╚═══════════════════════════╝
+   public void FocusCornerCamera(int stateIndex) => _focusCam.FocusOn(_mdpManager.StateQuads[stateIndex]);
+
+   // ┌───────────────────────────┐
+   // │ Algorithm Control Methods │
+   // └───────────────────────────┘
    
 
    // Controls the execution of policy evaluation by state space sweep, individual state, or individual transition.
@@ -398,12 +415,9 @@ public class UIController : MonoBehaviour
          Debug.Log("Value iteration execution cancelled with cancellation token.");
       }
    }
-
-   
-
    
    // ┌───────────────────────┐
-   // │ MDP Parameter Related │
+   // │ MDP Parameter Methods │
    // └───────────────────────┘
    public void SwitchGammaOn()
    {
@@ -479,9 +493,9 @@ public class UIController : MonoBehaviour
       return Task.CompletedTask;
    }
    
-   // ┌───────────────────────────────────┐
-   // │ Display and Edit State and Policy │
-   // └───────────────────────────────────┘
+   // ┌───────────────────────────────────────────┐
+   // │ Display and Edit State and Policy Methods │
+   // └───────────────────────────────────────────┘
 
    public async void OpenStateInformationEditorAndDisplay(int stateIndex)
    {
@@ -527,9 +541,9 @@ public class UIController : MonoBehaviour
       _mdpManager.EditRewardOfState(_currentStateToEdit, newReward);
    }
    
-   // ┌──────────┐
-   // │ Settings │
-   // └──────────┘
+   // ┌──────────────────┐
+   // │ Settings Methods │
+   // └──────────────────┘
 
    public void InitializeSettingsPanel()
    {

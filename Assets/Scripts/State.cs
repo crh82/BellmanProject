@@ -57,7 +57,7 @@ public class State : MonoBehaviour
     
     public List<GameObject>           actionGameObjects;
 
-    public readonly Queue<GridAction> CurrentActionPreviousAction = new Queue<GridAction>();
+    public readonly Queue<GridAction> currentActionPreviousAction = new Queue<GridAction>();
 
 
     public Transform leftMesh;
@@ -239,11 +239,11 @@ public class State : MonoBehaviour
     {
         UpdateActionSprites(action);
         
-        CurrentActionPreviousAction.Enqueue(action);
+        currentActionPreviousAction.Enqueue(action);
 
-        if (CurrentActionPreviousAction.Count != 2) return;
+        if (currentActionPreviousAction.Count != 2) return;
         
-        var previous = CurrentActionPreviousAction.Dequeue();
+        var previous = currentActionPreviousAction.Dequeue();
         
         UpdateActionSprites(previous, true);
     }

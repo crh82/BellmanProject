@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
 // Creates the model of the environment — the underlying MDP data rather than the physical/visual MDP.
@@ -69,8 +70,8 @@ public class MdpManager : MonoBehaviour
     private const int                      ByTransition = 3;
 
     private const int                      Paused = -1;
-    
-    
+
+
     // ┌─────────────────────────┐
     // │ MDP data and algorithms │
     // └─────────────────────────┘
@@ -106,8 +107,10 @@ public class MdpManager : MonoBehaviour
     private GridAction[]                   _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
-    
-    
+
+    public Dictionary<int, GameObject> StateQuads { get; set; } = new Dictionary<int, GameObject>();
+
+
     // ╔════════════════════════╗
     // ║ NORMAL UNITY FUNCTIONS ║
     // ╚════════════════════════╝
@@ -118,299 +121,7 @@ public class MdpManager : MonoBehaviour
         currentUi    = GameObject.FindGameObjectWithTag("PolicyEvaluationUI").GetComponent<Canvas>();
         uiController = currentUi.GetComponent<UIController>();
     }
-
-    // ┌──────────────────────────────────────┐
-    // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
-    // └──────────────────────────────────────┘
-
-    public float Gamma
-    {
-        get => gamma;
-        set => gamma = value;
-    }
-
-    public MarkovState GetStateFromCurrentMdp(int stateIndex)
-    {
-        return mdp.States[stateIndex];
-    }
-
-    public Dictionary<string, string> GetStateAndActionInformationForDisplayAndEdit(int stateIndex)
-    {
-        var state = mdp.States[stateIndex];
-
-        var stateVisualRepresentation = _stateSpaceVisualStates[stateIndex];
-        string stateName = StateNameFormatted(stateIndex);
-        var stateReward = $"R({stateName}) = {state.Reward}";
-        var stateValue = $"V({stateName}) = {stateVisualRepresentation.stateValue}";
-
-        // if (CurrentPolicy != null)
-        // {
-        //     var action = CurrentPolicy.GetAction(stateIndex);
-        // }
-
-        var stateInformation = new Dictionary<string, string>
-        {
-            {"state", stateName},
-            {"reward", stateReward},
-            {"value", stateValue},
-            {"iterations", $"Iteration: T + {_currentAlgorithmExecutionIterations}"},
-            {"action", ActionInStateFormatted(stateIndex)}
-        };
-
-        // var stateInfo = $"{stateName}\n{stateReward}\n{stateValue}";
-
-        return stateInformation;
-    }
-
-    public string StateNameFormatted(int stateIndex)
-    {
-        return $"<b>S</b><sub>{stateIndex}</sub>";
-    }
-
-    public string ActionInStateFormatted(int stateIndex)
-    {
-        string action = currentPolicy != null ? currentPolicy.GetAction(stateIndex).ToString() : "n/a";
-        return $"π({StateNameFormatted(stateIndex)}) = {action}";
-    }
-
-    public void EditRewardOfState(int stateIndex, float newReward)
-    {
-        mdp.States[stateIndex].Reward = newReward;
-    }
-
-
-    public void SetIndividualStateHeight(MarkovState state, float value)
-    {
-        SetIndividualStateHeight(state.StateIndex, value);
-    }
-
-    public async void SetIndividualStateHeight(int stateIndex, float value)
-    {
-        await _stateSpaceVisualStates[stateIndex].UpdateStateHeightAsync(value);
-    }
-    // => _stateSpaceVisualStates[stateIndex].UpdateHeight(value);
-
-
-    private void SetAllStateHeights(StateValueFunction valueOfCurrentPolicy)
-    {
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
-            SetIndividualStateHeight(state, valueOfCurrentPolicy.Value(state));
-    }
-
-    public Task SetIndividualStateHeightAsync(MarkovState state, float value)
-    {
-        var setHeight = SetIndividualStateHeightAsync(state.StateIndex, value);
-        return setHeight;
-    }
-
-    public Task SetIndividualStateHeightAsync(int stateIndex, float value)
-    {
-        return _stateSpaceVisualStates[stateIndex].UpdateStateHeightAsync(value);
-    }
-
-    private async Task SetAllStateHeightsAsync(StateValueFunction valueOfCurrentPolicy)
-    {
-        foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
-            // foreach (var state in mdp.States.Where(state => state.IsStandard()))
-            await SetIndividualStateHeightAsync(state, valueOfCurrentPolicy.Value(state));
-    }
-
-    public async Task SetIndividualActionHeightAsync(MarkovState state, MarkovAction action, float stateActionValue)
-    {
-        await SetIndividualActionHeightAsync(state.StateIndex, action.Action, stateActionValue);
-    }
-
-    public async Task SetIndividualActionHeightAsync(int stateIndex, GridAction action, float stateActionValue)
-    {
-        await _stateSpaceVisualStates[stateIndex].UpdateActionHeightAsync((int) action, stateActionValue);
-    }
-
-
-    public async Task SetAllActionHeightsAsync(MarkovState state, ActionValueFunction actionValueFunction)
-    {
-        var tasks = (
-            from action in state.ApplicableActions
-            let actionValue = actionValueFunction.Value(state, action)
-            select SetIndividualActionHeightAsync(state, action, actionValue)).ToList();
-
-        await Task.WhenAll(tasks);
-    }
-
-    private void ResetPolicyRecord()
-    {
-        if (policiesHistory.Count > 0) policiesHistory = new List<Policy>();
-    }
-
-    private void ResetStateValueRecord()
-    {
-        if (valueFunctionsHistory.Count > 0) valueFunctionsHistory = new List<StateValueFunction>();
-    }
-
-    public void ResetPolicy()
-    {
-        currentPolicy = null;
-    }
-
-    public void ResetCurrentStateValueFunction()
-    {
-        currentStateValueFunction = null;
-    }
-
-    public void GenerateRandomStateValueFunction()
-    {
-        currentStateValueFunction = new StateValueFunction(mdp, -3f, 3f);
-    }
-
-    public void SetKeepGoingFalse()
-    {
-        keepGoing = false;
-    }
-
-    public void SetKeepGoingTrue()
-    {
-        keepGoing = true;
-    }
-
-    public MDP GetCurrentMdp()
-    {
-        return mdp;
-    }
-
-    public void EditCurrentPolicy(MarkovState state, MarkovAction action)
-    {
-        currentPolicy.SetAction(state, action.Action);
-    }
-
-    public void EditCurrentPolicy(MarkovState state, GridAction action)
-    {
-        currentPolicy.SetAction(state, action);
-    }
-
-    public void EditCurrentPolicy(int stateIndex, int action)
-    {
-        currentPolicy.SetAction(stateIndex, (GridAction) action);
-    }
-
-
-    public void SetActionImage(MarkovState state, MarkovAction action)
-    {
-        SetActionImage(state.StateIndex, (int) action.Action);
-    }
-
-    public void SetActionImage(MarkovState state, GridAction action)
-    {
-        SetActionImage(state.StateIndex, (int) action);
-    }
-
-    public void SetActionImage(int stateIndex, int action)
-    {
-        _stateSpaceVisualStates[stateIndex].UpdateActionSprite((GridAction) action);
-    }
-
-    public void SetAllActionSprites(Policy policy)
-    {
-        foreach (var stateAction in policy.GetPolicyDictionary())
-            SetActionImage(stateAction.Key, (int) stateAction.Value);
-    }
-
-    public void ToggleStateHighlight(int stateIndex)
-    {
-        _stateSpaceVisualStates[stateIndex].StateHighlightToggle();
-    }
-
-    public void Toggle(string toToggle)
-    {
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
-            switch (toToggle)
-            {
-                case "ActionObjects":
-                    _stateSpaceVisualStates[state.StateIndex].ToggleActionObjects();
-                    // var actionMeshesContainer = _stateSpaceVisualStates[state.StateIndex].actionMeshesContainer;
-                    // actionMeshesContainer.SetActive(!actionMeshesContainer.activeSelf);
-                    // _stateSpaceVisualStates[state.StateIndex].ShowActionObjects();
-                    break;
-                case "ActionSprites":
-                    _stateSpaceVisualStates[state.StateIndex].ToggleActionSprites();
-                    // var actionSpritesContainer = _stateSpaceVisualStates[state.StateIndex].actionSpritesContainer;
-                    // actionSpritesContainer.SetActive(!actionSpritesContainer.activeSelf);
-                    // _stateSpaceVisualStates[state.StateIndex].ShowActionSprites();
-                    break;
-                case "PreviousActionSprites":
-                    _stateSpaceVisualStates[state.StateIndex].TogglePreviousActionSprites();
-                    // var previousActionSpritesContainer = _stateSpaceVisualStates[state.StateIndex].previousActionSpritesContainer;
-                    // previousActionSpritesContainer.SetActive(!previousActionSpritesContainer.activeSelf);
-                    // _stateSpaceVisualStates[state.StateIndex].ShowPreviousActionSprites();
-                    break;
-                default:
-                    throw new ArgumentException(
-                        "Incorrect string passed. Check that the string is either AS, PAS, or SAO");
-            }
-    }
-
-    private async Task RunPauseLoop(CancellationToken cancellationToken)
-    {
-        while (paused && !stepped) await Task.Delay(5, cancellationToken);
-
-        if (stepped) stepped = false;
-    }
-
-    public void EnsureMdpAndPolicyAreNotNull()
-    {
-        if (currentPolicy == null)
-        {
-            currentPolicy = new Policy(mdp);
-
-            ShowActionSpritesAtopStateValueVisuals();
-
-            Debug.Log("No Policy specified, evaluating a random policy.");
-        }
-
-        if (mdp == null) throw new NullReferenceException("No MDP specified.");
-    }
-
-    public Task ShowActionSpritesAtopStateValueVisuals()
-    {
-        if (currentPolicy == null) throw new ArgumentNullException();
-
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
-        {
-            var currentAction = currentPolicy.GetAction(state);
-            var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
-            currentStateVisual.UpdateActionSprite(currentAction);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private StateValueFunction AssignStateValueFunction(StateValueFunction stateValueFunction)
-    {
-        StateValueFunction stateValueFunctionV;
-
-        if (stateValueFunction != null) stateValueFunctionV = stateValueFunction;
-
-        else if (currentStateValueFunction != null) stateValueFunctionV = currentStateValueFunction;
-
-        else stateValueFunctionV = new StateValueFunction(mdp);
-
-        return stateValueFunctionV;
-    }
-
-    private Policy AssignPolicy(Policy policy)
-    {
-        Policy policyPi;
-
-        if (policy != null)
-            policyPi = policy;
-
-        else if (currentPolicy != null)
-            policyPi = currentPolicy;
-
-        else
-            policyPi = new Policy(mdp);
-
-        return policyPi;
-    }
-
+    
 
     // ╔═══════════════════════════════════╗
     // ║ MDP SERIALIZATION/DESERIALIZATION ║
@@ -518,6 +229,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject.stateType = stateType;
                 Task.Run(fullStateObject.UpdateStateHeightAsync(terminalGoalScale).RunSynchronously);
                 break;
+            
             case StateType.Obstacle:
                 state           = Instantiate(obstaclePrefab, obstaclePosition, Quaternion.identity, stateSpace);
                 fullStateObject = state.GetComponent<State>();
@@ -525,6 +237,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject.stateType = stateType;
                 fullStateObject.SetStateScale(obstacleScale);
                 break;
+            
             case StateType.Goal:
                 state           = Instantiate(goalPrefab, goalPosition, Quaternion.identity, stateSpace);
                 fullStateObject = state.GetComponent<State>();
@@ -532,6 +245,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject.stateType = stateType;
                 Task.Run(fullStateObject.UpdateStateHeightAsync(terminalGoalScale).RunSynchronously);
                 break;
+            
             case StateType.Standard:
                 state = Instantiate(stateActionPrefab, statePosition, Quaternion.identity, stateSpace);
                 fullStateObject = state.GetComponent<State>();
@@ -539,6 +253,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject.stateType = stateType;
                 Task.Run(fullStateObject.UpdateStateHeightAsync(scale.y).RunSynchronously);
                 break;
+            
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -550,6 +265,8 @@ public class MdpManager : MonoBehaviour
         fullStateObject.DistributeMdpManagerReferenceToComponents(this);
 
         _stateSpaceVisualStates[id] = fullStateObject;
+        
+        StateQuads.Add(id, fullStateObject.stateQuad);
 
         return state;
     }
@@ -622,6 +339,8 @@ public class MdpManager : MonoBehaviour
                     
                     foreach (var state in mdp.States.Where(state => state.IsStandard()))
                     {
+                        
+
                         if (paused) await RunPauseLoop(cancellationToken);
 
                         float actualValueOfState =
@@ -929,7 +648,302 @@ public class MdpManager : MonoBehaviour
         uiController.SetRunFeaturesActive();
     }
 
-   
+    // ┌──────────────────────────────────────┐
+    // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
+    // └──────────────────────────────────────┘
+
+    public float Gamma
+    {
+        get => gamma;
+        set => gamma = value;
+    }
+
+    public MarkovState GetStateFromCurrentMdp(int stateIndex)
+    {
+        return mdp.States[stateIndex];
+    }
+
+    public Dictionary<string, string> GetStateAndActionInformationForDisplayAndEdit(int stateIndex)
+    {
+        var state = mdp.States[stateIndex];
+
+        var stateVisualRepresentation = _stateSpaceVisualStates[stateIndex];
+        string stateName = StateNameFormatted(stateIndex);
+        var stateReward = $"R({stateName}) = {state.Reward}";
+        var stateValue = $"V({stateName}) = {stateVisualRepresentation.stateValue}";
+        var action = state.IsStandard() ? ActionInStateFormatted(stateIndex) : $"No action because state is {state.TypeOfState.ToString()}";
+        // if (CurrentPolicy != null)
+        // {
+        //     var action = CurrentPolicy.GetAction(stateIndex);
+        // }
+
+        var stateInformation = new Dictionary<string, string>
+        {
+            {"state", stateName},
+            {"reward", stateReward},
+            {"value", stateValue},
+            {"iterations", $"Iteration: T + {_currentAlgorithmExecutionIterations}"},
+            {"action", action}
+        };
+
+        // var stateInfo = $"{stateName}\n{stateReward}\n{stateValue}";
+
+        return stateInformation;
+    }
+
+    public string StateNameFormatted(int stateIndex)
+    {
+        return $"<b>S</b><sub>{stateIndex}</sub>";
+    }
+
+    public string ActionInStateFormatted(int stateIndex)
+    {
+        string action = currentPolicy != null ? currentPolicy.GetAction(stateIndex).ToString() : "n/a";
+        return $"π({StateNameFormatted(stateIndex)}) = {action}";
+    }
+
+    public void EditRewardOfState(int stateIndex, float newReward)
+    {
+        mdp.States[stateIndex].Reward = newReward;
+    }
+
+
+    public void SetIndividualStateHeight(MarkovState state, float value)
+    {
+        SetIndividualStateHeight(state.StateIndex, value);
+    }
+
+    public async void SetIndividualStateHeight(int stateIndex, float value)
+    {
+        await _stateSpaceVisualStates[stateIndex].UpdateStateHeightAsync(value);
+    }
+    // => _stateSpaceVisualStates[stateIndex].UpdateHeight(value);
+
+
+    private void SetAllStateHeights(StateValueFunction valueOfCurrentPolicy)
+    {
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+            SetIndividualStateHeight(state, valueOfCurrentPolicy.Value(state));
+    }
+
+    public Task SetIndividualStateHeightAsync(MarkovState state, float value)
+    {
+        var setHeight = SetIndividualStateHeightAsync(state.StateIndex, value);
+        return setHeight;
+    }
+
+    public Task SetIndividualStateHeightAsync(int stateIndex, float value)
+    {
+        return _stateSpaceVisualStates[stateIndex].UpdateStateHeightAsync(value);
+    }
+
+    private async Task SetAllStateHeightsAsync(StateValueFunction valueOfCurrentPolicy)
+    {
+        foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
+            // foreach (var state in mdp.States.Where(state => state.IsStandard()))
+            await SetIndividualStateHeightAsync(state, valueOfCurrentPolicy.Value(state));
+    }
+
+    public async Task SetIndividualActionHeightAsync(MarkovState state, MarkovAction action, float stateActionValue)
+    {
+        await SetIndividualActionHeightAsync(state.StateIndex, action.Action, stateActionValue);
+    }
+
+    public async Task SetIndividualActionHeightAsync(int stateIndex, GridAction action, float stateActionValue)
+    {
+        await _stateSpaceVisualStates[stateIndex].UpdateActionHeightAsync((int) action, stateActionValue);
+    }
+
+
+    public async Task SetAllActionHeightsAsync(MarkovState state, ActionValueFunction actionValueFunction)
+    {
+        var tasks = (
+            from action in state.ApplicableActions
+            let actionValue = actionValueFunction.Value(state, action)
+            select SetIndividualActionHeightAsync(state, action, actionValue)).ToList();
+
+        await Task.WhenAll(tasks);
+    }
+
+    private void ResetPolicyRecord()
+    {
+        if (policiesHistory.Count > 0) policiesHistory = new List<Policy>();
+    }
+
+    private void ResetStateValueRecord()
+    {
+        if (valueFunctionsHistory.Count > 0) valueFunctionsHistory = new List<StateValueFunction>();
+    }
+
+    public void ResetPolicy()
+    {
+        currentPolicy = null;
+    }
+
+    public void ResetCurrentStateValueFunction()
+    {
+        currentStateValueFunction = null;
+    }
+
+    public void ResetStateQuadDictionary()
+    {
+        StateQuads = new Dictionary<int, GameObject>();
+    }
+
+    public void GenerateRandomStateValueFunction()
+    {
+        currentStateValueFunction = new StateValueFunction(mdp, -3f, 3f);
+    }
+
+    public void SetKeepGoingFalse()
+    {
+        keepGoing = false;
+    }
+
+    public void SetKeepGoingTrue()
+    {
+        keepGoing = true;
+    }
+
+    public MDP GetCurrentMdp()
+    {
+        return mdp;
+    }
+
+    public void EditCurrentPolicy(MarkovState state, MarkovAction action)
+    {
+        currentPolicy.SetAction(state, action.Action);
+    }
+
+    public void EditCurrentPolicy(MarkovState state, GridAction action)
+    {
+        currentPolicy.SetAction(state, action);
+    }
+
+    public void EditCurrentPolicy(int stateIndex, int action)
+    {
+        currentPolicy.SetAction(stateIndex, (GridAction) action);
+    }
+
+
+    public void SetActionImage(MarkovState state, MarkovAction action)
+    {
+        SetActionImage(state.StateIndex, (int) action.Action);
+    }
+
+    public void SetActionImage(MarkovState state, GridAction action)
+    {
+        SetActionImage(state.StateIndex, (int) action);
+    }
+
+    public void SetActionImage(int stateIndex, int action)
+    {
+        _stateSpaceVisualStates[stateIndex].UpdateActionSprite((GridAction) action);
+    }
+
+    public void SetAllActionSprites(Policy policy)
+    {
+        foreach (var stateAction in policy.GetPolicyDictionary())
+            SetActionImage(stateAction.Key, (int) stateAction.Value);
+    }
+
+    public void ToggleStateHighlight(int stateIndex)
+    {
+        _stateSpaceVisualStates[stateIndex].StateHighlightToggle();
+    }
+
+    public void Toggle(string toToggle)
+    {
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+            switch (toToggle)
+            {
+                case "ActionObjects":
+                    _stateSpaceVisualStates[state.StateIndex].ToggleActionObjects();
+                    // var actionMeshesContainer = _stateSpaceVisualStates[state.StateIndex].actionMeshesContainer;
+                    // actionMeshesContainer.SetActive(!actionMeshesContainer.activeSelf);
+                    // _stateSpaceVisualStates[state.StateIndex].ShowActionObjects();
+                    break;
+                case "ActionSprites":
+                    _stateSpaceVisualStates[state.StateIndex].ToggleActionSprites();
+                    // var actionSpritesContainer = _stateSpaceVisualStates[state.StateIndex].actionSpritesContainer;
+                    // actionSpritesContainer.SetActive(!actionSpritesContainer.activeSelf);
+                    // _stateSpaceVisualStates[state.StateIndex].ShowActionSprites();
+                    break;
+                case "PreviousActionSprites":
+                    _stateSpaceVisualStates[state.StateIndex].TogglePreviousActionSprites();
+                    // var previousActionSpritesContainer = _stateSpaceVisualStates[state.StateIndex].previousActionSpritesContainer;
+                    // previousActionSpritesContainer.SetActive(!previousActionSpritesContainer.activeSelf);
+                    // _stateSpaceVisualStates[state.StateIndex].ShowPreviousActionSprites();
+                    break;
+                default:
+                    throw new ArgumentException(
+                        "Incorrect string passed. Check that the string is either AS, PAS, or SAO");
+            }
+    }
+
+    private async Task RunPauseLoop(CancellationToken cancellationToken)
+    {
+        while (paused && !stepped) await Task.Delay(5, cancellationToken);
+
+        if (stepped) stepped = false;
+    }
+
+    public void EnsureMdpAndPolicyAreNotNull()
+    {
+        if (currentPolicy == null)
+        {
+            currentPolicy = new Policy(mdp);
+
+            ShowActionSpritesAtopStateValueVisuals();
+
+            Debug.Log("No Policy specified, evaluating a random policy.");
+        }
+
+        if (mdp == null) throw new NullReferenceException("No MDP specified.");
+    }
+
+    public Task ShowActionSpritesAtopStateValueVisuals()
+    {
+        if (currentPolicy == null) throw new ArgumentNullException();
+
+        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        {
+            var currentAction = currentPolicy.GetAction(state);
+            var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
+            currentStateVisual.UpdateActionSprite(currentAction);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private StateValueFunction AssignStateValueFunction(StateValueFunction stateValueFunction)
+    {
+        StateValueFunction stateValueFunctionV;
+
+        if (stateValueFunction != null) stateValueFunctionV = stateValueFunction;
+
+        else if (currentStateValueFunction != null) stateValueFunctionV = currentStateValueFunction;
+
+        else stateValueFunctionV = new StateValueFunction(mdp);
+
+        return stateValueFunctionV;
+    }
+
+    private Policy AssignPolicy(Policy policy)
+    {
+        Policy policyPi;
+
+        if (policy != null)
+            policyPi = policy;
+
+        else if (currentPolicy != null)
+            policyPi = currentPolicy;
+
+        else
+            policyPi = new Policy(mdp);
+
+        return policyPi;
+    }
 
 
     // ╔══════════════════════╗

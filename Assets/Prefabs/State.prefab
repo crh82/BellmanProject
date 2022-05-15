@@ -43,27 +43,38 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1864717323818338891}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca6b432472c364e5d99f0a6083a06561, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stateInformationText: {fileID: 2722401187019276788}
-  isStateInfoActive: 0
-  stateValue: 0
-  stateMesh: {fileID: 2729783304473936585}
-  stateIndex: 0
-  hoveringText: {fileID: 8607733623482277991}
-  textContainer: {fileID: 7758824187808799678}
-  hoverInfoOffset: 0.02
   stateQuad: {fileID: 5122305160405309365}
-  selected: 0
+  stateValue: 0
+  stateIndex: 0
+  stateType: 0
+  currentAction: 0
+  previousAction: 0
+  stateMesh: {fileID: 2729783304473936585}
+  textContainer: {fileID: 7758824187808799678}
   hoverCanvas: {fileID: 0}
+  hoveringText: {fileID: 0}
+  selected: 0
+  highlighted: {fileID: 0}
+  normalColor: {fileID: 0}
+  actionSpritesContainer: {fileID: 0}
+  actionMeshesContainer: {fileID: 0}
+  previousActionSpritesContainer: {fileID: 0}
   actionSprites:
   - {fileID: 3905228869313053937}
   - {fileID: 6395892107134356214}
   - {fileID: 4456677100207708003}
   - {fileID: 4177982805223071928}
+  previousActionSprites: []
+  actionGameObjects: []
+  leftMesh: {fileID: 0}
+  downMesh: {fileID: 0}
+  rightMesh: {fileID: 0}
+  upMesh: {fileID: 0}
 --- !u!65 &4438065504006725371
 BoxCollider:
   m_ObjectHideFlags: 0

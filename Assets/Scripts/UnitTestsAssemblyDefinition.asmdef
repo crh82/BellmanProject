@@ -8,7 +8,8 @@
         "GUID:02f771204943f4a40949438e873e3eff",
         "GUID:2bafac87e7f4b9b418d9448d219b01ab",
         "GUID:656e461844099ae43a609ff6109b0877",
-        "ModernUIPack"
+        "ModernUIPack",
+        "Cinemachine"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

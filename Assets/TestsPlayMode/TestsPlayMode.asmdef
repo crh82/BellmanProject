@@ -5,7 +5,8 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "ModernUIPack",
-        "ScriptTests"
+        "ScriptTests",
+        "Cinemachine"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

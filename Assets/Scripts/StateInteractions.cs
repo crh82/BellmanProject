@@ -57,12 +57,20 @@ public class StateInteractions : MonoBehaviour
     private void OnMouseDown()
     {
         if (EventSystem.current.IsPointerOverGameObject()) return;
-            
+        
+        FocusCornerCameraOnThisStateObject();
+        
         _state.selected = !_state.selected;
 
         _uiController.SetStateToEdit(_state.stateIndex);
         
         _uiController.OpenStateInformationEditorAndDisplay(_state.stateIndex);
+    }
+
+    private void FocusCornerCameraOnThisStateObject()
+    {
+        _uiController.cornerCameraRig.SetActive(true);
+        _uiController.FocusCornerCamera(_state.stateIndex);
     }
 
     private string GetStateInformationText()
