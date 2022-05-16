@@ -69,7 +69,6 @@ public class StateInteractions : MonoBehaviour
 
     private void FocusCornerCameraOnThisStateObject()
     {
-        _uiController.cornerCameraRig.SetActive(true);
         _uiController.FocusCornerCamera(_state.stateIndex);
     }
 

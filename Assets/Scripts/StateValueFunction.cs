@@ -37,7 +37,7 @@ public class StateValueFunction
 
     public StateValueFunction(MDP mdp, float lowerBoundOfValues, float upperBoundOfValues)
     {
-        Assert.IsTrue(lowerBoundOfValues < upperBoundOfValues);
+        Assert.IsTrue(lowerBoundOfValues <= upperBoundOfValues);
         foreach (var state in mdp.States)
         {
             switch (state.TypeOfState)

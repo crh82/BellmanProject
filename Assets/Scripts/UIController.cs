@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
@@ -33,6 +34,10 @@ public class UIController : MonoBehaviour
    // ╚════════════════════╝
    
    public HorizontalSelector uiMdpSelector;
+
+   public Button             resetMdpButton;
+
+   public GameObject         resetButtonContainer;
 
    
    // public RadialSlider       gammaSlider;
@@ -87,6 +92,8 @@ public class UIController : MonoBehaviour
    public Button             runButton;
 
    public GameObject         runButtonContainer;
+
+   public SwitchManager      focusAndFollowToggle;
    
    
    // ╔═════════════════════════════════════════════════╗
@@ -107,7 +114,21 @@ public class UIController : MonoBehaviour
    public GameObject         pauseBanner;
    
    public TextMeshProUGUI    numberOfIterationsDisplay;
+
+   public ProgressBar        progressPercentageBar;
+
+   public TextMeshProUGUI    maxDelta;
+
+
+   private const string RegexRealNumber =
+      @"/^(?:-(?:[1-9](?:\d{0,2}(?:,\d{3})+|\d*))|(?:0|(?:[1-9](?:\d{0,2}(?:,\d{3})+|\d*))))(?:.\d+|)$/";
    
+   // ╔═════════════════════╗
+   // ║ MAIN CAMERA CONTROL ║
+   // ╚═════════════════════╝
+   public CameraController mainCameraController;
+   
+   public GameObject mainCameraRig;
    
    // ╔═══════════════════════╗
    // ║ CORNER CAMERA CONTROL ║
@@ -116,10 +137,12 @@ public class UIController : MonoBehaviour
 
    public GameObject                     cornerCameraRig;
    
+   
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
    // ╚═══════════════╝
    private CancellationTokenSource  _cancellationTokenSource;
+
 
    // ———————————————————————————————————————————————————————
    //                       ╔═════════╗
@@ -133,6 +156,7 @@ public class UIController : MonoBehaviour
       _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.defaultIndex;
       _cancellationTokenSource = new CancellationTokenSource();
       _focusCam = cornerCameraRig.GetComponent<CornerCameraController>();
+      mainCameraController = mainCameraRig.GetComponent<CameraController>();
    }
 
    private void Update()
@@ -152,19 +176,8 @@ public class UIController : MonoBehaviour
    public void LoadMdpFromDropdown()
    {
 
-      var existingStateSpace = GameObject.FindGameObjectWithTag("State Space");
+      ResetGridWorldAsync();
 
-      if (existingStateSpace != null)
-      {
-         StopAlgorithm();
-         Destroy(existingStateSpace);
-         _mdpManager.ResetPolicy();
-         _mdpManager.ResetCurrentStateValueFunction();
-         _mdpManager.ResetStateQuadDictionary();
-         
-         UpdateNumberOfIterations(0);
-      }
-      
       string mdpString;
       
       switch (uiMdpSelector.index)
@@ -207,6 +220,24 @@ public class UIController : MonoBehaviour
      InitializeSettingsPanel();
    }
 
+   private async void ResetGridWorldAsync()
+   {
+      var existingStateSpace = GameObject.FindGameObjectWithTag("State Space");
+
+      if (existingStateSpace != null)
+      {
+         await StopAlgorithmAsync();
+         
+         _mdpManager.ResetPolicy();
+         _mdpManager.ResetCurrentStateValueFunction();
+         _mdpManager.ResetStateQuadDictionary();
+         
+         Destroy(existingStateSpace);
+         
+         await UpdateNumberOfIterationsAsync(0);
+      }
+   }
+
    // ┌────────────────┐
    // │ Policy Related │
    // └────────────────┘
@@ -247,7 +278,12 @@ public class UIController : MonoBehaviour
    // │ Corner Camera Methods │
    // └───────────────────────┘
 
-   public void FocusCornerCamera(int stateIndex) => _focusCam.FocusOn(_mdpManager.StateQuads[stateIndex]);
+   public Task FocusCornerCamera(int stateIndex)
+   {
+      cornerCameraRig.SetActive(true);
+      _focusCam.FocusOn(_mdpManager.StateQuads[stateIndex]);
+      return Task.CompletedTask;
+   }
 
    // ┌───────────────────────────┐
    // │ Algorithm Control Methods │
@@ -317,7 +353,6 @@ public class UIController : MonoBehaviour
    public void StopAlgorithm()
    {
       _mdpManager.SetKeepGoingFalse();
-      
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
@@ -329,39 +364,69 @@ public class UIController : MonoBehaviour
       
       SetRunFeaturesActive();
    }
+   
+   public Task StopAlgorithmAsync()
+   {
+      _mdpManager.SetKeepGoingFalse();
+      _cancellationTokenSource.Cancel();
+      _cancellationTokenSource.Dispose();
+      _cancellationTokenSource = new CancellationTokenSource();
+
+      if (_mdpManager.paused) // If stopped while paused this unpauses
+      {
+         PauseAlgorithm();
+      }
+      
+      SetRunFeaturesActive();
+      return Task.CompletedTask;
+   }
+
+   public void EnableFocusAndFollow() => _mdpManager.focusAndFollowMode = true;
+
+   public void DisableFocusAndFollow() => _mdpManager.focusAndFollowMode = false;
 
    public async void DisableRunFeatures()
    {
       await Task.Delay(100);
-      await RunButtonVisibility(0.3f);
-      await SetRunButtonInteractableOff(); // OFF
+      await ButtonVisibility(runButtonContainer,0.3f);
+      await SetButtonInteractableOff(runButton); // OFF
+      
       progressBar.SetActive(true);
+      progressPercentageBar.isOn = true;
+      progressPercentageBar.currentPercent = 0f;
+      
+      await ButtonVisibility(resetButtonContainer,0.3f);
+      await SetButtonInteractableOff(resetMdpButton); // OFF
    
    }
 
    public async void SetRunFeaturesActive()
    {
       await Task.Delay(100);
-      await RunButtonVisibility(1f);
+      await ButtonVisibility(runButtonContainer, 1f);
+      await SetButtonInteractableOn(runButton); // ON
       progressBar.SetActive(false);
-      await SetRunButtonInteractableOn(); // ON
+      progressPercentageBar.isOn = false;
+      
+      await ButtonVisibility(resetButtonContainer, 1f);
+      await SetButtonInteractableOn(resetMdpButton); // ON
    }
 
-   private Task RunButtonVisibility(float alpha)
+   private Task ButtonVisibility(GameObject buttonContainer, float alpha)
    {
-      runButtonContainer.GetComponent<CanvasGroup>().alpha = alpha;
+      buttonContainer.GetComponent<CanvasGroup>().alpha = alpha;
       return Task.CompletedTask;
    }
 
-   private Task SetRunButtonInteractableOff()
+   private Task SetButtonInteractableOff(Button button)
    {
-      runButton.interactable = false;
+      button.interactable = false;
       return Task.CompletedTask;
    }
    
-   private Task SetRunButtonInteractableOn()
+   private Task SetButtonInteractableOn(Button button)
    {
-      runButton.interactable = true;
+      button.interactable = true;
       return Task.CompletedTask;
    }
 
@@ -419,6 +484,11 @@ public class UIController : MonoBehaviour
    // ┌───────────────────────┐
    // │ MDP Parameter Methods │
    // └───────────────────────┘
+
+   public void RandomizeStateValues() => _mdpManager.GenerateRandomStateValueFunction();
+
+   public void RandomizePolicy() => _mdpManager.GenerateRandomPolicy();
+
    public void SwitchGammaOn()
    {
       _gammaIsOn = true;
@@ -492,6 +562,16 @@ public class UIController : MonoBehaviour
 
       return Task.CompletedTask;
    }
+
+   public void SetProgressBarPercentage(float value)
+   {
+      progressPercentageBar.currentPercent = value;
+   }
+
+   public void SetMaxDeltaText(float value)
+   {
+      maxDelta.text = $"{value}";
+   }
    
    // ┌───────────────────────────────────────────┐
    // │ Display and Edit State and Policy Methods │
@@ -502,20 +582,27 @@ public class UIController : MonoBehaviour
       _mdpManager.ToggleStateHighlight(stateIndex);
       
       stateInformationWindow.useCustomValues = true;
+
+      stateInformationWindow.transform.position = Input.mousePosition;
       
       stateInformationWindow.OpenWindow();
       
-      var stateInfoFromManager = _mdpManager.GetStateAndActionInformationForDisplayAndEdit(stateIndex);
-      
-      stateInformationWindow.windowTitle.text = stateInfoFromManager["state"] + " Information";
-      
-      var displayInfo = new StringBuilder(string.Join("\n", stateInfoFromManager.Values));
-      
-      stateInformationWindow.windowDescription.text = displayInfo.ToString();
-      
+      SetStateInformationWindowText(stateIndex);
+
       await Task.Yield();
    }
-   
+
+   private void SetStateInformationWindowText(int stateIndex)
+   {
+      var stateInfoFromManager = _mdpManager.GetStateAndActionInformationForDisplayAndEdit(stateIndex);
+
+      stateInformationWindow.windowTitle.text = stateInfoFromManager["state"] + " Information";
+
+      var displayInfo = new StringBuilder(string.Join("\n", stateInfoFromManager.Values));
+
+      stateInformationWindow.windowDescription.text = displayInfo.ToString();
+   }
+
    public void SetStateToEdit(int stateIndex) => _currentStateToEdit = stateIndex;
 
    public void EditPolicyActionInSelectedState()
@@ -533,12 +620,28 @@ public class UIController : MonoBehaviour
       _mdpManager.SetActionImage(_currentStateToEdit, actionEdit.index);
       actionToEditPanel.SetActive(false);
    }
-   
+
+   public void SetEditRewardTextRedIfDirty()
+   {
+      if (!Regex.IsMatch(rewardEditor.textComponent.text, RegexRealNumber))
+         rewardEditor.textComponent.color = Color.red;
+      else
+         rewardEditor.textComponent.color = Color.HSVToRGB(152, 98, 75);
+   }
    
    public void EditReward()
    {
+      // if (!Regex.IsMatch(rewardEditor.text, RegexRealNumber)) return;
+      
       float newReward = float.Parse(rewardEditor.text);
       _mdpManager.EditRewardOfState(_currentStateToEdit, newReward);
+      SetStateInformationWindowText(_currentStateToEdit);
+   }
+
+   public void SetRewardTextInEditStatePanelToCurrentEditableStateReward()
+   {
+      float currentReward = _mdpManager.GetStateFromCurrentMdp(_currentStateToEdit).Reward;
+      rewardEditor.text = $"{currentReward}";
    }
    
    // ┌──────────────────┐

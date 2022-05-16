@@ -22,7 +22,7 @@ MonoBehaviour:
   Paragraph:
     alignment: 0
     justify: 1
-    indent: 0
+    indent: 1
     rightToLeft: 0
     centeredMathBlock: 1
     lineSpacing: 2.5

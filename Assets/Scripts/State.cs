@@ -19,9 +19,7 @@ public class State : MonoBehaviour
 
     public StateType  stateType;
 
-    public GridAction currentAction;
-
-    public GridAction previousAction;
+    public Vector3    statePosition;
 
     
     
@@ -39,9 +37,9 @@ public class State : MonoBehaviour
 
     public  bool            selected;
     
-    public Material highlighted;
+    public Material         highlighted;
     
-    public Material normalColor;
+    public Material         normalColor;
     
 
     public GameObject actionSpritesContainer;

@@ -45,7 +45,9 @@ public class MdpManager : MonoBehaviour
     private readonly Vector2               _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
 
     public bool                            actionSpritesDisplayed;
-    
+
+    public Vector2                         randomStateValueBounds;
+
     
     // ┌───────────────────────────────────────────────────┐
     // │ Algorithm Focus Level and Execution Speed Control │
@@ -71,45 +73,47 @@ public class MdpManager : MonoBehaviour
 
     private const int                      Paused = -1;
 
+    public bool                            focusAndFollowMode;
+
 
     // ┌─────────────────────────┐
     // │ MDP data and algorithms │
     // └─────────────────────────┘
     
-    public  MDP                            mdp;
-
+    private GridAction[]                   _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
+    
     public  Algorithms                     algorithms;
+    
+    public  bool                           boundIterations = true;
+
+    public  MDP                            mdp;
+    
+    public  ActionValueFunction            currentActionValueFunction;
+    
+    private int                            _currentAlgorithmExecutionIterations; // Reset after each alg execution.
 
     public  Policy                         currentPolicy;
 
     public  StateValueFunction             currentStateValueFunction;
 
-    public  ActionValueFunction            currentActionValueFunction;
+    public  bool                           debugMode;
 
     public  float                          gamma = 1f;
 
-    public  float                          theta = 1e-10f;
-
-    public  bool                           debugMode;
-
     public  int                            maximumIterations = 100_000;
-
-    public  bool                           boundIterations = true;
-
-    private int                            _currentAlgorithmExecutionIterations; // Reset after each alg execution.
 
     public  bool                           mdpLoaded;
 
-    public List<StateValueFunction>        valueFunctionsHistory = new List<StateValueFunction>();
-
     public List<Policy>                    policiesHistory = new List<Policy>();
-    
-    private GridAction[]                   _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
+
+    private float                            _progressOfAlgorithm;
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
+    public Dictionary<int, GameObject>     StateQuads { get; set; } = new Dictionary<int, GameObject>();
 
-    public Dictionary<int, GameObject> StateQuads { get; set; } = new Dictionary<int, GameObject>();
+    public  float                          theta = 1e-10f;
 
+    public List<StateValueFunction>        valueFunctionsHistory = new List<StateValueFunction>();
 
     // ╔════════════════════════╗
     // ║ NORMAL UNITY FUNCTIONS ║
@@ -186,9 +190,13 @@ public class MdpManager : MonoBehaviour
         {
             for (var x = 0; x < mdpForCreation.Width; x++)
             {
+                
                 var state = InstantiateIndividualState(mdpForCreation, stateCubeDimensions, x, y, stateSpace, id);
 
-                Instantiate(gridSquarePrefab, new Vector3(_offsetToCenterVector.x + x, 0f, _offsetToCenterVector.y + y), Quaternion.identity, stateSpace);
+                var gridSquarePosition = new Vector3(_offsetToCenterVector.x + x, 0f, _offsetToCenterVector.y + y);
+                
+                Instantiate(gridSquarePrefab, gridSquarePosition, Quaternion.identity, stateSpace);
+
                 
                 id++;
             }
@@ -227,6 +235,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject = state.GetComponent<State>();
                 fullStateObject.stateIndex = id;
                 fullStateObject.stateType = stateType;
+                fullStateObject.statePosition = terminalPosition;
                 Task.Run(fullStateObject.UpdateStateHeightAsync(terminalGoalScale).RunSynchronously);
                 break;
             
@@ -235,6 +244,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject = state.GetComponent<State>();
                 fullStateObject.stateIndex = id;
                 fullStateObject.stateType = stateType;
+                fullStateObject.statePosition = obstaclePosition;
                 fullStateObject.SetStateScale(obstacleScale);
                 break;
             
@@ -243,6 +253,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject = state.GetComponent<State>();
                 fullStateObject.stateIndex = id;
                 fullStateObject.stateType = stateType;
+                fullStateObject.statePosition = goalPosition;
                 Task.Run(fullStateObject.UpdateStateHeightAsync(terminalGoalScale).RunSynchronously);
                 break;
             
@@ -251,6 +262,7 @@ public class MdpManager : MonoBehaviour
                 fullStateObject = state.GetComponent<State>();
                 fullStateObject.stateIndex = id;
                 fullStateObject.stateType = stateType;
+                fullStateObject.statePosition = statePosition;
                 Task.Run(fullStateObject.UpdateStateHeightAsync(scale.y).RunSynchronously);
                 break;
             
@@ -311,6 +323,7 @@ public class MdpManager : MonoBehaviour
         
         SetKeepGoingTrue();
 
+        float maxDelta;
         while (keepGoing)
         {
             // Control flow handles the algorithm's execution speed for displaying how the algorithm functions.
@@ -339,7 +352,7 @@ public class MdpManager : MonoBehaviour
                     
                     foreach (var state in mdp.States.Where(state => state.IsStandard()))
                     {
-                        
+                        if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
 
                         if (paused) await RunPauseLoop(cancellationToken);
 
@@ -395,6 +408,12 @@ public class MdpManager : MonoBehaviour
             _currentAlgorithmExecutionIterations = stateValueFunctionV.Iterations;
 
             stateValueFunctionV.Iterations++;
+
+            
+            // Progress Update to UI
+            maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
+            SendProgressToUIForDisplay(maxDelta);
+            uiController.SetMaxDeltaText(maxDelta);
             
             await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
         }
@@ -405,6 +424,11 @@ public class MdpManager : MonoBehaviour
         
         uiController.SetRunFeaturesActive();
 
+        // Progress Update to UI
+        maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
+        SendProgressToUIForDisplay(maxDelta);
+        uiController.SetMaxDeltaText(maxDelta);
+        
         return stateValueFunctionV;
     }
     
@@ -424,6 +448,8 @@ public class MdpManager : MonoBehaviour
         
         foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
+            if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
+            
             if (paused) await RunPauseLoop(cancellationToken);
             
             foreach (var action in state.ApplicableActions)
@@ -555,6 +581,7 @@ public class MdpManager : MonoBehaviour
         
         var actionValueFunctionQ = new ActionValueFunction(mdp);
 
+        float maxDelta;
         while (keepGoing)
         {
             if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
@@ -591,6 +618,8 @@ public class MdpManager : MonoBehaviour
                     
                     foreach (var state in mdp.States.Where(state => state.IsStandard()))
                     {
+                        if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
+                        
                         if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
                         
                         foreach (var action in state.ApplicableActions)
@@ -633,6 +662,11 @@ public class MdpManager : MonoBehaviour
             
             if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
 
+            // Progress Update to UI
+            maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
+            SendProgressToUIForDisplay(maxDelta);
+            uiController.SetMaxDeltaText(maxDelta);
+            
             await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
 
             stateValueFunctionV.Iterations++;
@@ -645,13 +679,37 @@ public class MdpManager : MonoBehaviour
         
         currentStateValueFunction = stateValueFunctionV;
         
+        // Progress Update to UI
+        maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
+        SendProgressToUIForDisplay(maxDelta);
+        uiController.SetMaxDeltaText(maxDelta);
+        
         uiController.SetRunFeaturesActive();
     }
 
     // ┌──────────────────────────────────────┐
     // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
     // └──────────────────────────────────────┘
+    
+    // Math.Log10(3.564e-4)/Math.Log10(1e-10)
+    public float ProgressOfAlgorithm
+    {
+        get => _progressOfAlgorithm;
+        set
+        {
+            var progressValue = ((Math.Log10(value) / Math.Log10(theta)) * 100);
+            if (progressValue < 0) progressValue = 0;
+            _progressOfAlgorithm = (float) progressValue;
+        }
+    }
 
+    private void SendProgressToUIForDisplay(float maxDelta)
+    {
+        var progressValue = (float)((Math.Log10(maxDelta) / Math.Log10(theta)) * 100);
+        if (progressValue < 0) progressValue = 0;
+        uiController.SetProgressBarPercentage(progressValue);
+    }
+    
     public float Gamma
     {
         get => gamma;
@@ -693,7 +751,7 @@ public class MdpManager : MonoBehaviour
 
     public string StateNameFormatted(int stateIndex)
     {
-        return $"<b>S</b><sub>{stateIndex}</sub>";
+        return $"<b>S</b>{stateIndex}";
     }
 
     public string ActionInStateFormatted(int stateIndex)
@@ -792,7 +850,20 @@ public class MdpManager : MonoBehaviour
 
     public void GenerateRandomStateValueFunction()
     {
-        currentStateValueFunction = new StateValueFunction(mdp, -3f, 3f);
+        currentStateValueFunction = 
+            new StateValueFunction(
+                mdp, 
+                randomStateValueBounds.x, 
+                randomStateValueBounds.y);
+        
+        SetAllStateHeights(currentStateValueFunction);
+    }
+
+    public void GenerateRandomPolicy()
+    {
+        if (mdp == null) return;
+        currentPolicy = new Policy(mdp);
+        SetAllActionSprites(currentPolicy);
     }
 
     public void SetKeepGoingFalse()
