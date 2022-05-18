@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 using Michsky.UI.ModernUIPack;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
-
 
 public class StateInteractions : MonoBehaviour
 {

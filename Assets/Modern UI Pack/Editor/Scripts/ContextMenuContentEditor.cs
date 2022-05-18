@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using Michsky.UI.ModernUIPack;
 using UnityEditor;
+using UnityEngine;
 
-namespace Michsky.UI.ModernUIPack
+namespace Modern_UI_Pack.Editor.Scripts
 {
     [CustomEditor(typeof(ContextMenuContent))]
-    public class ContextMenuContentEditor : Editor
+    public class ContextMenuContentEditor : UnityEditor.Editor
     {
         private GUISkin customSkin;
         private ContextMenuContent cmcTarget;

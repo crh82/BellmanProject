@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Serialization;
-using UnityEngine.WSA;
-using Object = System.Object;
 
 // using Debug = System.Diagnostics.Debug;
 public class Algorithms : MonoBehaviour
