@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -97,7 +96,6 @@ public class Policy
     /// A small method to help with testing and debugging in the Unity Editor. Used to update the Editor visible policy.
     /// </summary>
     /// <param name="setOfStates">Represents the state space</param>
-    /// <param name="numberOfStates"><c>int</c></param>
     /// <returns>A string array representation of the policy where the actions are indexed by their corresponding state index</returns>
     public string[] PolicyToStringArray(List<MarkovState> setOfStates)
     {

@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -9,10 +6,6 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
-using UnityEditor;
-using UnityEngine.Android;
-using UnityEngine.Assertions;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
@@ -186,7 +179,7 @@ public class UIController : MonoBehaviour
             Debug.Log("Selected Custom Gridworld.");
             break;
          case 1:
-            mdpString = "Assets/Resources/TestMDPs/DrunkBonanza4x4Test.json";
+            mdpString = "Assets/Resources/TestMDPs/GrastiensWorld.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             break;
          case 2:
@@ -211,6 +204,14 @@ public class UIController : MonoBehaviour
             break;
          case 7:
             mdpString = "Assets/Resources/TestMDPs/BigRandomWalk.json";
+            _mdpManager.LoadMdpFromFilePath(mdpString);
+            break;
+         case 8:
+            mdpString = "Assets/Resources/TestMDPs/BloodMoon.json";
+            _mdpManager.LoadMdpFromFilePath(mdpString);
+            break;
+         case 9:
+            mdpString = "Assets/Resources/TestMDPs/TestFromGridEditor.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             break;
          default:

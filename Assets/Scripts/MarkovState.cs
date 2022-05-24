@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 
 /// <summary>
@@ -17,14 +14,6 @@ public class MarkovState
     [SerializeField] private List<MarkovAction> applicableActions;
     [SerializeField] private float              reward;
     [SerializeField] private StateType          typeOfState;
-
-    private Dictionary<GridAction, float> actionValue; // Not currently in use
-
-    public Dictionary<GridAction, float> ActionValue
-    {
-        get => actionValue;
-        set => actionValue = value;
-    }
 
     public int StateIndex
     {

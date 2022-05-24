@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
 // Creates the model of the environment — the underlying MDP data rather than the physical/visual MDP.
@@ -106,7 +105,7 @@ public class MdpManager : MonoBehaviour
 
     public List<Policy>                    policiesHistory = new List<Policy>();
 
-    private float                            _progressOfAlgorithm;
+    private float                          _progressOfAlgorithm;
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
     public Dictionary<int, GameObject>     StateQuads { get; set; } = new Dictionary<int, GameObject>();
@@ -124,6 +123,20 @@ public class MdpManager : MonoBehaviour
         algorithms   = gameObject.AddComponent<Algorithms>();
         currentUi    = GameObject.FindGameObjectWithTag("PolicyEvaluationUI").GetComponent<Canvas>();
         uiController = currentUi.GetComponent<UIController>();
+        
+        // MDP grastiens = MdpAdmin.GenerateMdp(
+        //     "BloodMoon", 
+        //     MdpRules.RussellAndNorvig,
+        //     new[] {50, 50},
+        //     new int[] {901,801,701},
+        //     new int[] {225,775},
+        //     new int[] {549,450,550,650,551},
+        //     0.001f,
+        //     -2f,
+        //     5f,
+        //     false);
+        // grastiens.States[900].Reward = 10f;
+        // MdpAdmin.SaveMdpToFile(grastiens, "Assets/Resources/TestMDPs");
     }
     
 
@@ -197,6 +210,7 @@ public class MdpManager : MonoBehaviour
                 
                 Instantiate(gridSquarePrefab, gridSquarePosition, Quaternion.identity, stateSpace);
 
+                
                 
                 id++;
             }
@@ -279,6 +293,12 @@ public class MdpManager : MonoBehaviour
         _stateSpaceVisualStates[id] = fullStateObject;
         
         StateQuads.Add(id, fullStateObject.stateQuad);
+
+        if (mdp.StateCount > 1000)
+        {
+            fullStateObject.hoverCanvas.enabled = false;
+            fullStateObject.hoverCanvas.gameObject.SetActive(false);
+        }
 
         return state;
     }

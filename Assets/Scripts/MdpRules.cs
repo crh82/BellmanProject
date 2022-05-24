@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine.Assertions;
@@ -7,13 +5,13 @@ using Random = UnityEngine.Random;
 
 public enum MdpRules
 {
-    SlipperyWalk,
-    RussellAndNorvig,
-    RandomWalk,
-    FrozenLake,
-    GrastiensWindFromTheNorth,
-    DrunkBonanza,
-    Deterministic
+    SlipperyWalk              = 0,
+    RussellAndNorvig          = 1,
+    RandomWalk                = 2,
+    FrozenLake                = 3,
+    GrastiensWindFromTheNorth = 4,
+    DrunkBonanza              = 5,
+    Deterministic             = 6
 }
 
 public static class RuleProbabilityDistributor
@@ -98,7 +96,7 @@ public static class RuleProbabilityDistributor
             default:
                 // Corresponds to case Rules.Deterministic
                 // Agent always arrives in intended s' 
-                transitions = new[] {1.0f, 1.0f, 1.0f, 1.0f};
+                transitions = new[] {1.0f};
                 break;
         }
     
