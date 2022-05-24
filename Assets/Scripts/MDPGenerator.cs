@@ -1,12 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using JetBrains.Annotations;
-using Newtonsoft.Json;
 using UnityEngine;
-using UnityEngine.Windows;
-using File = System.IO.File;
-using Random = UnityEngine.Random;
 
 /// <summary>
 /// This script draws on Sebastian Lague's MapGenerator tutorial.

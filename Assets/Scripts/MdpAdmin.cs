@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Debug = UnityEngine.Debug;
-using Random = UnityEngine.Random;
 
 
 /// <summary>
@@ -128,10 +125,12 @@ public static class MdpAdmin
         }
     }
 
-    private static void InitializeActionsAndTransitions(MDP newMdp, bool computeTransitions)
+    public static void InitializeActionsAndTransitions(MDP newMdp, bool computeTransitions)
     {
         foreach (MarkovState markovState in newMdp.States)
         {
+            markovState.ApplicableActions ??= new List<MarkovAction>();
+
             foreach (GridAction action in Enum.GetValues(typeof(GridAction)))
             {
                 int[] stateActionPair = {markovState.StateIndex, (int) action};

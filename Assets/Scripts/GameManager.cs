@@ -24,7 +24,13 @@ public class GameManager : MonoBehaviour
     {
         
     }
+
+    public void ApplicationQuit()
+    {
+        Application.Quit();
+    }
 }
+
 
 [System.Serializable]
 public class TestJson : MonoBehaviour

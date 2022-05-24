@@ -1,4 +1,3 @@
-using System;
 using Michsky.UI.ModernUIPack;
 using UnityEngine;
 
