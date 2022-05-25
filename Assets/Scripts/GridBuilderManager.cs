@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
 public class GridBuilderManager : MonoBehaviour
 {
-   public static GridBuilderManager instance;
+   // public static GridBuilderManager instance;
 
     public Grid gridPrefab;
 
@@ -24,10 +26,17 @@ public class GridBuilderManager : MonoBehaviour
 
     public Vector2Int dimensions;
 
+    public MDP        sceneMdp;
+
     private void Awake()
     {
-        if (instance == null) instance = this;
-        else Destroy(this);
+        if (GameManager.instance.sendMdp)
+        {
+            sceneMdp = GameManager.instance.currentMdp;
+            GameManager.instance.currentMdp = null;
+            GameManager.instance.sendMdp = false;
+            BuildGrid(sceneMdp);
+        }
     }
 
     // Update is called once per frame
@@ -35,7 +44,8 @@ public class GridBuilderManager : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.M) && Input.GetKey(KeyCode.LeftShift))
         {
-            SavePolicy();
+            // SavePolicy();
+            TransitionToMarkovDecisionProcessScene();
         }
 
         if (Input.GetKey(KeyCode.B) && !gridLoaded)
@@ -49,39 +59,52 @@ public class GridBuilderManager : MonoBehaviour
     void SavePolicy()
     {
         MDP test = levelEditor.GenerateMdpFromTileMaps();
-        
+
         MdpAdmin.SaveMdpToFile(test, "Assets/Resources/TestMDPs");
     }
 
-    void BuildGrid()
+    private void TransitionToMarkovDecisionProcessScene()
     {
+        GameManager.instance.currentMdp = levelEditor.GenerateMdpFromTileMaps();
+        GameManager.instance.sendMdp    = true;
+        GameManager.instance.SwitchScene(BellmanScenes.DynamicProgramming);
+    }
+
+    void BuildGrid(MDP buildMdp = null)
+    {
+        var buildDimensions = buildMdp == null 
+            ? dimensions 
+            : new Vector2Int(buildMdp.Width, buildMdp.Height);
+        
         currentGrid = Instantiate(gridPrefab);
         
         currentGrid.transform.position = Vector3.zero;
         
         levelEditor = currentGrid.GetComponent<LevelEditor>();
 
-        var bgTiles = levelEditor.tileMaps[0];
+        var bgTiles     = levelEditor.tileMaps[0];
         
-        var mainTiles = levelEditor.tileMaps[1];
+        var mainTiles   = levelEditor.tileMaps[1];
 
         var policyTiles = levelEditor.tileMaps[2];
 
         var rewardTiles = levelEditor.tileMaps[3];
         
-        FillBackground(bgTiles, levelEditor.tiles[4]);
-
-        CreateTilemapLayer(mainTiles, levelEditor.tiles[5], dimensions.x, dimensions.y);
+        // FillBackground(bgTiles, levelEditor.tiles[4]);
         
-        CreateTilemapLayer(policyTiles, levelEditor.tiles[8], dimensions.x, dimensions.y);
+        mainTiles   = CreateTilemapLayer(mainTiles,   levelEditor.tiles[5], buildDimensions.x, buildDimensions.y);
         
-        CreateTilemapLayer(rewardTiles, levelEditor.tiles[8], dimensions.x, dimensions.y);
-
+        policyTiles = CreateTilemapLayer(policyTiles, levelEditor.tiles[8], buildDimensions.x, buildDimensions.y);
+        
+        rewardTiles = CreateTilemapLayer(rewardTiles, levelEditor.tiles[8], buildDimensions.x, buildDimensions.y);
+        
         target.position = mainTiles.cellBounds.center;
+
+        var targetPos = target.position;
         
-        mainCamera.transform.position = target.position + new Vector3(0,0,-2f);
+        mainCamera.transform.position = targetPos + new Vector3(0,0,-2f);
         
-        mainCamera.orthographicSize = Math.Max(target.position.x, target.position.y);
+        mainCamera.orthographicSize = Math.Max(targetPos.x, targetPos.y);
         
         levelEditor.mainCamera = Camera.main;
        

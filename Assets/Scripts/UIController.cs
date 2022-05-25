@@ -159,6 +159,19 @@ public class UIController : MonoBehaviour
          _mdpManager.SetKeepGoingFalse();
          // Debug.Log("Escape key was pressed");
       }
+      
+      if (Input.GetKeyDown(KeyCode.Alpha1))
+      {
+         ToggleActionsVisuals("ActionObjects");
+      }
+      if (Input.GetKeyDown(KeyCode.Alpha2))
+      {
+         ToggleActionsVisuals("ActionSprites");
+      }
+      if (Input.GetKeyDown(KeyCode.Alpha3))
+      {
+         ToggleActionsVisuals("PreviousActionSprites");
+      }
    }
 
    private void OnDisable()

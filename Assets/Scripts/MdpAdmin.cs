@@ -97,21 +97,21 @@ public static class MdpAdmin
             if (newMdp.ObstacleStates.Contains(stateIndex))
             {
                 stateToAdd.TypeOfState = StateType.Obstacle;
-                stateToAdd.Reward = 0;
+                stateToAdd.Reward      = 0;
             }
 
             // Terminal state
             else if (newMdp.TerminalStates.Contains(stateIndex))
             {
                 stateToAdd.TypeOfState = StateType.Terminal;
-                stateToAdd.Reward = terminalReward;
+                stateToAdd.Reward      = terminalReward;
             }
 
             // Goal state
             else if (newMdp.GoalStates.Contains(stateIndex))
             {
                 stateToAdd.TypeOfState = StateType.Goal;
-                stateToAdd.Reward = goalReward;
+                stateToAdd.Reward      = goalReward;
             }
 
             // Standard state 

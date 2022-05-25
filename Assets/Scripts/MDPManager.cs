@@ -6,46 +6,54 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Assertions;
 using Debug = UnityEngine.Debug;
 
 // Creates the model of the environment — the underlying MDP data rather than the physical/visual MDP.
 /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/MDPManager/*'/>
 public class MdpManager : MonoBehaviour
 {
-    public Transform                       statePrefab;
+    public              Transform          statePrefab;
 
-    public Transform                       stateActionPrefab;
+    public              Transform          stateActionPrefab;
 
-    public Transform                       obstaclePrefab;
+    public              Transform          obstaclePrefab;
 
-    public Transform                       terminalPrefab;
+    public              Transform          terminalPrefab;
 
-    public Transform                       goalPrefab;
+    public              Transform          goalPrefab;
 
-    public Transform                       stateSpacePrefab;
+    public              Transform          stateSpacePrefab;
 
-    public Transform                       gridSquarePrefab;
+    public              Transform          gridSquarePrefab;
     
-    public TextAsset                       mdpFileToLoad;
+    public              TextAsset          mdpFileToLoad;
 
-    public Vector2                         dimensions = Vector2.one;
+    public              Vector2            dimensions = Vector2.one;
     
     [Range(0, 1)] 
     private const float                    GapBetweenStates = 0.4f;
 
-    public float                           initialStateValueForTesting; // Todo remove after built
+    public        float                    initialStateValueForTesting; // Todo remove after built
 
-    public Canvas                          currentUi;
+    public              Canvas             currentUi;
 
-    public UIController                    uiController;
+    public              UIController       uiController;
     
-    private Vector2                        _offsetToCenterVector;
+    private             Vector2            _offsetToCenterVector;
 
-    private readonly Vector2               _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
+    private readonly    Vector2            _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
 
     public bool                            actionSpritesDisplayed;
 
-    public Vector2                         randomStateValueBounds;
+    public              Vector2            randomStateValueBounds;
+    
+    private const       BellmanScenes      Title              = BellmanScenes.Title;
+    
+    private const       BellmanScenes      DynamicProgramming = BellmanScenes.DynamicProgramming;
+   
+    private const       BellmanScenes      MdpBuilder         = BellmanScenes.MdpBuilder;
+
 
     
     // ┌───────────────────────────────────────────────────┐
@@ -123,6 +131,8 @@ public class MdpManager : MonoBehaviour
         algorithms   = gameObject.AddComponent<Algorithms>();
         currentUi    = GameObject.FindGameObjectWithTag("PolicyEvaluationUI").GetComponent<Canvas>();
         uiController = currentUi.GetComponent<UIController>();
+
+        if (GameManager.instance.sendMdp) LoadMdpFromGameManager();
         
         // MDP grastiens = MdpAdmin.GenerateMdp(
         //     "BloodMoon", 
@@ -143,8 +153,22 @@ public class MdpManager : MonoBehaviour
     // ╔═══════════════════════════════════╗
     // ║ MDP SERIALIZATION/DESERIALIZATION ║
     // ╚═══════════════════════════════════╝
-    public MDP CreateFromJson(string jsonString) => JsonUtility.FromJson<MDP>(jsonString);
+    private MDP CreateFromJson(string jsonString) => JsonUtility.FromJson<MDP>(jsonString);
 
+    private async void LoadMdpFromGameManager()
+    {
+        mdp = await InstantiateMdpVisualisationAsync(GameManager.instance.currentMdp);
+        
+        mdpLoaded = true;
+        
+        uiController.SetRunFeaturesActive();
+        
+        // GameManager instances of MDPs, value functions, and policies get reset to null after transitioning scenes
+        // Also sets the send flag false.
+        GameManager.instance.currentMdp = null;
+        GameManager.instance.sendMdp    = false;
+    }
+    
     public async void LoadMdpFromFilePath(string filepath)
     {
         string mdpJsonRepresentation = File.ReadAllText(filepath);
@@ -156,33 +180,7 @@ public class MdpManager : MonoBehaviour
         uiController.SetRunFeaturesActive();
     }
 
-    public IEnumerator InstantiateMdpVisualisation()
-    {
-        var id = 0;
-        
-        _offsetToCenterVector = new Vector2((-mdp.Width / 2f), (-mdp.Height / 2f));
-        
-        if (mdp.Height > 1) {_offsetToCenterVector += _offsetValuesFor2DimensionalGrids;}
-        
-        const float stateCubeDimensions = 1 - GapBetweenStates;
-
-        Transform stateSpace = Instantiate(
-            stateSpacePrefab, 
-            this.transform, 
-            true);
-
-        for (var y = 0; y < mdp.Height; y++)
-        {
-            for (var x = 0; x < mdp.Width; x++)
-            {
-                var state = InstantiateIndividualState(mdp, stateCubeDimensions, x, y, stateSpace, id);
-                id++;
-                yield return null;
-            }
-        }
-    }
-
-    public async Task<MDP> InstantiateMdpVisualisationAsync(MDP mdpFromFile)
+    private async Task<MDP> InstantiateMdpVisualisationAsync(MDP mdpFromFile)
     {
         var mdpForCreation = mdpFromFile;
         
@@ -218,8 +216,8 @@ public class MdpManager : MonoBehaviour
 
         return await Task.FromResult(mdpForCreation);
     }
-    
-    public Transform InstantiateIndividualState(MDP mdp, float stateXandZDimensions, int x, int y, Transform stateSpace, int id)
+
+    private Transform InstantiateIndividualState(MDP mdp, float stateXandZDimensions, int x, int y, Transform stateSpace, int id)
     {
         var stateType = mdp.States[id].TypeOfState;
         

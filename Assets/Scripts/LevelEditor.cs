@@ -162,15 +162,14 @@ public class LevelEditor : MonoBehaviour
 
         for (var index = 0; index < tilesFromTileMap.Length; index++)
         {
-            var newState = new MarkovState();
-
-            newState.ApplicableActions = new List<MarkovAction>();
-            
             var tileBase = tilesFromTileMap[index];
-
-            newState.TypeOfState = AssignStateTypeFromTileType(tileBase);
             
-            newState.StateIndex = index;
+            var newState = new MarkovState
+            {
+                ApplicableActions = new List<MarkovAction>(),
+                TypeOfState = AssignStateTypeFromTileType(tileBase),
+                StateIndex = index
+            };
 
             if (!newState.IsObstacle())
             {
@@ -185,7 +184,12 @@ public class LevelEditor : MonoBehaviour
         return newMdp;
     }
 
-    public StateType AssignStateTypeFromTileType(TileBase tile)
+    public void GenerateTilemapFromMdp(MDP buildMdp)
+    {
+        
+    }
+
+    private StateType AssignStateTypeFromTileType(TileBase tile)
     {
         return tile.name switch
         {
@@ -195,13 +199,13 @@ public class LevelEditor : MonoBehaviour
               _ => StateType.Standard
         };
     }
-    
-        public Vector2Int IndexToLocation(int index, int xDimension)
+
+    private Vector2Int IndexToLocation(int index, int xDimension)
     {
         return new Vector2Int(index % xDimension, index / xDimension);
     }
 
-    public int LocationToIndex(int x, int y, int xDimension)
+    private int LocationToIndex(int x, int y, int xDimension)
     {
         return (y * xDimension) + x;
     }

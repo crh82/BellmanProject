@@ -117,91 +117,6 @@ public class Algorithms : MonoBehaviour
         return stateValueFunctionV;
     }
 
-    public IEnumerator<StateValueFunction> PolicyEvaluationCR(
-        MDP mdp,
-        Policy policy,
-        float gamma,
-        float theta,
-        bool boundIterations = true,
-        int maxIterations = 10000,
-        bool debugMode = false)
-    {
-        var kIterations = 0;
-
-        var stateValueFunctionV = new StateValueFunction(mdp);
-
-        while (true)
-        {
-            float delta = 0;
-
-            foreach (var state in mdp.States.Where(state => state.IsStandard()))
-            {
-                
-                float valueBeforeUpdate = stateValueFunctionV.Value(state);     
-                        
-                // Σ P(s'|s,a) [ R(s') + 𝛄 • V(s') ]
-                float valueOfState = 0;
-
-                // LINQ VERSION
-                //
-                // float valueOfState = (
-                //     from transition in mdp.TransitionFunction(state, policy.GetAction(state)) 
-                //     let probability = transition.Probability 
-                //     let successorState = mdp.States[transition.SuccessorStateIndex] 
-                //     let reward = transition.Reward 
-                //     let valueOfSuccessor = stateValueFunctionV.Value(successorState) 
-                //     let zeroIfTerminal = ZeroIfTerminal(successorState) 
-                //     select probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal)
-                // ).Sum();
-                    
-                // foreach (var transition in P(state, policy.Pi(state))) <—— Precomputed transitions.
-                foreach (var transition in mdp.TransitionFunction(state, policy.GetAction(state))) 
-                {
-                    float          probability = transition.Probability;
-                    MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
-                    float               reward = transition.Reward;
-                    float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
-                    float       zeroIfTerminal = ZeroIfTerminal(successorState);
-
-                    //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
-                    valueOfState += probability * (reward + gamma * valueOfSuccessor * zeroIfTerminal);
-                }
-
-                stateValueFunctionV.SetValue(state, valueOfState);
-                
-                // Rather than running the L-inf norm on the full state set, this checks the change incrementally
-                delta = Math.Max(delta, Math.Abs(valueBeforeUpdate - valueOfState));
-                        
-            }
-            
-            if (delta < theta) 
-            {
-                if (debugMode) Debug.Log($"delta: {delta} theta: {theta}");
-                break;
-            }
-            
-            if (boundIterations & (kIterations >= maxIterations))
-            {
-                if (debugMode) Debug.Log($"delta: {delta} theta: {theta}");
-                break;
-            }
-
-            kIterations++;
-
-            stateValueFunctionV.Iterations++;
-
-            yield return null;
-        }
-
-        // For testing and debugging, updates the Unity Editor stateValue array.
-        UpdateGameObjectFields(mdp, stateValueFunctionV, kIterations);
-
-        if (debugMode) GenerateDebugInformation(mdp, stateValueFunctionV, kIterations);
-        // ——— End Unity Editor debug stuff ———
-        
-        yield return stateValueFunctionV;
-    }
-    
     public StateValueFunction SingleStateSweep(
         MDP                mdp, 
         Policy             policy, 
@@ -500,8 +415,6 @@ public class Algorithms : MonoBehaviour
             stateValueFunctionV.SetValue(state, valueOfState);
         }
         
-        // stateValueFunctionV.Iterations++;
-        
         return Task.FromResult(stateValueFunctionV);
     }
     
@@ -537,26 +450,7 @@ public class Algorithms : MonoBehaviour
 
         return actionValueFunction.MaxValue(state);
     }
-    
-    // public Task<StateValueFunction> SingleStateSweepAsync(
-    //     MDP                mdp, 
-    //     Policy             policy, 
-    //     float              gamma,
-    //     StateValueFunction stateValueFunctionV)
-    // {
-    //     foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
-    //     // foreach (var state in mdp.States.Where(state => state.IsStandard()))
-    //     {
-    //         float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
-    //         
-    //         stateValueFunctionV.SetValue(state, valueOfState);
-    //     }
-    //     
-    //     stateValueFunctionV.Iterations++;
-    //     
-    //     return Task.FromResult(stateValueFunctionV);
-    // }
-    
+
     public Task<float> BellmanBackUpValueOfStateAsync(
         MDP                mdp, 
         Policy             policy, 
