@@ -22,9 +22,15 @@ public class CameraController : MonoBehaviour
 
     public MdpManager mdpManager;
 
+    public bool annotateMode;
+
+    public GameObject trail;
+
     // Start is called before the first frame update
     private void Start()
     {
+        // trail = GameObject.FindWithTag("RedLine");
+        
         mdpManager = FindObjectOfType<MdpManager>();
         // mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
     }
@@ -32,6 +38,18 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        
+        // Todo Get the screen annotation mode working. 
+        // if (annotateMode && Input.GetMouseButton(1))
+        // {
+        //     Debug.Log(mainCamera.ScreenToViewportPoint(Input.mousePosition));
+        //     mainCamera.ViewportToScreenPoint(Input.mousePosition);
+        //     // trail.transform.position = Vector3.Lerp(trail.transform.position, mainCamera.ScreenToWorldPoint(Input.mousePosition), 10);
+        //     trail.transform.position = mainCamera.ScreenToViewportPoint(Input.mousePosition);
+        //     // trail.transform.position = mainCamera.ViewportToScreenPoint(Input.mousePosition);
+        //     //     trail.transform.position = mainCamera.ViewportToWorldPoint(Input.mousePosition);
+        // }
+        
         
         HandleMouseInput();
         HandleMovement();

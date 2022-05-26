@@ -17,6 +17,8 @@ TagManager:
   - Right
   - Up
   - SettingsDropdown
+  - MainTileMap
+  - RedLine
   layers:
   - Default
   - TransparentFX

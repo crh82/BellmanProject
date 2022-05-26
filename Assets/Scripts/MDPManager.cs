@@ -54,6 +54,8 @@ public class MdpManager : MonoBehaviour
    
     private const       BellmanScenes      MdpBuilder         = BellmanScenes.MdpBuilder;
 
+    public GameObject rabbit;
+
 
     
     // ┌───────────────────────────────────────────────────┐
@@ -310,12 +312,13 @@ public class MdpManager : MonoBehaviour
     // ───────────────────
     //  Policy Evaluation 
     // ───────────────────
-    
+
     /// <summary>
     /// Todo Properly comment this
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <param name="stateValueFunction"></param>
+    /// <param name="policy"></param>
     public async Task<StateValueFunction> PolicyEvaluationControlAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
     {
 
@@ -365,11 +368,15 @@ public class MdpManager : MonoBehaviour
                 case ByState:
                 case ByAction:
                 case ByTransition:
+                    
+                    EnableRabbit();
 
                     if (paused) await RunPauseLoop(cancellationToken);
                     
                     foreach (var state in mdp.States.Where(state => state.IsStandard()))
                     {
+                        SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
+                        
                         if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
 
                         if (paused) await RunPauseLoop(cancellationToken);
@@ -415,6 +422,7 @@ public class MdpManager : MonoBehaviour
                             await Task.Delay(playSpeed, cancellationToken);
                         }
                     }
+                    DisableRabbit();
                     break;
             }
            
@@ -433,6 +441,8 @@ public class MdpManager : MonoBehaviour
             SendProgressToUIForDisplay(maxDelta);
             uiController.SetMaxDeltaText(maxDelta);
             
+            DisableRabbit();
+            
             await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
         }
         
@@ -446,6 +456,8 @@ public class MdpManager : MonoBehaviour
         maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
         SendProgressToUIForDisplay(maxDelta);
         uiController.SetMaxDeltaText(maxDelta);
+        
+        DisableRabbit();
         
         return stateValueFunctionV;
     }
@@ -464,8 +476,12 @@ public class MdpManager : MonoBehaviour
     
         var actionValueFunctionQ = new ActionValueFunction();
         
+        EnableRabbit();
+        
         foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
+            SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
+            
             if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
             
             if (paused) await RunPauseLoop(cancellationToken);
@@ -522,6 +538,8 @@ public class MdpManager : MonoBehaviour
     
         uiController.SetRunFeaturesActive();
         
+        DisableRabbit();
+        
         return improvedPolicy;
     }
     
@@ -556,13 +574,13 @@ public class MdpManager : MonoBehaviour
 
             uiController.PauseAlgorithm();
             
-            await RunPauseLoop(cancellationToken);
+            if (focusAndFollowMode) await RunPauseLoop(cancellationToken);
             
             newPolicy = await PolicyImprovementControlledAsync(cancellationToken, valueOfPolicy);
             
             uiController.PauseAlgorithm();
             
-            await RunPauseLoop(cancellationToken);
+            if (focusAndFollowMode) await RunPauseLoop(cancellationToken);
             
             if (oldPolicy.Equals(newPolicy)) break;
 
@@ -634,8 +652,14 @@ public class MdpManager : MonoBehaviour
                 case ByAction:
                 case ByTransition:
                     
+                    
+                    
                     foreach (var state in mdp.States.Where(state => state.IsStandard()))
                     {
+                        EnableRabbit();
+                        
+                        SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
+                        
                         if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
                         
                         if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
@@ -670,7 +694,10 @@ public class MdpManager : MonoBehaviour
                         await SetIndividualStateHeightAsync(state, valueOfState);
                 
                         await Task.Delay(playSpeed, cancellationToken);
+                        
+                        DisableRabbit();
                     }
+                    
                     break;
             }
 
@@ -703,19 +730,26 @@ public class MdpManager : MonoBehaviour
         uiController.SetMaxDeltaText(maxDelta);
         
         uiController.SetRunFeaturesActive();
+        
+        DisableRabbit();
     }
 
     // ┌──────────────────────────────────────┐
     // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
     // └──────────────────────────────────────┘
+
+    public void SetRabbitPosition(Vector3 position) => rabbit.transform.position = position;
+
+    public void EnableRabbit() => rabbit.SetActive(true);
     
-    // Math.Log10(3.564e-4)/Math.Log10(1e-10)
+    public void DisableRabbit() => rabbit.SetActive(false);
+    
     public float ProgressOfAlgorithm
     {
         get => _progressOfAlgorithm;
         set
         {
-            var progressValue = ((Math.Log10(value) / Math.Log10(theta)) * 100);
+            double progressValue = ((Math.Log10(value) / Math.Log10(theta)) * 100);
             if (progressValue < 0) progressValue = 0;
             _progressOfAlgorithm = (float) progressValue;
         }
@@ -1039,140 +1073,6 @@ public class MdpManager : MonoBehaviour
     // ║ Not Currently In Use ║
     // ╚══════════════════════╝
     
-    // /// <summary>
-    // /// TODO Improve because Temporary. Break this up into evaluation and visualization
-    // /// </summary>
-    // public void EvaluateAndVisualizeStateValues()
-    // {
-    //     EnsureMdpAndPolicyAreNotNull();
-    //     
-    //     StateValueFunction valueOfCurrentPolicy = algorithms.PolicyEvaluation(
-    //         mdp, 
-    //         CurrentPolicy, 
-    //         gamma, 
-    //         theta,
-    //         boundIterations,
-    //         maximumIterations,
-    //         debugMode);
-    //
-    //     SetAllStateHeights(valueOfCurrentPolicy);
-    // }
-    //
-    // public async void PolicyEvaluationFullControl(CancellationToken cancellationToken, StateValueFunction stateValue = null)
-    // {
-    //     Debug.Log($"Started with speed of: {algorithmExecutionSpeed}");
-    //     
-    //     var i = 0;  // Internal iteration count
-    //     
-    //     var stateValueFunctionV = stateValue ?? new StateValueFunction(mdp);
-    //     
-    //     await SetAllStateHeightsAsync(stateValueFunctionV);
-    //     
-    //     // To reset the keepGoing field to true if the algorithm was previously killed due to an infinite loop
-    //     SetKeepGoingTrue();
-    //     
-    //     while (keepGoing)
-    //     {
-    //         switch (algorithmViewLevel)
-    //         {
-    //             case BySweep:
-    //                 
-    //                 Debug.Log("BySweep started");
-    //                 
-    //                 stateValueFunctionV =
-    //                     algorithms.SingleStateSweep(mdp, CurrentPolicy, gamma, stateValueFunctionV);
-    //
-    //                 await SetAllStateHeightsAsync(stateValueFunctionV);
-    //                 
-    //                 if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
-    //                 else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
-    //
-    //                 i++;
-    //                 
-    //                 Debug.Log("BySweep Worked");
-    //                 
-    //                 break;
-    //             
-    //             case ByStatePE:
-    //                 
-    //                 Debug.Log("ByState Started");
-    //                 
-    //                 foreach (var state in mdp.States.Where(state => state.IsStandard()))
-    //                 {
-    //                     float valueOfState = algorithms.BellmanBackUpValueOfState(
-    //                         mdp, CurrentPolicy, gamma, state, stateValueFunctionV);
-    //             
-    //                     stateValueFunctionV.SetValue(state, valueOfState);
-    //             
-    //                     SetIndividualStateHeight(state, valueOfState);
-    //                     
-    //                     if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
-    //                     else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
-    //                 }
-    //                 
-    //                 stateValueFunctionV.Iterations++;
-    //
-    //                 i++;
-    //                 
-    //                 Debug.Log("ByState Worked");
-    //                 
-    //                 break;
-    //             
-    //             case ByTransition:
-    //                 
-    //                 Debug.Log("ByTransition Started");
-    //                 
-    //                 foreach (var state in mdp.States.Where(state => state.IsStandard()))
-    //                 {
-    //                     float valueOfState = 0;
-    //                     
-    //                     var action = CurrentPolicy.GetAction(state);
-    //                     
-    //                     foreach (var transition in mdp.TransitionFunction(state, action))
-    //                     {
-    //                         float          probability = transition.Probability;
-    //                         MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
-    //                         float               reward = transition.Reward;
-    //                         float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
-    //                         float       zeroIfTerminal = successorState.IsTerminal() ? 0 : 1;
-    //
-    //                         valueOfState += algorithms.SingleTransitionBackup(
-    //                             probability, reward, gamma, valueOfSuccessor, zeroIfTerminal);
-    //                         
-    //                         stateValueFunctionV.SetValue(state, valueOfState);
-    //                         
-    //                         SetIndividualStateHeight(state, valueOfState);
-    //                         
-    //                         if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
-    //                         else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
-    //                     }
-    //                 }
-    //                 
-    //                 stateValueFunctionV.Iterations++;
-    //
-    //                 i++;
-    //                 
-    //                 Debug.Log("ByTransition Worked");
-    //                 
-    //                 break;
-    //         }
-    //         
-    //         SetAllStateHeights(stateValueFunctionV);
-    //                 
-    //         if (algorithmExecutionSpeed < 0.0001) await Task.Yield();
-    //         else await Task.Delay(TimeSpan.FromMilliseconds(algorithmExecutionSpeed), cancellationToken);
-    //         
-    //         if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
-    //         
-    //         if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
-    //
-    //         uiController.UpdateNumberOfIterations(stateValueFunctionV.Iterations);
-    //         
-    //         Debug.Log("PolicyEval Full Control Done");
-    //     }
-    //
-    //     CurrentStateValueFunction = stateValueFunctionV;
-    // }
     
     // Generates the successor state, given a state and action in the modelling of the environment.
     /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/ExecuteAction/*'/>

@@ -112,6 +112,8 @@ public class UIController : MonoBehaviour
 
    public TextMeshProUGUI    maxDelta;
 
+   public TextMeshProUGUI    algorithmTitleText;
+
 
    private const string RegexRealNumber =
       @"/^(?:-(?:[1-9](?:\d{0,2}(?:,\d{3})+|\d*))|(?:0|(?:[1-9](?:\d{0,2}(?:,\d{3})+|\d*))))(?:.\d+|)$/";
@@ -252,6 +254,12 @@ public class UIController : MonoBehaviour
       }
    }
 
+   // ┌──────────────────────┐
+   // │ Central Area Related │
+   // └──────────────────────┘
+   public void SetAlgorithmTitleText(string algorithmTitle) => algorithmTitleText.text = algorithmTitle;
+
+
    // ┌────────────────┐
    // │ Policy Related │
    // └────────────────┘
@@ -366,6 +374,7 @@ public class UIController : MonoBehaviour
    
    public void StopAlgorithm()
    {
+      _mdpManager.DisableRabbit();
       _mdpManager.SetKeepGoingFalse();
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
@@ -381,6 +390,7 @@ public class UIController : MonoBehaviour
    
    public Task StopAlgorithmAsync()
    {
+      _mdpManager.DisableRabbit();
       _mdpManager.SetKeepGoingFalse();
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
@@ -390,7 +400,6 @@ public class UIController : MonoBehaviour
       {
          PauseAlgorithm();
       }
-      
       SetRunFeaturesActive();
       return Task.CompletedTask;
    }
