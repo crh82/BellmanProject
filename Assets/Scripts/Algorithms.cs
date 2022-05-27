@@ -117,62 +117,8 @@ public class Algorithms : MonoBehaviour
         return stateValueFunctionV;
     }
 
-    public StateValueFunction SingleStateSweep(
-        MDP                mdp, 
-        Policy             policy, 
-        float              gamma,
-        StateValueFunction stateValueFunctionV)
-    {
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
-        {
-            float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
-            
-            stateValueFunctionV.SetValue(state, valueOfState);
-        }
-        
-        stateValueFunctionV.Iterations++;
-        
-        return stateValueFunctionV;
-    }
-    
+   
 
-    public float BellmanBackUpValueOfState(
-        MDP                mdp, 
-        Policy             policy, 
-        float              gamma, 
-        MarkovState        state,
-        StateValueFunction stateValueFunctionV)
-    {
-        float valueOfState = 0; // Sutton & Barto
-        
-        // float valueOfState = state.Reward; // Russell & Norvig
-        
-        var action = policy.GetAction(state);
-        
-        foreach (var transition in mdp.TransitionFunction(state, action))
-        {
-            float          probability = transition.Probability;
-            MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
-            float               reward = transition.Reward;
-            float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
-            float       zeroIfTerminal = ZeroIfTerminal(successorState);
-
-            // Sutton & Barto
-            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
-            valueOfState += SingleTransitionBackup(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal); 
-            
-            // Russell & Norvig
-            // valueOfState += gamma * probability * valueOfSuccessor;
-        }
-
-        return valueOfState;
-    }
-    
-    public float SingleTransitionBackup(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
-    {
-        return prob * (reward + gamma * vSprime * zeroIfTerm);
-    }
-    
     // ┌────────────────────┐
     // │ Policy Improvement │
     // └────────────────────┘
@@ -335,6 +281,60 @@ public class Algorithms : MonoBehaviour
         if (debugMode) GenerateDebugInformation(mdp, stateValueFunctionV, kIterations);
         
         return (stateValueFunctionV, policy);
+    }
+    
+    public StateValueFunction SingleStateSweep(
+        MDP                mdp, 
+        Policy             policy, 
+        float              gamma,
+        StateValueFunction stateValueFunctionV)
+    {
+        foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
+        {
+            float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
+            
+            stateValueFunctionV.SetValue(state, valueOfState);
+        }
+        
+        stateValueFunctionV.Iterations++;
+        
+        return stateValueFunctionV;
+    }
+    public float BellmanBackUpValueOfState(
+        MDP                mdp, 
+        Policy             policy, 
+        float              gamma, 
+        MarkovState        state,
+        StateValueFunction stateValueFunctionV)
+    {
+        float valueOfState = 0; // Sutton & Barto
+        
+        // float valueOfState = state.Reward; // Russell & Norvig
+        
+        var action = policy.GetAction(state);
+        
+        foreach (var transition in mdp.TransitionFunction(state, action))
+        {
+            float          probability = transition.Probability;
+            MarkovState successorState = mdp.States[transition.SuccessorStateIndex];
+            float               reward = transition.Reward;
+            float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
+            float       zeroIfTerminal = ZeroIfTerminal(successorState);
+
+            // Sutton & Barto
+            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
+            valueOfState += SingleTransitionBackup(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal); 
+            
+            // Russell & Norvig
+            // valueOfState += gamma * probability * valueOfSuccessor;
+        }
+
+        return valueOfState;
+    }
+    
+    public float SingleTransitionBackup(float prob, float reward, float gamma, float vSprime, float zeroIfTerm)
+    {
+        return prob * (reward + gamma * vSprime * zeroIfTerm);
     }
 
     public Policy GeneratePolicyFromArgMaxActions(MDP mdp, ActionValueFunction actionValueFunctionQ)

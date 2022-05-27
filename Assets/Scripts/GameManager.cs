@@ -39,11 +39,8 @@ public class GameManager : MonoBehaviour
 
     public void ApplicationQuit()
     {
-    #if UNITY_EDITOR
-        EditorApplication.ExitPlaymode();
-    #else
+    
         Application.Quit();
-    #endif
 
     }
 

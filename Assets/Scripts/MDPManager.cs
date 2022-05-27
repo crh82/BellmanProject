@@ -1,18 +1,19 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Assertions;
 using Debug = UnityEngine.Debug;
 
 // Creates the model of the environment — the underlying MDP data rather than the physical/visual MDP.
 /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/MDPManager/*'/>
 public class MdpManager : MonoBehaviour
 {
+    // ┌─────────┐
+    // │ Prefabs │
+    // └─────────┘
     public              Transform          statePrefab;
 
     public              Transform          stateActionPrefab;
@@ -27,10 +28,9 @@ public class MdpManager : MonoBehaviour
 
     public              Transform          gridSquarePrefab;
     
-    public              TextAsset          mdpFileToLoad;
-
-    public              Vector2            dimensions = Vector2.one;
-    
+    // ┌─────────────────────────┐
+    // │ GridWorld Visualisation │
+    // └─────────────────────────┘
     [Range(0, 1)] 
     private const float                    GapBetweenStates = 0.4f;
 
@@ -54,14 +54,12 @@ public class MdpManager : MonoBehaviour
    
     private const       BellmanScenes      MdpBuilder         = BellmanScenes.MdpBuilder;
 
-    public GameObject rabbit;
-
+    public              GameObject         rabbit;
 
     
     // ┌───────────────────────────────────────────────────┐
     // │ Algorithm Focus Level and Execution Speed Control │
     // └───────────────────────────────────────────────────┘
-    
     public int                             playSpeed = 1;
     
     public int                             algorithmViewLevel;
@@ -82,20 +80,17 @@ public class MdpManager : MonoBehaviour
 
     private const int                      Paused = -1;
 
-    public bool                            focusAndFollowMode;
+    public bool                            focusAndFollowMode = true;
 
 
     // ┌─────────────────────────┐
     // │ MDP data and algorithms │
     // └─────────────────────────┘
-    
     private GridAction[]                   _actions = Enum.GetValues(typeof(GridAction)) as GridAction[];
     
     public  Algorithms                     algorithms;
     
     public  bool                           boundIterations = true;
-
-    public  MDP                            mdp;
     
     public  ActionValueFunction            currentActionValueFunction;
     
@@ -106,11 +101,17 @@ public class MdpManager : MonoBehaviour
     public  StateValueFunction             currentStateValueFunction;
 
     public  bool                           debugMode;
+    
+    public  Vector2                        dimensions = Vector2.one;
 
     public  float                          gamma = 1f;
 
     public  int                            maximumIterations = 100_000;
-
+    
+    public  MDP                            mdp;
+    
+    public  TextAsset                      mdpFileToLoad;
+ 
     public  bool                           mdpLoaded;
 
     public List<Policy>                    policiesHistory = new List<Policy>();
@@ -124,10 +125,10 @@ public class MdpManager : MonoBehaviour
 
     public List<StateValueFunction>        valueFunctionsHistory = new List<StateValueFunction>();
 
+    
     // ╔════════════════════════╗
     // ║ NORMAL UNITY FUNCTIONS ║
     // ╚════════════════════════╝
-    
     public void Awake()
     {
         algorithms   = gameObject.AddComponent<Algorithms>();
@@ -152,9 +153,9 @@ public class MdpManager : MonoBehaviour
     }
     
 
-    // ╔═══════════════════════════════════╗
-    // ║ MDP SERIALIZATION/DESERIALIZATION ║
-    // ╚═══════════════════════════════════╝
+    // ╔═══════════════════════════════════════════════════╗
+    // ║ MDP SERIALIZATION/DESERIALIZATION & INSTANTIATION ║
+    // ╚═══════════════════════════════════════════════════╝
     private MDP CreateFromJson(string jsonString) => JsonUtility.FromJson<MDP>(jsonString);
 
     private async void LoadMdpFromGameManager()
@@ -312,16 +313,32 @@ public class MdpManager : MonoBehaviour
     // ───────────────────
     //  Policy Evaluation 
     // ───────────────────
-
     /// <summary>
-    /// Todo Properly comment this
+    /// Asynchronous implementation of the policy evaluation algorithm. Runs with control over the execution speed
+    /// (delays the execution at specified points to update visuals) It roughly follows Sutton and Barto's
+    /// implementation. The <c>await</c> keywords are for the asynchronous execution—the question was raised.
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <param name="stateValueFunction"></param>
-    /// <param name="policy"></param>
+    /// <param name="cancellationToken">
+    /// Cancellation Token cancels the asynchronous execution of the algorithm.
+    /// </param>
+    /// <param name="stateValueFunction">
+    /// When the method takes in an optional V(s) it sets all the state values (data and visualised heights)
+    /// </param>
+    /// <param name="policy">
+    /// The optional policy here is set to the global <c>currentPolicy</c> field. This enables live editing of the
+    /// policy during the execution of the algorithm.
+    /// </param>
+    /// <returns>
+    /// StateValueFunction object. NOTE: It's not always necessary because it's running anytime and directly updating
+    /// the global <c>currentStateValueFunction</c> field.
+    /// </returns>
+    /// <remarks>
+    /// Todo Add Russell and Norvig's implementation option.
+    /// </remarks>
     public async Task<StateValueFunction> PolicyEvaluationControlAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
     {
 
+        // Turns off UI features that can crash the system if clicked during algorithm execution.
         uiController.DisableRunFeatures();
         
         _currentAlgorithmExecutionIterations = 0;  
@@ -345,6 +362,7 @@ public class MdpManager : MonoBehaviour
         SetKeepGoingTrue();
 
         float maxDelta;
+        
         while (keepGoing)
         {
             // Control flow handles the algorithm's execution speed for displaying how the algorithm functions.
@@ -365,10 +383,14 @@ public class MdpManager : MonoBehaviour
                     
                     break;
                 
+                // The next three cases cascade because the control flow for the delays functions more effectively with
+                // conditionals.
                 case ByState:
                 case ByAction:
                 case ByTransition:
                     
+                    // The rabbit is the orb with a tail that floats above the state. It indicates where the algorithm
+                    // is currently in the state sweep.
                     EnableRabbit();
 
                     if (paused) await RunPauseLoop(cancellationToken);
@@ -377,7 +399,7 @@ public class MdpManager : MonoBehaviour
                     {
                         SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
                         
-                        if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
+                        // if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
 
                         if (paused) await RunPauseLoop(cancellationToken);
 
@@ -425,7 +447,6 @@ public class MdpManager : MonoBehaviour
                     DisableRabbit();
                     break;
             }
-           
             
             if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
             
@@ -438,8 +459,8 @@ public class MdpManager : MonoBehaviour
             
             // Progress Update to UI
             maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
-            SendProgressToUIForDisplay(maxDelta);
-            uiController.SetMaxDeltaText(maxDelta);
+            await SendProgressToUIForDisplayAsync(maxDelta);
+            await uiController.SetMaxDeltaTextAsync(maxDelta);
             
             DisableRabbit();
             
@@ -454,18 +475,130 @@ public class MdpManager : MonoBehaviour
 
         // Progress Update to UI
         maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
-        SendProgressToUIForDisplay(maxDelta);
-        uiController.SetMaxDeltaText(maxDelta);
+        
+        await SendProgressToUIForDisplayAsync(maxDelta);
+        
+        await uiController.SetMaxDeltaTextAsync(maxDelta);
         
         DisableRabbit();
         
+        return stateValueFunctionV;
+    }
+
+    /// <summary>
+    /// As in <see cref="PolicyEvaluationControlAsync"/> except that this runs with almost no delay aside from updating
+    /// progress panel in UI at specified points.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancellation Token cancels the asynchronous execution of the algorithm.
+    /// </param>
+    /// <param name="stateValueFunction">
+    /// When the method takes in an optional V(s) it sets all the state values (data and visualised heights)
+    /// </param>
+    /// <param name="policy">
+    /// The optional policy here is set to the global <code>currentPolicy</code> field. This enables live editing of the policy during the execution of the algorithm.
+    /// </param>
+    /// <returns>
+    /// StateValueFunction object. NOTE: It's not always necessary because it's running anytime and directly updating
+    /// the global <c>currentStateValueFunction</c> field.
+    /// </returns>
+    /// <remarks>
+    /// Todo Add Russell and Norvig's implementation option.
+    /// </remarks>
+    public async Task<StateValueFunction> PolicyEvaluationNoDelay(CancellationToken cancellationToken,
+        StateValueFunction stateValueFunction = null, Policy policy = null)
+    {
+        // Turns off UI features that can crash the system if clicked during algorithm execution.
+        uiController.DisableRunFeatures();
+        
+        _currentAlgorithmExecutionIterations = 0;  
+
+        // Checks which policy to use. If there isn't a policy already displayed (Policy Eval or Policy Iteration
+        // running from fresh MDP) it displays the policy.
+        currentPolicy = AssignPolicy(policy);
+        
+        
+        if (!actionSpritesDisplayed)
+        {
+            actionSpritesDisplayed = true;
+            SetAllActionSprites(currentPolicy);
+        }
+        
+        // Checks which V(s) to use. Either a new one, a continuation of current one, or a specific inputted one (for
+        // showing monotonic convergence, for example). Then displays the state heights.
+        var stateValueFunctionV = AssignStateValueFunction(stateValueFunction);
+        
+        SetKeepGoingTrue();
+
+        float maxDelta;
+
+        while (keepGoing)
+        {
+            stateValueFunctionV = await algorithms.SingleStateSweepAsync(mdp, currentPolicy, Gamma, stateValueFunctionV);
+            
+            if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
+            
+            if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
+            
+            _currentAlgorithmExecutionIterations = stateValueFunctionV.Iterations;
+
+            stateValueFunctionV.Iterations++;
+
+            maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
+
+            // uiController.SetMaxDeltaText(maxDelta);
+
+            await uiController.SetMaxDeltaTextAsync(maxDelta);
+            await SendProgressToUIForDisplayAsync(maxDelta);
+
+            switch (stateValueFunctionV.Iterations)
+            {
+                case var i when i < 50:
+                    await Task.Yield();
+                    break;
+                case var i when i >= 50:
+                    if (stateValueFunctionV.Iterations % 100 == 0) await Task.Yield();
+                    break;
+                case var i when i >= 1000:
+                    if (stateValueFunctionV.Iterations % 250 == 0) await Task.Yield();
+                    break;
+            }
+
+            await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
+        }
+        
+        // Sets all the visuals to make sure they're good at the end. NOTE: this is probably only necessary because I'm 
+        // new to working with async stuff. Undoubtedly there's a better way of doing this.
+        
+        maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
+        
+        await SendProgressToUIForDisplayAsync(maxDelta);
+        
+        await uiController.SetMaxDeltaTextAsync(maxDelta);
+        
+        await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
+        
+        currentStateValueFunction = stateValueFunctionV;
+        
+        await SetAllStateHeightsAsync(stateValueFunctionV);
+        
+        uiController.SetRunFeaturesActive();
+
         return stateValueFunctionV;
     }
     
     // ────────────────────
     //  Policy Improvement 
     // ────────────────────
-    // 
+    /// <summary>
+    /// Execution speed controlled implementation of Policy Improvement. There's no real need to implement a no delay
+    /// version of this given that it only does a single sweep of the state space. As with all these algorithms the
+    /// necessity to run them in the manager, rather than from the <see cref="Algorithms"/> class is to enable the live
+    /// control of the execution. The execution control flow  
+    /// </summary>
+    /// <param name="cancellationToken">Token cancels the asynchronous execution</param>
+    /// <param name="stateValueFunction">Values of the states under the policy to be improved.</param>
+    /// <returns>An improved policy</returns>
     public async Task<Policy> PolicyImprovementControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
     {
         uiController.DisableRunFeatures();
@@ -476,13 +609,13 @@ public class MdpManager : MonoBehaviour
     
         var actionValueFunctionQ = new ActionValueFunction();
         
-        EnableRabbit();
+        if (focusAndFollowMode) EnableRabbit();
         
         foreach (var state in mdp.States.Where(state => state.IsStandard()))
         {
-            SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
+            if (focusAndFollowMode) SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
             
-            if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
+            // if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
             
             if (paused) await RunPauseLoop(cancellationToken);
             
@@ -506,9 +639,7 @@ public class MdpManager : MonoBehaviour
                             await algorithms.CalculateSingleTransitionAsync(mdp, Gamma, transition, stateValueFunctionV);
                         
                         await Task.Delay(playSpeed, cancellationToken);
-                    }  
-                    
-                    // Todo action value coroutine
+                    }
                 }
                 
                 actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
@@ -516,7 +647,6 @@ public class MdpManager : MonoBehaviour
                 await SetIndividualActionHeightAsync(state, action, stateActionValueQsa);
                 
                 if (algorithmViewLevel == ByAction) await Task.Delay(playSpeed, cancellationToken);
-                
             }
     
             if (paused) await RunPauseLoop(cancellationToken);
@@ -547,7 +677,8 @@ public class MdpManager : MonoBehaviour
     //  Policy Iteration 
     // ──────────────────
     
-    public async Task PolicyIterationControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
+    public async Task PolicyIterationControlledAsync(
+        CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
     {
         ResetPolicyRecord();
         
@@ -569,18 +700,25 @@ public class MdpManager : MonoBehaviour
             
             // Todo add pseudocode thing
             var oldPolicy = newPolicy.Copy();
-            
-            valueOfPolicy = await PolicyEvaluationControlAsync(cancellationToken, valueOfPolicy, oldPolicy);
 
-            uiController.PauseAlgorithm();
-            
-            if (focusAndFollowMode) await RunPauseLoop(cancellationToken);
-            
+            if (focusAndFollowMode)
+            {
+                valueOfPolicy = await PolicyEvaluationControlAsync(cancellationToken, valueOfPolicy, oldPolicy);
+                uiController.PauseAlgorithm();
+                await RunPauseLoop(cancellationToken);
+            }
+            else
+            {
+                valueOfPolicy = await PolicyEvaluationNoDelay(cancellationToken, valueOfPolicy, oldPolicy);
+            }
+
             newPolicy = await PolicyImprovementControlledAsync(cancellationToken, valueOfPolicy);
-            
-            uiController.PauseAlgorithm();
-            
-            if (focusAndFollowMode) await RunPauseLoop(cancellationToken);
+
+            if (focusAndFollowMode)
+            {
+                uiController.PauseAlgorithm();
+                await RunPauseLoop(cancellationToken);
+            }
             
             if (oldPolicy.Equals(newPolicy)) break;
 
@@ -618,6 +756,7 @@ public class MdpManager : MonoBehaviour
         var actionValueFunctionQ = new ActionValueFunction(mdp);
 
         float maxDelta;
+        
         while (keepGoing)
         {
             if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
@@ -652,15 +791,16 @@ public class MdpManager : MonoBehaviour
                 case ByAction:
                 case ByTransition:
                     
-                    
-                    
                     foreach (var state in mdp.States.Where(state => state.IsStandard()))
                     {
-                        EnableRabbit();
+                        if (focusAndFollowMode)
+                        {
+                            EnableRabbit();
+                            
+                            SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
+                        }
                         
-                        SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
-                        
-                        if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
+                        // if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
                         
                         if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
                         
@@ -709,8 +849,8 @@ public class MdpManager : MonoBehaviour
 
             // Progress Update to UI
             maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
-            SendProgressToUIForDisplay(maxDelta);
-            uiController.SetMaxDeltaText(maxDelta);
+            await SendProgressToUIForDisplayAsync(maxDelta);
+            await uiController.SetMaxDeltaTextAsync(maxDelta);
             
             await uiController.UpdateNumberOfIterationsAsync(stateValueFunctionV.Iterations);
 
@@ -726,8 +866,8 @@ public class MdpManager : MonoBehaviour
         
         // Progress Update to UI
         maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
-        SendProgressToUIForDisplay(maxDelta);
-        uiController.SetMaxDeltaText(maxDelta);
+        await SendProgressToUIForDisplayAsync(maxDelta);
+        await uiController.SetMaxDeltaTextAsync(maxDelta);
         
         uiController.SetRunFeaturesActive();
         
@@ -761,6 +901,15 @@ public class MdpManager : MonoBehaviour
         if (progressValue < 0) progressValue = 0;
         uiController.SetProgressBarPercentage(progressValue);
     }
+    
+    private Task SendProgressToUIForDisplayAsync(float maxDelta)
+    {
+        var progressValue = (float)((Math.Log10(maxDelta) / Math.Log10(theta)) * 100);
+        if (progressValue < 0) progressValue = 0;
+        uiController.SetProgressBarPercentage(progressValue);
+        return Task.CompletedTask;
+    }
+
     
     public float Gamma
     {

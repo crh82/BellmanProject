@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using UnityEditor;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
@@ -87,8 +89,10 @@ public class UIController : MonoBehaviour
    public GameObject         runButtonContainer;
 
    public SwitchManager      focusAndFollowToggle;
-   
-   
+
+   public List<GameObject>   focusAndFollowUIObjects;
+
+
    // ╔═════════════════════════════════════════════════╗
    // ║ CENTER CONTROL PANEL — STATE INFORMATION WINDOW ║
    // ╚═════════════════════════════════════════════════╝
@@ -340,7 +344,8 @@ public class UIController : MonoBehaviour
       switch (algorithmSelector.index)
       {
          case 0:
-            EvaluatePolicyFullControlAsync(cancellationToken);
+            if (_mdpManager.focusAndFollowMode) EvaluatePolicyFullControlAsync(cancellationToken);
+            else EvaluatePolicyNoDelay(cancellationToken);
             break;
          case 1:
             ImprovePolicyFullControlAsync(cancellationToken);
@@ -451,6 +456,18 @@ public class UIController : MonoBehaviour
    {
       button.interactable = true;
       return Task.CompletedTask;
+   }
+
+   private async void EvaluatePolicyNoDelay(CancellationToken cancellationToken)
+   {
+      try
+      {
+         await _mdpManager.PolicyEvaluationNoDelay(cancellationToken);
+      }
+      catch (TaskCanceledException)
+      {
+         Debug.Log("Policy evaluation execution cancelled with cancellation token.");
+      }
    }
 
    private async void EvaluatePolicyFullControlAsync(CancellationToken cancellationToken)
@@ -595,6 +612,12 @@ public class UIController : MonoBehaviour
    {
       maxDelta.text = $"{value}";
    }
+
+   public Task SetMaxDeltaTextAsync(float value)
+   {
+      maxDelta.text = $"{value}";
+      return Task.CompletedTask;
+   }
    
    // ┌───────────────────────────────────────────┐
    // │ Display and Edit State and Policy Methods │
@@ -606,7 +629,7 @@ public class UIController : MonoBehaviour
       
       stateInformationWindow.useCustomValues = true;
 
-      stateInformationWindow.transform.position = Input.mousePosition;
+      // stateInformationWindow.transform.position = Input.mousePosition;
       
       stateInformationWindow.OpenWindow();
       
@@ -681,5 +704,21 @@ public class UIController : MonoBehaviour
          _settingsItemsDropdown.SetupDropdown();
       }
    }
+
+   public void ToggleFocusAndFollowObjectsInRightUIControlPanel(bool toggleState)
+   {
+      _mdpManager.focusAndFollowMode = toggleState;
+      
+      foreach (var uiObject in focusAndFollowUIObjects)
+      {
+         uiObject.SetActive(!uiObject.activeSelf);
+      }
+   }
+   
    public void ToggleActionsVisuals(string toBeToggled) => _mdpManager.Toggle(toBeToggled);
+
+   public void ApplicationQuit()
+   {
+      GameManager.instance.ApplicationQuit();
+   }
 }
