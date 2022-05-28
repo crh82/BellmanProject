@@ -68,7 +68,7 @@ public class StateInteractions : MonoBehaviour
 
     private string GetStateInformationText()
     {
-        MarkovState currentState = _mdpManager.mdp.States[_state.stateIndex];
+        MarkovState currentState = _mdpManager.Mdp.States[_state.stateIndex];
         // GridAction action;
         //
         // if (_mdpManager.CurrentPolicy != null)

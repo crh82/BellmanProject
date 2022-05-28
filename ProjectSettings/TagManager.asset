@@ -19,6 +19,7 @@ TagManager:
   - SettingsDropdown
   - MainTileMap
   - RedLine
+  - Fire
   layers:
   - Default
   - TransparentFX
@@ -26,7 +27,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - PPLayer
   - 
   - 
   - 

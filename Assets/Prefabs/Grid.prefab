@@ -135,6 +135,36 @@ TilemapCollider2D:
   m_Offset: {x: 0, y: 0}
   m_MaximumTileChangeCount: 1000
   m_ExtrusionFactor: 0.00001
+--- !u!1 &1368234865268730145
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3801971030485815123}
+  m_Layer: 0
+  m_Name: RewardTextContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3801971030485815123
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368234865268730145}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.06}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1246401990957280409}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2118413687480843476
 GameObject:
   m_ObjectHideFlags: 0
@@ -168,6 +198,7 @@ Transform:
   - {fileID: 8400636656740562270}
   - {fileID: 2814421924022262949}
   - {fileID: 6810954181801934107}
+  - {fileID: 3801971030485815123}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -219,9 +250,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2ef584d33bc2d42609cdf755101da818, type: 2}
   - {fileID: 11400000, guid: 56db608bc75bf4361be23f4fbabf94b1, type: 2}
   rewardTile: {fileID: 11400000, guid: 4b5f663e6081743d3b7f86de2a92d3af, type: 2}
+  currentLayer: 1
   inPolicyLayer: 0
   inRewardLayer: 0
-  reward: 0
+  reward: 3
+  mdpDynamicsType: 0
+  testText: {fileID: 6502808098358033297, guid: 4845a00d6958b47ae86d6a994455a290, type: 3}
+  displayRewardPrefab: {fileID: 1635081675585409855, guid: 973845eb75e584058a990828aedc3764, type: 3}
 --- !u!1 &2156668144546774335
 GameObject:
   m_ObjectHideFlags: 0

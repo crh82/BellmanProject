@@ -272,9 +272,9 @@ public class UIController : MonoBehaviour
    {
       string textInput = GameObject.FindGameObjectWithTag("Policy Input").GetComponent<TMP_InputField>().text.Replace(" ", "");
 
-      if (textInput.Length != _mdpManager.mdp.StateCount) throw new ArgumentNullException("textInput", "String of Actions does not equal state space of MDP.");
+      if (textInput.Length != _mdpManager.Mdp.StateCount) throw new ArgumentNullException("textInput", "String of Actions does not equal state space of MDP.");
       
-      var newPolicy = new Policy(_mdpManager.mdp.StateCount);
+      var newPolicy = new Policy(_mdpManager.Mdp.StateCount);
       
       for (var index = 0; index < textInput.Length; index++)
       {
@@ -288,7 +288,7 @@ public class UIController : MonoBehaviour
 
       newPolicy.PrintPolicyToDebugLog();
       
-      currentPolicyString = newPolicy.PolicyToStringArray(_mdpManager.mdp.States);
+      currentPolicyString = newPolicy.PolicyToStringArray(_mdpManager.Mdp.States);
 
       _mdpManager.currentPolicy = newPolicy;
 
@@ -698,7 +698,7 @@ public class UIController : MonoBehaviour
    {
       settingsItemsDropdownPanel.SetActive(true);
 
-      if (_mdpManager.mdp != null)
+      if (_mdpManager.Mdp != null)
       {
          _settingsItemsDropdown = settingsItemsDropdownPanel.GetComponent<DropdownMultiSelect>();
          _settingsItemsDropdown.SetupDropdown();

@@ -106,7 +106,7 @@ public class StateAction : MonoBehaviour
         await UpdateObjectHeight(stateMesh, value);
 
         // hoveringText.text = 2 > 50 
-        hoveringText.text = _mdpManager.mdp.StateCount > 50 
+        hoveringText.text = _mdpManager.Mdp.StateCount > 50 
             ? $"{Math.Round(stateValue, 2)}" : $"{Math.Round(stateValue, 4)}";
         
         await UpdateTextThatHoversAboveState();

@@ -107,6 +107,8 @@ public class GridBuilderManager : MonoBehaviour
         mainCamera.orthographicSize = Math.Max(targetPos.x, targetPos.y);
         
         levelEditor.mainCamera = Camera.main;
+        
+        levelEditor.GenerateRewardTextOverTiles();
        
     }
 

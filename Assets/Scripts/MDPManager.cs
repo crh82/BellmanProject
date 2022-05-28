@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -107,9 +108,7 @@ public class MdpManager : MonoBehaviour
     public  float                          gamma = 1f;
 
     public  int                            maximumIterations = 100_000;
-    
-    public  MDP                            mdp;
-    
+
     public  TextAsset                      mdpFileToLoad;
  
     public  bool                           mdpLoaded;
@@ -126,6 +125,23 @@ public class MdpManager : MonoBehaviour
     public List<StateValueFunction>        valueFunctionsHistory = new List<StateValueFunction>();
 
     
+    // ┌────────────┐
+    // │ Properties │
+    // └────────────┘
+    public float Gamma
+    {
+        get => gamma;
+        set => gamma = value;
+    }
+
+    public MDP Mdp { get; set; }
+
+    public float Theta
+    {
+        get => theta;
+        set => theta = value;
+    }
+
     // ╔════════════════════════╗
     // ║ NORMAL UNITY FUNCTIONS ║
     // ╚════════════════════════╝
@@ -160,7 +176,7 @@ public class MdpManager : MonoBehaviour
 
     private async void LoadMdpFromGameManager()
     {
-        mdp = await InstantiateMdpVisualisationAsync(GameManager.instance.currentMdp);
+        Mdp = await InstantiateMdpVisualisationAsync(GameManager.instance.currentMdp);
         
         mdpLoaded = true;
         
@@ -175,8 +191,8 @@ public class MdpManager : MonoBehaviour
     public async void LoadMdpFromFilePath(string filepath)
     {
         string mdpJsonRepresentation = File.ReadAllText(filepath);
-        mdp = CreateFromJson(mdpJsonRepresentation);
-        mdp = await InstantiateMdpVisualisationAsync(CreateFromJson(mdpJsonRepresentation));
+        Mdp = CreateFromJson(mdpJsonRepresentation);
+        Mdp = await InstantiateMdpVisualisationAsync(CreateFromJson(mdpJsonRepresentation));
 
         mdpLoaded = true;
         
@@ -210,8 +226,6 @@ public class MdpManager : MonoBehaviour
                 var gridSquarePosition = new Vector3(_offsetToCenterVector.x + x, 0f, _offsetToCenterVector.y + y);
                 
                 Instantiate(gridSquarePrefab, gridSquarePosition, Quaternion.identity, stateSpace);
-
-                
                 
                 id++;
             }
@@ -375,7 +389,7 @@ public class MdpManager : MonoBehaviour
                     if (paused) await RunPauseLoop(cancellationToken);
                     
                     stateValueFunctionV =
-                        await algorithms.SingleStateSweepAsync(mdp, currentPolicy, Gamma, stateValueFunctionV);
+                        await algorithms.SingleStateSweepAsync(Mdp, currentPolicy, Gamma, stateValueFunctionV);
 
                     await SetAllStateHeightsAsync(stateValueFunctionV);
                     
@@ -395,7 +409,7 @@ public class MdpManager : MonoBehaviour
 
                     if (paused) await RunPauseLoop(cancellationToken);
                     
-                    foreach (var state in mdp.States.Where(state => state.IsStandard()))
+                    foreach (var state in Mdp.States.Where(state => state.IsStandard()))
                     {
                         SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
                         
@@ -405,7 +419,7 @@ public class MdpManager : MonoBehaviour
 
                         float actualValueOfState =
                             await algorithms.BellmanBackUpValueOfStateAsync(
-                                mdp, currentPolicy, Gamma, state, stateValueFunctionV);
+                                Mdp, currentPolicy, Gamma, state, stateValueFunctionV);
                         
                         // Resets the state height to zero to demonstrate that the V(s) <- Bellman equation is an
                         // assignment. It's not incrementing the value. Subtle difference.
@@ -418,12 +432,12 @@ public class MdpManager : MonoBehaviour
                         
                         if (algorithmViewLevel == ByTransition)
                         {
-                            foreach (var transition in mdp.TransitionFunction(state, action))
+                            foreach (var transition in Mdp.TransitionFunction(state, action))
                             {
                                 if (paused) await RunPauseLoop(cancellationToken);
                             
                                 float valueFromSuccessor = 
-                                    await algorithms.CalculateSingleTransitionAsync(mdp, gamma, transition, stateValueFunctionV);
+                                    await algorithms.CalculateSingleTransitionAsync(Mdp, Gamma, transition, stateValueFunctionV);
 
                                 // actualValueOfState = await algorithms.IncrementValueAsync(actualValueOfState, valueFromSuccessor);
                             
@@ -448,7 +462,7 @@ public class MdpManager : MonoBehaviour
                     break;
             }
             
-            if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
+            if (stateValueFunctionV.MaxChangeInValueOfStates() < Theta) break;
             
             if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
             
@@ -534,9 +548,9 @@ public class MdpManager : MonoBehaviour
 
         while (keepGoing)
         {
-            stateValueFunctionV = await algorithms.SingleStateSweepAsync(mdp, currentPolicy, Gamma, stateValueFunctionV);
+            stateValueFunctionV = await algorithms.SingleStateSweepAsync(Mdp, currentPolicy, Gamma, stateValueFunctionV);
             
-            if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
+            if (stateValueFunctionV.MaxChangeInValueOfStates() < Theta) break;
             
             if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
             
@@ -611,7 +625,7 @@ public class MdpManager : MonoBehaviour
         
         if (focusAndFollowMode) EnableRabbit();
         
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
         {
             if (focusAndFollowMode) SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
             
@@ -624,11 +638,11 @@ public class MdpManager : MonoBehaviour
                 if (paused) await RunPauseLoop(cancellationToken);
                 
                 float stateActionValueQsa = await algorithms.CalculateActionValueAsync(
-                mdp, state, action.Action, Gamma, stateValueFunctionV);
+                    Mdp, state, action.Action, Gamma, stateValueFunctionV);
 
                 if (algorithmViewLevel == ByTransition)
                 {
-                    foreach (var transition in mdp.TransitionFunction(state, action))
+                    foreach (var transition in Mdp.TransitionFunction(state, action))
                     {
                         // TODO fire off fading coroutine highlighting the transition
                         // transition.SuccessorStateIndex
@@ -636,7 +650,7 @@ public class MdpManager : MonoBehaviour
                         if (paused) await RunPauseLoop(cancellationToken);
                             
                         float valueFromSuccessor = 
-                            await algorithms.CalculateSingleTransitionAsync(mdp, Gamma, transition, stateValueFunctionV);
+                            await algorithms.CalculateSingleTransitionAsync(Mdp, Gamma, transition, stateValueFunctionV);
                         
                         await Task.Delay(playSpeed, cancellationToken);
                     }
@@ -753,7 +767,7 @@ public class MdpManager : MonoBehaviour
         
         SetKeepGoingTrue();
         
-        var actionValueFunctionQ = new ActionValueFunction(mdp);
+        var actionValueFunctionQ = new ActionValueFunction(Mdp);
 
         float maxDelta;
         
@@ -761,7 +775,7 @@ public class MdpManager : MonoBehaviour
         {
             if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
 
-            actionValueFunctionQ = new ActionValueFunction(mdp);
+            actionValueFunctionQ = new ActionValueFunction(Mdp);
             
 
             switch (algorithmViewLevel)
@@ -770,11 +784,11 @@ public class MdpManager : MonoBehaviour
 
                     if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
 
-                    await algorithms.SingleSweepValueIteration(mdp, stateValueFunctionV, actionValueFunctionQ, Gamma);
+                    await algorithms.SingleSweepValueIteration(Mdp, stateValueFunctionV, actionValueFunctionQ, Gamma);
             
                     var tasks = new List<Task>();
                 
-                    foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
+                    foreach (var state in Mdp.States.AsParallel().Where(state => state.IsStandard()))
                     {
                         tasks.Add(SetAllActionHeightsAsync(state, actionValueFunctionQ));
                     
@@ -791,7 +805,7 @@ public class MdpManager : MonoBehaviour
                 case ByAction:
                 case ByTransition:
                     
-                    foreach (var state in mdp.States.Where(state => state.IsStandard()))
+                    foreach (var state in Mdp.States.Where(state => state.IsStandard()))
                     {
                         if (focusAndFollowMode)
                         {
@@ -808,7 +822,7 @@ public class MdpManager : MonoBehaviour
                         {
                             if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
 
-                            float stateActionValueQsa = await algorithms.CalculateActionValueAsync(mdp, state, action.Action, Gamma, stateValueFunctionV);
+                            float stateActionValueQsa = await algorithms.CalculateActionValueAsync(Mdp, state, action.Action, Gamma, stateValueFunctionV);
             
                             actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
             
@@ -843,7 +857,7 @@ public class MdpManager : MonoBehaviour
 
             currentActionValueFunction = actionValueFunctionQ;
 
-            if (stateValueFunctionV.MaxChangeInValueOfStates() < theta) break;
+            if (stateValueFunctionV.MaxChangeInValueOfStates() < Theta) break;
             
             if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
 
@@ -858,7 +872,7 @@ public class MdpManager : MonoBehaviour
 
         }
         
-        currentPolicy = algorithms.GeneratePolicyFromArgMaxActions(mdp, actionValueFunctionQ);
+        currentPolicy = algorithms.GeneratePolicyFromArgMaxActions(Mdp, actionValueFunctionQ);
         
         SetAllActionSprites(currentPolicy);
         
@@ -878,18 +892,25 @@ public class MdpManager : MonoBehaviour
     // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
     // └──────────────────────────────────────┘
 
+    // ────────
+    //  Rabbit 
+    // ────────
     public void SetRabbitPosition(Vector3 position) => rabbit.transform.position = position;
 
     public void EnableRabbit() => rabbit.SetActive(true);
     
     public void DisableRabbit() => rabbit.SetActive(false);
     
+    
+    // ─────────────────────── 
+    //  Progress of Algorithm  <- Deals with the data related to expressing: iterations, max difference, etc. Communicates with uiController.
+    // ─────────────────────── 
     public float ProgressOfAlgorithm
     {
         get => _progressOfAlgorithm;
         set
         {
-            double progressValue = ((Math.Log10(value) / Math.Log10(theta)) * 100);
+            double progressValue = ((Math.Log10(value) / Math.Log10(Theta)) * 100);
             if (progressValue < 0) progressValue = 0;
             _progressOfAlgorithm = (float) progressValue;
         }
@@ -897,34 +918,27 @@ public class MdpManager : MonoBehaviour
 
     private void SendProgressToUIForDisplay(float maxDelta)
     {
-        var progressValue = (float)((Math.Log10(maxDelta) / Math.Log10(theta)) * 100);
+        var progressValue = (float)((Math.Log10(maxDelta) / Math.Log10(Theta)) * 100);
         if (progressValue < 0) progressValue = 0;
         uiController.SetProgressBarPercentage(progressValue);
     }
     
     private Task SendProgressToUIForDisplayAsync(float maxDelta)
     {
-        var progressValue = (float)((Math.Log10(maxDelta) / Math.Log10(theta)) * 100);
+        var progressValue = (float)((Math.Log10(maxDelta) / Math.Log10(Theta)) * 100);
         if (progressValue < 0) progressValue = 0;
         uiController.SetProgressBarPercentage(progressValue);
         return Task.CompletedTask;
     }
 
     
-    public float Gamma
-    {
-        get => gamma;
-        set => gamma = value;
-    }
+    
 
-    public MarkovState GetStateFromCurrentMdp(int stateIndex)
-    {
-        return mdp.States[stateIndex];
-    }
+    public MarkovState GetStateFromCurrentMdp(int stateIndex) => Mdp.States[stateIndex];
 
     public Dictionary<string, string> GetStateAndActionInformationForDisplayAndEdit(int stateIndex)
     {
-        var state = mdp.States[stateIndex];
+        var state = Mdp.States[stateIndex];
 
         var stateVisualRepresentation = _stateSpaceVisualStates[stateIndex];
         string stateName = StateNameFormatted(stateIndex);
@@ -963,7 +977,7 @@ public class MdpManager : MonoBehaviour
 
     public void EditRewardOfState(int stateIndex, float newReward)
     {
-        mdp.States[stateIndex].Reward = newReward;
+        Mdp.States[stateIndex].Reward = newReward;
     }
 
 
@@ -981,7 +995,7 @@ public class MdpManager : MonoBehaviour
 
     private void SetAllStateHeights(StateValueFunction valueOfCurrentPolicy)
     {
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
             SetIndividualStateHeight(state, valueOfCurrentPolicy.Value(state));
     }
 
@@ -998,7 +1012,7 @@ public class MdpManager : MonoBehaviour
 
     private async Task SetAllStateHeightsAsync(StateValueFunction valueOfCurrentPolicy)
     {
-        foreach (var state in mdp.States.AsParallel().Where(state => state.IsStandard()))
+        foreach (var state in Mdp.States.AsParallel().Where(state => state.IsStandard()))
             // foreach (var state in mdp.States.Where(state => state.IsStandard()))
             await SetIndividualStateHeightAsync(state, valueOfCurrentPolicy.Value(state));
     }
@@ -1053,7 +1067,7 @@ public class MdpManager : MonoBehaviour
     {
         currentStateValueFunction = 
             new StateValueFunction(
-                mdp, 
+                Mdp, 
                 randomStateValueBounds.x, 
                 randomStateValueBounds.y);
         
@@ -1062,8 +1076,8 @@ public class MdpManager : MonoBehaviour
 
     public void GenerateRandomPolicy()
     {
-        if (mdp == null) return;
-        currentPolicy = new Policy(mdp);
+        if (Mdp == null) return;
+        currentPolicy = new Policy(Mdp);
         SetAllActionSprites(currentPolicy);
     }
 
@@ -1077,41 +1091,20 @@ public class MdpManager : MonoBehaviour
         keepGoing = true;
     }
 
-    public MDP GetCurrentMdp()
-    {
-        return mdp;
-    }
+    public MDP GetCurrentMdp() => Mdp;
 
-    public void EditCurrentPolicy(MarkovState state, MarkovAction action)
-    {
-        currentPolicy.SetAction(state, action.Action);
-    }
+    public void EditCurrentPolicy(MarkovState state, MarkovAction action) => currentPolicy.SetAction(state, action.Action);
 
-    public void EditCurrentPolicy(MarkovState state, GridAction action)
-    {
-        currentPolicy.SetAction(state, action);
-    }
+    public void EditCurrentPolicy(MarkovState state, GridAction action) => currentPolicy.SetAction(state, action);
 
-    public void EditCurrentPolicy(int stateIndex, int action)
-    {
-        currentPolicy.SetAction(stateIndex, (GridAction) action);
-    }
+    public void EditCurrentPolicy(int stateIndex, int action) => currentPolicy.SetAction(stateIndex, (GridAction) action);
 
 
-    public void SetActionImage(MarkovState state, MarkovAction action)
-    {
-        SetActionImage(state.StateIndex, (int) action.Action);
-    }
+    public void SetActionImage(MarkovState state, MarkovAction action) => SetActionImage(state.StateIndex, (int) action.Action);
 
-    public void SetActionImage(MarkovState state, GridAction action)
-    {
-        SetActionImage(state.StateIndex, (int) action);
-    }
+    public void SetActionImage(MarkovState state, GridAction action) => SetActionImage(state.StateIndex, (int) action);
 
-    public void SetActionImage(int stateIndex, int action)
-    {
-        _stateSpaceVisualStates[stateIndex].UpdateActionSprite((GridAction) action);
-    }
+    public void SetActionImage(int stateIndex, int action) => _stateSpaceVisualStates[stateIndex].UpdateActionSprite((GridAction) action);
 
     public void SetAllActionSprites(Policy policy)
     {
@@ -1119,14 +1112,11 @@ public class MdpManager : MonoBehaviour
             SetActionImage(stateAction.Key, (int) stateAction.Value);
     }
 
-    public void ToggleStateHighlight(int stateIndex)
-    {
-        _stateSpaceVisualStates[stateIndex].StateHighlightToggle();
-    }
+    public void ToggleStateHighlight(int stateIndex) => _stateSpaceVisualStates[stateIndex].StateHighlightToggle();
 
     public void Toggle(string toToggle)
     {
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
             switch (toToggle)
             {
                 case "ActionObjects":
@@ -1164,21 +1154,21 @@ public class MdpManager : MonoBehaviour
     {
         if (currentPolicy == null)
         {
-            currentPolicy = new Policy(mdp);
+            currentPolicy = new Policy(Mdp);
 
             ShowActionSpritesAtopStateValueVisuals();
 
             Debug.Log("No Policy specified, evaluating a random policy.");
         }
 
-        if (mdp == null) throw new NullReferenceException("No MDP specified.");
+        if (Mdp == null) throw new NullReferenceException("No MDP specified.");
     }
 
     public Task ShowActionSpritesAtopStateValueVisuals()
     {
         if (currentPolicy == null) throw new ArgumentNullException();
 
-        foreach (var state in mdp.States.Where(state => state.IsStandard()))
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
         {
             var currentAction = currentPolicy.GetAction(state);
             var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
@@ -1196,7 +1186,7 @@ public class MdpManager : MonoBehaviour
 
         else if (currentStateValueFunction != null) stateValueFunctionV = currentStateValueFunction;
 
-        else stateValueFunctionV = new StateValueFunction(mdp);
+        else stateValueFunctionV = new StateValueFunction(Mdp);
 
         return stateValueFunctionV;
     }
@@ -1212,7 +1202,7 @@ public class MdpManager : MonoBehaviour
             policyPi = currentPolicy;
 
         else
-            policyPi = new Policy(mdp);
+            policyPi = new Policy(Mdp);
 
         return policyPi;
     }
@@ -1221,8 +1211,7 @@ public class MdpManager : MonoBehaviour
     // ╔══════════════════════╗
     // ║ Not Currently In Use ║
     // ╚══════════════════════╝
-    
-    
+
     // Generates the successor state, given a state and action in the modelling of the environment.
     /// <include file='include.xml' path='docs/members[@name="mdpmanager"]/ExecuteAction/*'/>
     public int ExecuteAction(int state, GridAction action)
@@ -1233,11 +1222,11 @@ public class MdpManager : MonoBehaviour
 
     public bool DestinationOutOfBounds(int origin, int destination, GridAction action)
     {
-        bool outOfBoundsTop             = destination > mdp.States.Count - 1;
+        bool outOfBoundsTop             = destination > Mdp.States.Count - 1;
         bool outOfBoundsBottom          = destination < 0;
-        bool outOfBoundsLeft            = origin       % mdp.Width == 0 && action == GridAction.Left;
-        bool outOfBoundsRight           = (origin + 1) % mdp.Width == 0 && action == GridAction.Right;
-        bool hitObstacle = mdp.ObstacleStates.Contains(destination);
+        bool outOfBoundsLeft            = origin       % Mdp.Width == 0 && action == GridAction.Left;
+        bool outOfBoundsRight           = (origin + 1) % Mdp.Width == 0 && action == GridAction.Right;
+        bool hitObstacle = Mdp.ObstacleStates.Contains(destination);
 
         return (outOfBoundsLeft   | 
                 outOfBoundsBottom | 
@@ -1255,9 +1244,9 @@ public class MdpManager : MonoBehaviour
         => action switch
         {
             GridAction.Left => -1,
-            GridAction.Down => -mdp.Width,
+            GridAction.Down => -Mdp.Width,
             GridAction.Right => 1,
-            GridAction.Up => mdp.Width,
+            GridAction.Up => Mdp.Width,
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
 

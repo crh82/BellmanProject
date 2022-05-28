@@ -149,7 +149,7 @@ public class State : MonoBehaviour
 
         if (stateType == StateType.Standard)
         {
-            hoveringText.text = _mdpManager.mdp.StateCount switch
+            hoveringText.text = _mdpManager.Mdp.StateCount switch
             {
                 var i1 when i1 < 50 => $"{Math.Round(stateValue, 4)}",
                 var i2 when (i2 > 50 && i2 <= 100) => $"{Math.Round(stateValue, 3)}",
