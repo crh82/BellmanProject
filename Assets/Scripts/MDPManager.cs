@@ -412,8 +412,6 @@ public class MdpManager : MonoBehaviour
                     foreach (var state in Mdp.States.Where(state => state.IsStandard()))
                     {
                         SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
-                        
-                        // if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
 
                         if (paused) await RunPauseLoop(cancellationToken);
 
@@ -1121,21 +1119,12 @@ public class MdpManager : MonoBehaviour
             {
                 case "ActionObjects":
                     _stateSpaceVisualStates[state.StateIndex].ToggleActionObjects();
-                    // var actionMeshesContainer = _stateSpaceVisualStates[state.StateIndex].actionMeshesContainer;
-                    // actionMeshesContainer.SetActive(!actionMeshesContainer.activeSelf);
-                    // _stateSpaceVisualStates[state.StateIndex].ShowActionObjects();
                     break;
                 case "ActionSprites":
                     _stateSpaceVisualStates[state.StateIndex].ToggleActionSprites();
-                    // var actionSpritesContainer = _stateSpaceVisualStates[state.StateIndex].actionSpritesContainer;
-                    // actionSpritesContainer.SetActive(!actionSpritesContainer.activeSelf);
-                    // _stateSpaceVisualStates[state.StateIndex].ShowActionSprites();
                     break;
                 case "PreviousActionSprites":
                     _stateSpaceVisualStates[state.StateIndex].TogglePreviousActionSprites();
-                    // var previousActionSpritesContainer = _stateSpaceVisualStates[state.StateIndex].previousActionSpritesContainer;
-                    // previousActionSpritesContainer.SetActive(!previousActionSpritesContainer.activeSelf);
-                    // _stateSpaceVisualStates[state.StateIndex].ShowPreviousActionSprites();
                     break;
                 default:
                     throw new ArgumentException(

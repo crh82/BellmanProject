@@ -404,13 +404,13 @@ MonoBehaviour:
   mainCamera: {fileID: 1857995990}
   target: {fileID: 176666254}
   levelEditor: {fileID: 0}
-  dimensions: {x: 5, y: 5}
+  dimensions: {x: 50, y: 50}
   sceneMdp:
     name: 
     width: 0
     height: 0
     states: []
-    mdpRules: 0
+    mdpRules: 1
     obstacleStates: 
     terminalStates: 
     goalStates: 

@@ -26,7 +26,7 @@ public class StateValueFunction
                     SetValue(state, state.Reward);
                     break;
                 case StateType.Standard:
-                    SetValue(state, 0f);
+                    SetValue(state, state.Reward);
                     _changeInStateValue[state.StateIndex] = float.PositiveInfinity;
                     break;
                 default:

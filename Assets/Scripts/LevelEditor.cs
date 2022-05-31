@@ -186,7 +186,7 @@ public class LevelEditor : MonoBehaviour
 
     private void SetRewardValue(int idx) => rewardText[idx].SetValue($"{reward}");
     
-    private float GetRewardValue(int index) => rewardText.ContainsKey(index) ? rewardText[index].RewardFloat : 0;
+    private float GetRewardValue(int index) => rewardText.ContainsKey(index) ? rewardText[index].RewardFloat :0;
 
     private void DisableRewardTextDisplayInUI(int index) => rewardText[index].rewardTextObject.SetActive(false);
     
@@ -249,6 +249,8 @@ public class LevelEditor : MonoBehaviour
 
             if (!newState.IsObstacle()) newState.Reward = GetRewardValue(index);
 
+            // if (newState.IsStandard()) newState.Reward = -0.04f; Todo delete this was just for testing something related to the credit assignment problem
+            
             newMdp.States.Add(newState);
         }
         

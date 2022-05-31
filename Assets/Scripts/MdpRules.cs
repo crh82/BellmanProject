@@ -47,6 +47,12 @@ public static class RuleProbabilityDistributor
     /// </listheader>
     /// <item>¯¯\_(ツ)_/¯¯</item>
     /// </list>
+    /// <list type="bullet">
+    /// <listheader>
+    /// <term><b>Deterministic</b></term>
+    /// </listheader>
+    /// <item>Intended successor state ( 100% ) </item>
+    /// </list>
     /// </summary>
     /// 
     /// <param name="mdpRuleSet"></param>
@@ -96,7 +102,7 @@ public static class RuleProbabilityDistributor
             default:
                 // Corresponds to case Rules.Deterministic
                 // Agent always arrives in intended s' 
-                transitions = new[] {1.0f};
+                transitions = new[] {1.0f, 1.0f, 1.0f, 1.0f};
                 break;
         }
     

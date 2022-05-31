@@ -428,7 +428,7 @@ public class Algorithms : MonoBehaviour
         {
             float valueOfState = await BellmanBackupMaxActionValue(
                 mdp, stateValueFunction, actionValueFunction, state, gamma);
-
+            
             stateValueFunction.SetValue(state, valueOfState);
         }
     }
@@ -440,11 +440,12 @@ public class Algorithms : MonoBehaviour
         MarkovState         state, 
         float               gamma)
     {
+        
         foreach (var action in state.ApplicableActions)
         {
             float stateActionValueQsa =
                 await CalculateActionValueAsync(mdp, state, action.Action, gamma, stateValueFunction);
-
+            
             actionValueFunction.SetValue(state, action, stateActionValueQsa);
         }
 
@@ -470,7 +471,7 @@ public class Algorithms : MonoBehaviour
             float     valueOfSuccessor = stateValueFunctionV.Value(successorState);
             float       zeroIfTerminal = ZeroIfTerminal(successorState);
 
-            //           P(s'| s, π(s) )•[  R(s') +   𝛄   •  V(s') ]
+            //           P(s'| s, π(s) )•[  R( s, a, s') +   𝛄   •  V(s') ]
             valueOfState += SingleTransitionBackup(probability, reward, gamma,valueOfSuccessor, zeroIfTerminal);
         }
 

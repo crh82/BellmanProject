@@ -16,13 +16,13 @@ public class MDP
     [SerializeField] private int[]             obstacleStates;
     [SerializeField] private int[]             terminalStates;
     [SerializeField] private int[]             goalStates;
+    
+    // These are just for readability
+    private const GridAction                   Left  = GridAction.Left;
+    private const GridAction                   Down  = GridAction.Down;
+    private const GridAction                   Right = GridAction.Right;
+    private const GridAction                   Up    = GridAction.Up;
 
-    // NOTE: Don't know if it's better to use dictionaries here...
-    // noting that Unity can't serialize and deserialize dictionaries.
-    private Dictionary<int[], float> _transitionProbabilities;  // CURRENTLY DOESN'T DO ANYTHING
-    private Dictionary<int, float> _rewards;                    // CURRENTLY DOESN'T DO ANYTHING
-    
-    
     // Getters & Setters
     
     public string Name
@@ -75,23 +75,8 @@ public class MDP
         set => goalStates = value;
     }
 
-    public Dictionary<int[], float> TransitionProbabilities
-    {
-        get => _transitionProbabilities;
-        set => _transitionProbabilities = value;
-    }
-
-    public Dictionary<int, float> Rewards
-    {
-        get => _rewards;
-        set => _rewards = value;
-    }
-
     /// <summary>See <see cref="TransitionFunction(MarkovState,GridAction)"/> below for documentation.</summary>
-    public List<MarkovTransition> TransitionFunction(MarkovState state, MarkovAction action)
-    {
-        return TransitionFunction(state, action.Action);
-    }
+    public List<MarkovTransition> TransitionFunction(MarkovState state, MarkovAction action) => TransitionFunction(state, action.Action);
 
     /// <summary>
     /// <para>
@@ -164,8 +149,9 @@ public class MDP
                 break;
 
             case MdpRules.GrastiensWindFromTheNorth:
-            // transitions = GrastiensRules(mdp, mState, probabilityDistribution);
-            // break;
+                transitions = GrastiensWindFromTheNorth(state, action);
+                break;
+            
             case MdpRules.Deterministic:
             default:
                 transitions = FullTransitionsEffects(state, probabilityDistribution);
@@ -177,10 +163,11 @@ public class MDP
     }
 
     /// <summary>
+    /// <para>
     /// Used to dynamically calculate transitions. We use this instead of precalculated transitions (State Machine) so
-    /// that we will be able to change parameters such as the rule sets, the discount factor (gamma), convergence
-    /// threshold (theta), and so forth. Uses the index (<c>int</c>) representation of the state and an action to
-    /// calculate the successor state (represented by its index). 
+    /// that we will be able to change parameters such as the environment's dynamics and other features. Uses the index
+    /// (<c>int</c>) representation of the state and an action to calculate the successor state (represented by its index).
+    /// </para>
     /// </summary>
     /// <param name="mdp">
     /// <c>MDP</c> object 
@@ -238,10 +225,8 @@ public class MDP
             Probability         = probabilityDistribution[0],
             SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
         };
-
-        intended.Reward = intended.SuccessorStateIndex == intended.State
-            ? 0
-            : States[intended.SuccessorStateIndex].Reward;
+        
+        intended.Reward = RewardFunction(intended.SuccessorStateIndex);
 
         var effects = action.GetOrthogonalEffects();
         
@@ -252,11 +237,8 @@ public class MDP
             Probability = probabilityDistribution[1],
             SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, effects.Item1)
         };
-        
-        orthogonalEffect.Reward = 
-            orthogonalEffect.State == orthogonalEffect.SuccessorStateIndex
-            ? 0
-            : States[orthogonalEffect.SuccessorStateIndex].Reward;
+
+        orthogonalEffect.Reward = RewardFunction(orthogonalEffect.SuccessorStateIndex);
 
         var otherOrthogonalEffect = new MarkovTransition
         {
@@ -265,54 +247,137 @@ public class MDP
             Probability = probabilityDistribution[2],
             SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, effects.Item2)
         };
-        
-        otherOrthogonalEffect.Reward = 
-            otherOrthogonalEffect.State == otherOrthogonalEffect.SuccessorStateIndex
-            ? 0
-            : States[otherOrthogonalEffect.SuccessorStateIndex].Reward;
+
+        otherOrthogonalEffect.Reward = RewardFunction(otherOrthogonalEffect.SuccessorStateIndex);
         
         return new List<MarkovTransition> {intended, orthogonalEffect, otherOrthogonalEffect};
     }
+
+    /// <summary>
+    /// <para>
+    /// Simulates a wind blowing from the north. If the agent takes the <c>Up</c> action there's a 50% chance of moving
+    /// to the state above (if it's reachable) a 33.33...% chance of staying in the current state and a 16.66667% chance
+    /// of slipping down to the state below (if it's reachable) 
+    /// </para>
+    /// </summary>
+    /// <param name="mState"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    private List<MarkovTransition> GrastiensWindFromTheNorth(MarkovState mState, GridAction action)
+    {
+        var transitions = new List<MarkovTransition>();
+
+        switch (action)
+        {
+            case GridAction.Left:
+            case GridAction.Right:
+                var newTransition = new MarkovTransition
+                {
+                    State               = mState.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 0.5f,
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
+                };
+                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
+                transitions.Add(newTransition);
+               
+                newTransition = new MarkovTransition
+                {
+                    State               = mState.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 0.5f,
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, Down)
+                };
+                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
+                transitions.Add(newTransition);
+                break;
+            
+            case GridAction.Down:
+                newTransition = new MarkovTransition
+                {
+                    State               = mState.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 1f,
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
+                };
+                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
+                transitions.Add(newTransition);
+                break;
+            
+            case GridAction.Up:
+                newTransition = new MarkovTransition
+                {
+                    State               = mState.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 0.5f,
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
+                };
+                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
+                transitions.Add(newTransition);
+                
+                newTransition = new MarkovTransition
+                {
+                    State               = mState.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 33.33333f,
+                    SuccessorStateIndex = mState.StateIndex
+                };
+                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
+                transitions.Add(newTransition);
+                
+                newTransition = new MarkovTransition
+                {
+                    State               = mState.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 0.16667f,
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, Down)
+                };
+                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
+                transitions.Add(newTransition);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(action), action, null);
+        }
+        
+        return transitions;
+    } 
     
     private bool SuccessorStateOutOfBounds(int stateIndex, int successorIndex, GridAction action)
     {
         bool outOfBoundsTop             = successorIndex   > States.Count - 1;
         bool outOfBoundsBottom          = successorIndex   < 0;
-        bool outOfBoundsLeft            = stateIndex       % Width == 0 && action == GridAction.Left;
-        bool outOfBoundsRight           = (stateIndex + 1) % Width == 0 && action == GridAction.Right;
+        bool outOfBoundsLeft            = stateIndex       % Width == 0 && action == Left;
+        bool outOfBoundsRight           = (stateIndex + 1) % Width == 0 && action == Right;
         return outOfBoundsLeft | outOfBoundsBottom | outOfBoundsRight | outOfBoundsTop;
     }
     
     // Given we've enumerated states and actions, we do easy math rather than explicitly defining actions and their
-    // effects.  
+    // effects. At some future point we'll need to transition to an adjacency matrix if we want to move beyond grid worlds.
     private int ArithmeticEffectOfAction(GridAction action)
     {
         return action switch
         {
-            GridAction.Left  => -1,
-            GridAction.Down  => -Width,
-            GridAction.Right =>  1,
-            GridAction.Up    =>  Width,
+            Left  => -1,
+            Down  => -Width,
+            Right =>  1,
+            Up    =>  Width,
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
     }
 
     /// <summary>
-    /// Todo implement dynamic reward function
+    /// For now we use R(s, a, s'), but it's simply encoded as the reward for reaching the successor state. In
+    /// retrospect I should have created either a dictionary or a RewardFunction object to handle each version of the
+    /// reward function ( R(s) , R(s,a) , and R(s,a,s') ).  
     /// </summary>
     /// <param name="state"></param>
     /// <returns><c>float</c> representing the reward for arriving in the given state.</returns>
     /// <exception cref="Exception"></exception>
-    public float RewardFunction(MarkovState state)
-    {
-        return state.Reward;
-    }
+    public float RewardFunction(MarkovState state) => state.Reward;
 
-    public float RewardFunction(int stateIndex)
-    {
-        return States[stateIndex].Reward;
-    }
-    
+    public float RewardFunction(int stateIndex) => States[stateIndex].Reward;
+
 
     public void EditRewardForState(MarkovState state, float newReward)
     {
