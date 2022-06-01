@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using TexDrawLib;
 using UnityEditor;
 using UnityEngine;
@@ -361,3 +362,4 @@ public class FindReplaceDrawer : PropertyDrawer
         return 0;
     }
 }
+#endif

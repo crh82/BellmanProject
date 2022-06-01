@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -77,6 +78,5 @@ namespace Michsky.UI.ModernUIPack
             serializedObject.ApplyModifiedProperties();
         }
     }
-
 }
-
+#endif

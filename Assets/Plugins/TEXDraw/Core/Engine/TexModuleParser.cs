@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using static TexDrawLib.TexParserUtility;
 
-
 namespace TexDrawLib
 {
     public partial class TexModuleParser
@@ -21,7 +20,7 @@ namespace TexDrawLib
             // See TexModuleInitiator.cs
             Initialize();
         }
-        
+
 
         /// <summary>
         /// Global parsing until the end of string

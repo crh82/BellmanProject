@@ -1,11 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,22 +22,29 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        // Generates the singleton architecture
         if (instance != null)
         {
             Destroy(gameObject);
             return;
         }
-        
         instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
-    public void ApplicationQuit()
+    private void Update()
     {
-    
-        Application.Quit();
-
+        if (Input.GetKeyDown(KeyCode.B) && SceneManager.GetActiveScene().name == "TitleMenuScene")
+        {
+            instance.SwitchScene(BellmanScenes.MdpBuilder);          
+        }
+        if (Input.GetKeyDown(KeyCode.L) && SceneManager.GetActiveScene().name == "TitleMenuScene")
+        {
+            instance.SwitchScene(BellmanScenes.DynamicProgramming);          
+        }
     }
+
+    public void ApplicationQuit() => Application.Quit();
 
     public void SwitchScene(BellmanScenes bellmanScene)
     {

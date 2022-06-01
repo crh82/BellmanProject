@@ -1,4 +1,5 @@
-﻿using TexDrawLib;
+﻿#if UNITY_EDITOR
+using TexDrawLib;
 using UnityEditor;
 using UnityEngine;
 
@@ -95,3 +96,4 @@ public class TEXDraw3DEditor : Editor
         Selection.activeObject = go;
     }
 }
+#endif

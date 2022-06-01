@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-
 using TexDrawLib;
 using UnityEditor;
 using UnityEngine;

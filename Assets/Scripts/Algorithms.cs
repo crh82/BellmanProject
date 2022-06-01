@@ -400,7 +400,6 @@ public class Algorithms : MonoBehaviour
             // This LINQ implementation replaces the BellmanBackUpValueOfState method to leverage the performance gains
             // that come from PLINQ (parallel) the on larger state spaces.
             
-            // float valueOfState = BellmanBackUpValueOfState(mdp, policy, gamma, state, stateValueFunctionV);
             var action = policy.GetAction(state);
             float valueOfState = (
                 from transition in mdp.TransitionFunction(state, action) 
@@ -414,6 +413,26 @@ public class Algorithms : MonoBehaviour
             
             stateValueFunctionV.SetValue(state, valueOfState);
         }
+        
+        // I've left this commented out to be able to show the differences between the various r(s), r(s,a), and r(s,a,s') formulations.
+        // foreach (var state in mdp.States.Where(state => !state.IsObstacle()))
+        // {
+        //     float valueOfState = state.Reward;
+        //     
+        //     if (state.IsStandard())
+        //     {
+        //         var action = policy.GetAction(state);
+        //         valueOfState += (
+        //             from transition in mdp.TransitionFunction(state, action) 
+        //             let p = transition.Probability 
+        //             let sPrime = transition.SuccessorStateIndex 
+        //             let vsPrime = stateValueFunctionV.Value(sPrime) 
+        //             select p * gamma * vsPrime
+        //             ).Sum();
+        //     }
+        //     
+        //     stateValueFunctionV.SetValue(state, valueOfState);
+        // }
         
         return Task.FromResult(stateValueFunctionV);
     }

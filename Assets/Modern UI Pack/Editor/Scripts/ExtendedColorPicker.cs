@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Globalization;
 using UnityEditor;
@@ -102,3 +103,4 @@ namespace Michsky.UI.ModernUIPack
         }
     }
 }
+#endif

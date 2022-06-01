@@ -174,8 +174,7 @@ namespace Michsky.UI.ModernUIPack
                 textHelper = dropdownItems[i].itemName;
                 setItemText.text = textHelper;
 
-                Transform goImage;
-                goImage = go.gameObject.transform.Find("Icon");
+                Transform goImage = go.gameObject.transform.Find("Icon");
                 setItemImage = goImage.GetComponent<Image>();
                 imageHelper = dropdownItems[i].itemIcon;
                 setItemImage.sprite = imageHelper;
@@ -183,9 +182,7 @@ namespace Michsky.UI.ModernUIPack
                 dropdownItems[i].itemIndex = i;
                 CustomDropdown.Item mainItem = dropdownItems[i];
 
-                Button itemButton;
-                itemButton = go.GetComponent<Button>();
-
+                Button itemButton = go.GetComponent<Button>();
                 itemButton.onClick.AddListener(Animate);
                 itemButton.onClick.AddListener(delegate
                 {

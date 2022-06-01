@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor;
 
 namespace Michsky.UI.ModernUIPack
@@ -198,3 +199,4 @@ namespace Michsky.UI.ModernUIPack
         }
     }
 }
+#endif

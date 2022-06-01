@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
-using UnityEditor;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour

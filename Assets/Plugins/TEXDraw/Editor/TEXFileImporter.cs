@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 #if UNITY_2019 || UNITY_2020_1
 using UnityEditor.Experimental.AssetImporters;
 #else
@@ -16,3 +17,4 @@ public class TEXFileImporter : ScriptedImporter
         ctx.SetMainObject(text);
     }
 }
+#endif

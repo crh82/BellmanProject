@@ -1,7 +1,7 @@
+#if UNITY_EDITOR
 using TexDrawLib;
 using UnityEditor;
 using UnityEngine;
-
 [CustomEditor(typeof(TEXConfiguration))]
 [CanEditMultipleObjects]
 public class TEXConfigurationEditor : Editor
@@ -52,3 +52,4 @@ public class TEXConfigurationEditor : Editor
         return EditorGUI.EndChangeCheck();
     }
 }
+#endif

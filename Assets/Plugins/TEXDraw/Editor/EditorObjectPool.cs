@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using TexDrawLib;
 using UnityEditor;
 using UnityEngine;
@@ -46,3 +47,4 @@ public class EditorObjectPool : EditorWindow
         Repaint();
     }
 }
+#endif

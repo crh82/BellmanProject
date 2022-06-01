@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 
 public class MiniThumbTextureDrawer : MaterialPropertyDrawer
@@ -25,3 +26,4 @@ public class MiniThumbTextureDrawer : MaterialPropertyDrawer
             prop.textureValue = editor.TexturePropertyMiniThumbnail(position, prop, label, "RGBA Texture for " + label);
     }
 }
+#endif

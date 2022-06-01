@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+
 //using TexDrawLib;
 //using UnityEditor;
 
@@ -59,3 +61,4 @@
 //            helpGUI = "[Post Effect]\n" + helpGUI;
 //    }
 //}
+#endif

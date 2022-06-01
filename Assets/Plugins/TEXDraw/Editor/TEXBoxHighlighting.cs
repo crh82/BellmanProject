@@ -1,8 +1,8 @@
-﻿using TexDrawLib;
+﻿#if UNITY_EDITOR
+using TexDrawLib;
 
 using UnityEditor;
 using UnityEngine;
-
 public class TEXBoxHighlighting : ScriptableObject
 {
     public static class Styles
@@ -412,3 +412,4 @@ public class TEXBoxHighlighting : ScriptableObject
 
     }
 }
+#endif

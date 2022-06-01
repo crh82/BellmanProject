@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f181994389177aa4e8807fb9cd14776f, type: 3}
   m_Name: TEXDrawPreference
   m_EditorClassIdentifier: 
-  MainFolderPath: Assets/Plugins/TEXDraw
+  MainFolderPath: Assets\Plugins\TEXDraw
   editorReloading: 0
   defaultMaterial: {fileID: 2100000, guid: 9d473469be5a9fc448e911362f79b8a9, type: 2}
   spriteMaterial: {fileID: 2100000, guid: 37137b524c1bc134c93e4ef9471abc1c, type: 2}
