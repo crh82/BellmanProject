@@ -27,22 +27,23 @@ public class CornerCameraController : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKey(KeyCode.End))
-        {
-            cameraRig.SetActive(false);
-        }
-
+        if (Input.GetKeyDown(KeyCode.End)) cornerCamera.gameObject.SetActive(!cornerCamera.gameObject.activeSelf);
+        
         if (Input.GetKeyDown(KeyCode.LeftBracket))
         {
-            Debug.Log("orig");
-            cornerCamera.rect = new Rect(0, 0.75f, 0.2f, 0.25f);
+            Debug.Log("OriginalCorner");
+            cornerCamera.rect = new Rect(0.75f, 0.65f, 0.4f, 1f);
+            cornerCamera.clearFlags = CameraClearFlags.Depth;
+            // Debug.Log("orig");
+            // cornerCamera.rect = new Rect(0, 0.75f, 0.2f, 0.25f);
             // cornerCamera.rect.Set(0,0.75f,0.2f,0.25f);
         }
 
         if (Input.GetKeyDown(KeyCode.RightBracket))
         {
-            Debug.Log("Big");
-            cornerCamera.rect = new Rect(0.75f, 0.7f, 0.4f, 1f);
+            Debug.Log("FullScreen");
+            cornerCamera.rect = new Rect(0f, 0f, 1f, 1f);
+            cornerCamera.clearFlags = CameraClearFlags.Skybox;
             // cornerCamera.rect.Set(0,0.5f,0.4f,1f);
         }
 
