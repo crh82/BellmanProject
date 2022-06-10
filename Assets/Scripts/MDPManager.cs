@@ -117,6 +117,8 @@ public class MdpManager : MonoBehaviour
     private float                          _progressOfAlgorithm;
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
+
+    private Dictionary<int, GridSquareData> _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
     public Dictionary<int, GameObject>     StateQuads { get; set; } = new Dictionary<int, GameObject>();
 
     public  float                          theta = 1e-10f;
@@ -150,6 +152,8 @@ public class MdpManager : MonoBehaviour
         currentUi    = GameObject.FindGameObjectWithTag("PolicyEvaluationUI").GetComponent<Canvas>();
         uiController = currentUi.GetComponent<UIController>();
 
+        GameManager.instance.SetMdpManager(this);
+
         if (GameManager.instance.sendMdp) LoadMdpFromGameManager();
         
         // MDP grastiens = MdpAdmin.GenerateMdp(
@@ -171,6 +175,10 @@ public class MdpManager : MonoBehaviour
     // ╔═══════════════════════════════════════════════════╗
     // ║ MDP SERIALIZATION/DESERIALIZATION & INSTANTIATION ║
     // ╚═══════════════════════════════════════════════════╝
+    
+    
+    
+   
     private MDP CreateFromJson(string jsonString) => JsonUtility.FromJson<MDP>(jsonString);
 
     private async void LoadMdpFromGameManager()
@@ -200,6 +208,8 @@ public class MdpManager : MonoBehaviour
 
     private async Task<MDP> InstantiateMdpVisualisationAsync(MDP mdpFromFile)
     {
+        _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
+        
         var mdpForCreation = mdpFromFile;
         
         var id = 0;
@@ -224,7 +234,13 @@ public class MdpManager : MonoBehaviour
 
                 var gridSquarePosition = new Vector3(_offsetToCenterVector.x + x, 0f, _offsetToCenterVector.y + y);
                 
-                Instantiate(gridSquarePrefab, gridSquarePosition, Quaternion.identity, stateSpace);
+                var gridSquare = Instantiate(gridSquarePrefab, gridSquarePosition, Quaternion.identity, stateSpace);
+
+                var gridSquareData = gridSquare.GetComponent<GridSquareData>();
+                
+                gridSquareData.SetGridSquareVisualInformation(x, y, id);
+                
+                _stateSpaceGridSquares.Add(id, gridSquareData);
                 
                 id++;
             }
@@ -1060,6 +1076,11 @@ public class MdpManager : MonoBehaviour
         StateQuads = new Dictionary<int, GameObject>();
     }
 
+    public void ResetGridSquareDictionary()
+    {
+        _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
+    }
+
     public void GenerateRandomStateValueFunction()
     {
         currentStateValueFunction = 
@@ -1116,6 +1137,15 @@ public class MdpManager : MonoBehaviour
         foreach (var state in Mdp.States.Where(state => state.IsStandard()))
             switch (toToggle)
             {
+                case "GridSquare":
+                    _stateSpaceGridSquares[state.StateIndex].ToggleVisibility();
+                    break;
+                case "StateValue":
+                    _stateSpaceVisualStates[state.StateIndex].ToggleStateValue();
+                    break;
+                case "StateValueText":
+                    _stateSpaceVisualStates[state.StateIndex].ToggleStateValueText();
+                    break;
                 case "ActionObjects":
                     _stateSpaceVisualStates[state.StateIndex].ToggleActionObjects();
                     break;

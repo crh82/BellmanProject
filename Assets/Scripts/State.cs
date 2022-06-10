@@ -213,7 +213,10 @@ public class State : MonoBehaviour
     public void TogglePreviousActionSprites() => previousActionSpritesContainer.SetActive(!previousActionSpritesContainer.activeSelf);
 
     public void ToggleActionObjects()         => actionMeshesContainer.SetActive(!actionMeshesContainer.activeSelf);
-    
+
+    public void ToggleStateValue()            => stateMesh.SetActive(!stateMesh.activeSelf);
+
+    public void ToggleStateValueText()           => hoverCanvas.gameObject.SetActive(!hoverCanvas.gameObject.activeSelf);
 
     // ┌────────────────┐
     // │ Action Sprites │

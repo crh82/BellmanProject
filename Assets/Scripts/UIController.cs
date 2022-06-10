@@ -159,24 +159,39 @@ public class UIController : MonoBehaviour
 
    private void Update()
    {
-      if (Input.GetKeyDown(KeyCode.Escape))
-      {
-         _mdpManager.SetKeepGoingFalse();
-         // Debug.Log("Escape key was pressed");
-      }
+      // if (Input.GetKeyDown(KeyCode.Escape))
+      // {
+      //    _mdpManager.SetKeepGoingFalse();
+      //    // Debug.Log("Escape key was pressed");
+      // }
+      //
+      // if (Input.GetKeyDown(KeyCode.Alpha1))
+      // {
+      //    ToggleActionsVisuals("ActionObjects");
+      // }
+      // if (Input.GetKeyDown(KeyCode.Alpha2))
+      // {
+      //    ToggleActionsVisuals("ActionSprites");
+      // }
+      // if (Input.GetKeyDown(KeyCode.Alpha3))
+      // {
+      //    ToggleActionsVisuals("PreviousActionSprites");
+      // }
       
-      if (Input.GetKeyDown(KeyCode.Alpha1))
-      {
-         ToggleActionsVisuals("ActionObjects");
-      }
-      if (Input.GetKeyDown(KeyCode.Alpha2))
-      {
-         ToggleActionsVisuals("ActionSprites");
-      }
-      if (Input.GetKeyDown(KeyCode.Alpha3))
-      {
-         ToggleActionsVisuals("PreviousActionSprites");
-      }
+      if (Input.GetKeyDown(KeyCode.Escape)) _mdpManager.SetKeepGoingFalse();
+        
+      if (Input.GetKeyDown(KeyCode.Alpha1)) _mdpManager.Toggle("GridSquare");
+       
+      if (Input.GetKeyDown(KeyCode.Alpha2)) _mdpManager.Toggle("StateValue");
+        
+      if (Input.GetKeyDown(KeyCode.Alpha3)) _mdpManager.Toggle("StateValueText");
+        
+      if (Input.GetKeyDown(KeyCode.Alpha4)) _mdpManager.Toggle("ActionObjects");
+        
+      if (Input.GetKeyDown(KeyCode.Alpha5)) _mdpManager.Toggle("ActionSprites");
+
+      if (Input.GetKeyDown(KeyCode.Alpha6)) _mdpManager.Toggle("PreviousActionSprites");
+      
    }
 
    private void OnDisable()
@@ -714,7 +729,7 @@ public class UIController : MonoBehaviour
       }
    }
    
-   public void ToggleActionsVisuals(string toBeToggled) => _mdpManager.Toggle(toBeToggled);
+   // public void ToggleActionsVisuals(string toBeToggled) => _mdpManager.Toggle(toBeToggled);
 
    public void ApplicationQuit()
    {
