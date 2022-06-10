@@ -27,41 +27,45 @@ public class CornerCameraController : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.End)) cornerCamera.gameObject.SetActive(!cornerCamera.gameObject.activeSelf);
+        // TD Visibility
+        if (Input.GetKeyDown(KeyCode.End))          ToggleTopDownVisibility();
         
-        if (Input.GetKeyDown(KeyCode.LeftBracket))
-        {
-            Debug.Log("OriginalCorner");
-            cornerCamera.rect = new Rect(0.75f, 0.65f, 0.4f, 1f);
-            cornerCamera.clearFlags = CameraClearFlags.Depth;
-            // Debug.Log("orig");
-            // cornerCamera.rect = new Rect(0, 0.75f, 0.2f, 0.25f);
-            // cornerCamera.rect.Set(0,0.75f,0.2f,0.25f);
-        }
+        // TD Camera Full Screen/MiniMap modes
+        if (Input.GetKeyDown(KeyCode.LeftBracket))  SwitchTopDownToCornerMiniMap();
+        
+        if (Input.GetKeyDown(KeyCode.RightBracket)) SwitchTopDownToFullScreen();
+        
+        // Top Down Camera Zoom Controls
+        if (Input.GetKey(KeyCode.R))                ZoomInTopDownCamera();
+        
+        if (Input.GetKey(KeyCode.F))                ZoomOutTopDownCamera();
+      
+    }
 
-        if (Input.GetKeyDown(KeyCode.RightBracket))
-        {
-            Debug.Log("FullScreen");
-            cornerCamera.rect = new Rect(0f, 0f, 1f, 1f);
-            cornerCamera.clearFlags = CameraClearFlags.Skybox;
-            // cornerCamera.rect.Set(0,0.5f,0.4f,1f);
-        }
+    private void ZoomOutTopDownCamera()
+    {
+        if (topDownView.m_Lens.OrthographicSize <= 10f)
+            topDownView.m_Lens.OrthographicSize += orthZoomValue;
+    }
 
-        if (Input.GetKey(KeyCode.R))
-        {
-            if (topDownView.m_Lens.OrthographicSize >= 0.3f)
-                topDownView.m_Lens.OrthographicSize -= orthZoomValue;
-            
-            // topDownOffset.m_Offset += Vector3.forward * -1;
-        }
+    private void ZoomInTopDownCamera()
+    {
+        if (topDownView.m_Lens.OrthographicSize >= 0.3f)
+            topDownView.m_Lens.OrthographicSize -= orthZoomValue;
+    }
 
-        if (Input.GetKey(KeyCode.F))
-        {
-            if (topDownView.m_Lens.OrthographicSize <= 10f)
-                topDownView.m_Lens.OrthographicSize += orthZoomValue;
-           
-            // topDownOffset.m_Offset += Vector3.forward * 1;
-        }
+    private void ToggleTopDownVisibility() => cornerCamera.gameObject.SetActive(!cornerCamera.gameObject.activeSelf);
+
+    private void SwitchTopDownToFullScreen()
+    {
+        cornerCamera.rect = new Rect(0f, 0f, 1f, 1f);
+        cornerCamera.clearFlags = CameraClearFlags.Skybox;
+    }
+
+    private void SwitchTopDownToCornerMiniMap()
+    {
+        cornerCamera.rect = new Rect(0.75f, 0.65f, 0.4f, 1f);
+        cornerCamera.clearFlags = CameraClearFlags.Depth;
     }
 
     public void FocusOn(GameObject quad)

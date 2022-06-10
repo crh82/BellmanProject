@@ -146,7 +146,9 @@ public class State : MonoBehaviour
         stateValue = value;
         
         await UpdateObjectHeight(stateMesh, value);
-
+        
+        // This controls the amount of text visible on the screen. TextMeshPro or really any text heavily slows down the 
+        // framerate so with larger state spaces we reduce the number of significant digits displayed.
         if (stateType == StateType.Standard)
         {
             hoveringText.text = _mdpManager.Mdp.StateCount switch
