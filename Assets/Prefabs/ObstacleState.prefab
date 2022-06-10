@@ -152,8 +152,7 @@ MonoBehaviour:
   stateValue: 0
   stateIndex: 0
   stateType: 0
-  currentAction: 0
-  previousAction: 0
+  statePosition: {x: 0, y: 0, z: 0}
   stateMesh: {fileID: 2729783304473936585}
   textContainer: {fileID: 7758824187808799678}
   hoverCanvas: {fileID: 5798423129387892312}
@@ -644,7 +643,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &23888049198900283
 RectTransform:
   m_ObjectHideFlags: 0

@@ -26,14 +26,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1638649818044378835}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.02, y: 0.02, z: 0.02}
   m_Children:
   - {fileID: 1322608037942717851}
   m_Father: {fileID: 2947299909188966495}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0.15}
@@ -152,8 +152,7 @@ MonoBehaviour:
   stateValue: 0
   stateIndex: 0
   stateType: 0
-  currentAction: 0
-  previousAction: 0
+  statePosition: {x: 0, y: 0, z: 0}
   stateMesh: {fileID: 2729783304473936585}
   textContainer: {fileID: 7758824187808799678}
   hoverCanvas: {fileID: 642255839676516912}
@@ -733,8 +732,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4285054724
-  m_fontColor: {r: 0.015686275, g: 0.7490196, b: 0.40784314, a: 1}
+    rgba: 4293244767
+  m_fontColor: {r: 0.37254903, g: 0.7176471, b: 0.8980392, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

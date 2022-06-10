@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MdpBuilder.unity
     guid: 103cba223f12a4683a2db249d7c380bd
+  - enabled: 1
+    path: Assets/Scenes/MarkovDecisionProcessTesttingNewColours.unity
+    guid: 285e430460d294c07aa530daf22fc6a2
   m_configObjects: {}
