@@ -15,10 +15,15 @@ public class GameManager : MonoBehaviour
     public bool                        sendPolicy;
     public bool                        sendStateValueFunction;
     public bool                        sendActionValueFunction;
+
+    private MdpManager                 _mdpManager;
     
     private const  BellmanScenes       Title              = BellmanScenes.Title;
     private const  BellmanScenes       DynamicProgramming = BellmanScenes.DynamicProgramming;
     private const  BellmanScenes       MdpBuilder         = BellmanScenes.MdpBuilder;
+    private const  BellmanScenes       DP2         = BellmanScenes.Dp2;
+
+    public int currentScene;
 
     private void Awake()
     {
@@ -34,14 +39,19 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.B) && SceneManager.GetActiveScene().name == "TitleMenuScene")
+        if (Input.GetKeyDown(KeyCode.Equals))
         {
-            instance.SwitchScene(BellmanScenes.MdpBuilder);          
+            currentScene += 1;
+
+            if (currentScene > 3) currentScene = 0;
+           
+            instance.SwitchScene((BellmanScenes) currentScene);          
         }
-        if (Input.GetKeyDown(KeyCode.L) && SceneManager.GetActiveScene().name == "TitleMenuScene")
-        {
-            instance.SwitchScene(BellmanScenes.DynamicProgramming);          
-        }
+
+        // if (Input.GetKeyDown(KeyCode.L) && SceneManager.GetActiveScene().name == "TitleMenuScene")
+        // {
+        //     instance.SwitchScene(BellmanScenes.DynamicProgramming);          
+        // }
     }
 
     public void ApplicationQuit() => Application.Quit();
@@ -59,15 +69,21 @@ public class GameManager : MonoBehaviour
             case MdpBuilder:
                 SceneManager.LoadScene("Scenes/MdpBuilder");
                 break;
+            case DP2:
+                SceneManager.LoadScene(3);
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(bellmanScene), bellmanScene, null);
         }        
     }
+
+    public void SetMdpManager(MdpManager mdpManager) => _mdpManager = mdpManager;
 }
 
 public enum BellmanScenes
 {
     Title              = 0,
     DynamicProgramming = 1,
-    MdpBuilder         = 2
+    MdpBuilder         = 2,
+    Dp2 = 3
 }
