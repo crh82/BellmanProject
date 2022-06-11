@@ -50,7 +50,9 @@ public class State : MonoBehaviour
     public List<GameObject>           previousActionSprites;
     
     public List<GameObject>           actionGameObjects;
-
+    
+    public List<GameObject>           actionTargetGameObjects;
+    
     public readonly Queue<GridAction> currentActionPreviousAction = new Queue<GridAction>();
 
 
@@ -126,21 +128,38 @@ public class State : MonoBehaviour
         await setActions;
     }
     
+    
+    // ┌─────────┐
+    // │ Heights │
+    // └─────────┘
     public async Task UpdateAllActionHeightsAsync(float value)
     {
+        var index = 0;
+        
         foreach (var actionGameObject in actionGameObjects)
         {
+            SetActionValueTargetPosition(index, value);
+            
             await UpdateObjectHeight(actionGameObject, value, true);
+            
+            index++;
         }
     }
 
     public async Task UpdateActionHeightAsync(int action, float value)
     {
+        SetActionValueTargetPosition(action, value);
+
         await UpdateObjectHeight(actionGameObjects[action], value, true);
     }
-    
-    
-    
+
+    private void SetActionValueTargetPosition(int action, float value)
+    {
+        var oldPosition = actionTargetGameObjects[action].transform.position;
+
+        actionTargetGameObjects[action].transform.position = new Vector3(oldPosition.x, value, oldPosition.z);
+    }
+
     public async Task UpdateStateHeightAsync(float value)
     {
         stateValue = value;
@@ -168,7 +187,34 @@ public class State : MonoBehaviour
         
     }
     
-    
+    private Task UpdateObjectHeight(GameObject stateOrAction,  float value, bool action=false)
+    {
+        var stateOrActionTransform = stateOrAction.transform;
+        var stateOrActionTransformLocalScale = stateOrAction.transform.localScale;
+        var stateOrActionTransformPosition = stateOrAction.transform.position;
+
+        // So the visual representation is never actually zero because it looks wonky and the colliders don't seem to work.
+        float updateValue = -0.01 < value && value < 0.01 ? 0.01f : value;
+
+        if (action)
+        {
+            stateOrActionTransform.localScale = ActionHeightTranslator(stateOrActionTransformLocalScale, updateValue);
+        }
+        else
+            stateOrActionTransform.localScale = new Vector3(stateOrActionTransformLocalScale.x, updateValue,
+                stateOrActionTransformLocalScale.z);
+
+        stateOrActionTransform.position =
+            new Vector3(stateOrActionTransformPosition.x, updateValue / 2, stateOrActionTransformPosition.z);
+        
+        return Task.CompletedTask;
+    }
+
+    private Vector3 ActionHeightTranslator(Vector3 oldHeight, float value) => new Vector3(oldHeight.x, oldHeight.y, value);
+
+    // ┌──────┐
+    // │ Text │
+    // └──────┘
     private Task UpdateTextThatHoversAboveState()
     {
         var stateMeshTransform = stateMesh.transform;
@@ -181,31 +227,6 @@ public class State : MonoBehaviour
         
         return Task.CompletedTask;
     }
-
-    private Task UpdateObjectHeight(GameObject stateOrAction,  float value, bool action=false)
-    {
-        var stateOrActionTransform = stateOrAction.transform;
-        var stateOrActionTransformLocalScale = stateOrAction.transform.localScale;
-        var stateOrActionTransformPosition = stateOrAction.transform.position;
-
-        // So the visual representation is never actually zero because it looks wonky and the colliders don't seem to work.
-        float updateValue = -0.01 < value && value < 0.01 ? 0.01f : value;
-
-        if (action)
-            stateOrActionTransform.localScale = ActionHeightTranslator(stateOrActionTransformLocalScale, updateValue);
-        else
-            stateOrActionTransform.localScale = new Vector3(stateOrActionTransformLocalScale.x, updateValue,
-                stateOrActionTransformLocalScale.z);
-
-        stateOrActionTransform.position =
-            new Vector3(stateOrActionTransformPosition.x, updateValue / 2, stateOrActionTransformPosition.z);
-        
-        return Task.CompletedTask;
-    }
-
-    
-    private Vector3 ActionHeightTranslator(Vector3 oldHeight, float value) => new Vector3(oldHeight.x, oldHeight.y, value);
-
 
     // ┌─────────┐
     // │ Toggles │

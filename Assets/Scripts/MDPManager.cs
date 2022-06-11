@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,8 @@ public class MdpManager : MonoBehaviour
     public              Transform          stateSpacePrefab;
 
     public              Transform          gridSquarePrefab;
+
+    public              Transform          updateTrail;
     
     // ┌─────────────────────────┐
     // │ GridWorld Visualisation │
@@ -55,6 +58,10 @@ public class MdpManager : MonoBehaviour
     private const       BellmanScenes      MdpBuilder         = BellmanScenes.MdpBuilder;
 
     public              GameObject         rabbit;
+
+    public  bool                           stateValueObjectsVisible  = true;
+    public  bool                           stateValueValuesVisible   = true;
+    public  bool                           actionValueObjectsVisible = true;
 
     
     // ┌───────────────────────────────────────────────────┐
@@ -118,7 +125,7 @@ public class MdpManager : MonoBehaviour
 
     private readonly Dictionary<int,State> _stateSpaceVisualStates = new Dictionary<int, State>();
 
-    private Dictionary<int, GridSquareData> _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
+    private Dictionary<int,GridSquareData> _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
     public Dictionary<int, GameObject>     StateQuads { get; set; } = new Dictionary<int, GameObject>();
 
     public  float                          theta = 1e-10f;
@@ -177,10 +184,17 @@ public class MdpManager : MonoBehaviour
     // ╚═══════════════════════════════════════════════════╝
     
     
-    
-   
     private MDP CreateFromJson(string jsonString) => JsonUtility.FromJson<MDP>(jsonString);
 
+    /// <summary>
+    /// <para>
+    /// The GameManager controls the flow between scenes carrying over the necessary data. For example, if we've created
+    /// a grid world in the grid world builder and we want to run the algorithms on it, GameManager handles the
+    /// transition from the builder to the solver handing off the built gridworld then deleting it from its state. I do
+    /// this so it will throw a null exception error if I inadvertently try access the data from the GameManger when I
+    /// shouldn't.
+    /// </para>
+    /// </summary>
     private async void LoadMdpFromGameManager()
     {
         Mdp = await InstantiateMdpVisualisationAsync(GameManager.instance.currentMdp);
@@ -195,10 +209,16 @@ public class MdpManager : MonoBehaviour
         GameManager.instance.sendMdp    = false;
     }
     
+    /// <summary>
+    /// Loads a gridworld from persistant storage into the solver.
+    /// </summary>
+    /// <param name="filepath">String representation of the filepath</param>
     public async void LoadMdpFromFilePath(string filepath)
     {
         string mdpJsonRepresentation = File.ReadAllText(filepath);
+        
         Mdp = CreateFromJson(mdpJsonRepresentation);
+        
         Mdp = await InstantiateMdpVisualisationAsync(CreateFromJson(mdpJsonRepresentation));
 
         mdpLoaded = true;
@@ -206,32 +226,46 @@ public class MdpManager : MonoBehaviour
         uiController.SetRunFeaturesActive();
     }
 
-    private async Task<MDP> InstantiateMdpVisualisationAsync(MDP mdpFromFile)
+    /// <summary>
+    /// <para>
+    /// Generates all the visuals and sets up the solver for whichever MDP gridworld we are wanting to run the
+    /// algorithms on.
+    /// </para>
+    /// </summary>
+    /// <param name="mdpToBuild"></param>
+    /// <returns></returns>
+    private async Task<MDP> InstantiateMdpVisualisationAsync(MDP mdpToBuild)
     {
+        // Resets the grid square holder (this allows access to the toggle visibility the white boxes with the indices
+        // and coordinates). 
         _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
         
-        var mdpForCreation = mdpFromFile;
+        var mdpForCreation = mdpToBuild; // Inevitably this is unnecessary I did it for some reason at some point. 
         
-        var id = 0;
-        
+        // This block does all the offsets and so forth so the grid actually forms.
         _offsetToCenterVector = new Vector2((-mdpForCreation.Width / 2f), (-mdpForCreation.Height / 2f));
         
         if (mdpForCreation.Height > 1) {_offsetToCenterVector += _offsetValuesFor2DimensionalGrids;}
         
         float stateCubeDimensions = 1 - GapBetweenStates;
-
+        
+        // Holds everything so that when we reset, change MDP, etc, we can just delete all the current stuff in one go.
         var stateSpace = Instantiate(
             stateSpacePrefab, 
             transform, 
             true);
 
+        // Main loops to handle instantiating the actual grid.
+        var id = 0;
+        
         for (var y = 0; y < mdpForCreation.Height; y++)
         {
             for (var x = 0; x < mdpForCreation.Width; x++)
             {
-                
+                // Calls the method below to deal with the individual states.
                 var state = InstantiateIndividualState(mdpForCreation, stateCubeDimensions, x, y, stateSpace, id);
-
+                
+                // All of this is to create and label the grid squares.
                 var gridSquarePosition = new Vector3(_offsetToCenterVector.x + x, 0f, _offsetToCenterVector.y + y);
                 
                 var gridSquare = Instantiate(gridSquarePrefab, gridSquarePosition, Quaternion.identity, stateSpace);
@@ -249,8 +283,24 @@ public class MdpManager : MonoBehaviour
         return await Task.FromResult(mdpForCreation);
     }
 
+    /// <summary>
+    /// This monstrosity is what creates the visual representations of the both the V(s) and Q(s,a) also assigns its
+    /// necessary information. It's a complex little beast because the hardest thing about all this is figuring out how
+    /// to visually express each part of the algorithm/equation/model/or anything else. Whether it's comprehensible or
+    /// incoherent depends entirely on how exhausted I was trying to solve what ever annoying UI related problem at the
+    /// time.
+    /// </summary>
+    /// <param name="mdp"></param>
+    /// <param name="stateXandZDimensions"></param>
+    /// <param name="x">X-Coordinate of the state</param>
+    /// <param name="y">Y-Coordinate of the state</param>
+    /// <param name="stateSpace">State space GameObject of which the state is a child</param>
+    /// <param name="id">Index of the state</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     private Transform InstantiateIndividualState(MDP mdp, float stateXandZDimensions, int x, int y, Transform stateSpace, int id)
     {
+        // These set all the dimensions and positions of the visuals. 
         var stateType = mdp.States[id].TypeOfState;
         
         var   scale              = new Vector3(stateXandZDimensions, initialStateValueForTesting, stateXandZDimensions);
@@ -272,6 +322,8 @@ public class MdpManager : MonoBehaviour
         
         State fullStateObject;
 
+        // This switch block instantiates whatever version of the state, the state is (obstacle is the black boxes,
+        // terminals are red, goals are green, standard is, well, standard)
         switch (stateType)
         {
             case StateType.Terminal:
@@ -324,11 +376,10 @@ public class MdpManager : MonoBehaviour
         
         StateQuads.Add(id, fullStateObject.stateQuad);
 
-        if (mdp.StateCount > 1000)
-        {
-            fullStateObject.hoverCanvas.enabled = false;
-            fullStateObject.hoverCanvas.gameObject.SetActive(false);
-        }
+        // This is to save framerate with a HUGE state space. Rendering text in large volumes really slows things down. 
+        if (mdp.StateCount <= 1000) return state;
+        fullStateObject.hoverCanvas.enabled = false;
+        fullStateObject.hoverCanvas.gameObject.SetActive(false);
 
         return state;
     }
@@ -403,9 +454,11 @@ public class MdpManager : MonoBehaviour
                     
                     if (paused) await RunPauseLoop(cancellationToken);
                     
+                    // Calculates the state values over a single sweep of the state space.
                     stateValueFunctionV =
                         await algorithms.SingleStateSweepAsync(Mdp, currentPolicy, Gamma, stateValueFunctionV);
 
+                    // Sets the heights of the state values to correspond to the values calculated.
                     await SetAllStateHeightsAsync(stateValueFunctionV);
                     
                     await Task.Delay(playSpeed, cancellationToken);
@@ -413,7 +466,8 @@ public class MdpManager : MonoBehaviour
                     break;
                 
                 // The next three cases cascade because the control flow for the delays functions more effectively with
-                // conditionals.
+                // conditionals. It's like this currently because I haven't yet had a chance to adjust it. Moreover, I'd
+                // rather wait until I can brainstorm with someone else to figure out whether there might be a better solution.
                 case ByState:
                 case ByAction:
                 case ByTransition:
@@ -430,40 +484,37 @@ public class MdpManager : MonoBehaviour
 
                         if (paused) await RunPauseLoop(cancellationToken);
 
+                        // Here it runs the actual back up first—computing it here is a relic of a previous way I was
+                        // trying to visualise the individual transitions.
+                        // That is it computes V(s) = Σ_s' P(s'|s,a)[r(s')+ 𝛄V(s')]
                         float actualValueOfState =
                             await algorithms.BellmanBackUpValueOfStateAsync(
                                 Mdp, currentPolicy, Gamma, state, stateValueFunctionV);
-                        
-                        // Resets the state height to zero to demonstrate that the V(s) <- Bellman equation is an
-                        // assignment. It's not incrementing the value. Subtle difference.
-                        if (algorithmViewLevel == ByTransition)
-                        {
-                            await SetIndividualStateHeightAsync(state, actualValueOfState);
-                        }
-                        
+
                         var action = currentPolicy.GetAction(state);
                         
+                        // Descends down if the user has selected to visualize the individual transitions
                         if (algorithmViewLevel == ByTransition)
                         {
                             foreach (var transition in Mdp.TransitionFunction(state, action))
                             {
                                 if (paused) await RunPauseLoop(cancellationToken);
-                            
-                                float valueFromSuccessor = 
-                                    await algorithms.CalculateSingleTransitionAsync(Mdp, Gamma, transition, stateValueFunctionV);
 
-                                // actualValueOfState = await algorithms.IncrementValueAsync(actualValueOfState, valueFromSuccessor);
-                            
-                                await SetIndividualStateHeightAsync(state, valueFromSuccessor);
-
+                                // This creates the little visual trails that shoot from the successor states (s') back
+                                // to the state.  
+                                await SendTransitionTrailFromSuccessorToVSorQSA(transition, state, action, false);
+                                                                                    
                                 await Task.Delay(playSpeed, cancellationToken);
                             }  
                         }
 
                         if (paused) await RunPauseLoop(cancellationToken);
                         
+                        // Finally, here it sets the value of the state
                         stateValueFunctionV.SetValue(state, actualValueOfState);
                         
+                        // This sets the state value heights to correspond to the values—think, makes state boxes be
+                        // height of value.
                         await SetIndividualStateHeightAsync(state, actualValueOfState);
 
                         if (algorithmViewLevel <= ByAction)
@@ -471,12 +522,17 @@ public class MdpManager : MonoBehaviour
                             await Task.Delay(playSpeed, cancellationToken);
                         }
                     }
+                    
                     DisableRabbit();
+                    
                     break;
             }
             
+            // Standard P.Eval. check of whether the max absolute difference is within the convergence threshold ( Θ )
+            // we have set in the parameters.
             if (stateValueFunctionV.MaxChangeInValueOfStates() < Theta) break;
             
+            // k-Iterations check if we've set it so that it's running finitely, IOW we've set a max K.
             if (boundIterations && stateValueFunctionV.Iterations >= maximumIterations) break;
             
             _currentAlgorithmExecutionIterations = stateValueFunctionV.Iterations;
@@ -484,9 +540,12 @@ public class MdpManager : MonoBehaviour
             stateValueFunctionV.Iterations++;
 
             
-            // Progress Update to UI
+            // Progress Update to UI, that is sends the iteration count and the max absolute difference to the UI for 
+            // displaying.
             maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
+            
             await SendProgressToUIForDisplayAsync(maxDelta);
+            
             await uiController.SetMaxDeltaTextAsync(maxDelta);
             
             DisableRabbit();
@@ -500,7 +559,8 @@ public class MdpManager : MonoBehaviour
         
         uiController.SetRunFeaturesActive();
 
-        // Progress Update to UI
+        // Progress Update to UI...Yes I've put this in again...why, you ask...I can't quite remember, but I do remember
+        // something being weird at some point and this fixing it. I haven't taken the time to go find out why.
         maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
         
         await SendProgressToUIForDisplayAsync(maxDelta);
@@ -657,9 +717,10 @@ public class MdpManager : MonoBehaviour
                 {
                     foreach (var transition in Mdp.TransitionFunction(state, action))
                     {
-                        // TODO fire off fading coroutine highlighting the transition
                         // transition.SuccessorStateIndex
-                        
+                        // StartCoroutine("SendTransitionTrailFromSuccessorToVSorQSA");
+                        await SendTransitionTrailFromSuccessorToVSorQSA(transition, state, action.Action);
+
                         if (paused) await RunPauseLoop(cancellationToken);
                             
                         float valueFromSuccessor = 
@@ -699,7 +760,9 @@ public class MdpManager : MonoBehaviour
         
         return improvedPolicy;
     }
+
     
+
     // ──────────────────
     //  Policy Iteration 
     // ──────────────────
@@ -913,6 +976,50 @@ public class MdpManager : MonoBehaviour
     public void EnableRabbit() => rabbit.SetActive(true);
     
     public void DisableRabbit() => rabbit.SetActive(false);
+    
+    
+    // ─────────────────────────
+    //  Transition Update Trail  <- These methods handle everything on the Manager side to shoot the little transition 
+    // ─────────────────────────    trails off from each transition.
+    private Task SendTransitionTrailFromSuccessorToVSorQSA(MarkovTransition transition, MarkovState state, GridAction action, bool destinationActionValue = true)
+    {
+        var valueFromPosition = GetOriginatingPosition(transition);
+
+        Transform target, valueToPosition;
+        
+        if (destinationActionValue)
+        {
+            target = GetActionValueTargetPosition(state, action);
+            
+            valueToPosition = GetActionValueTargetPosition(state, action);
+        }
+        else
+        {
+            target = GetStateValueTargetPosition(state);
+            
+            valueToPosition = GetStateValueTargetPosition(state);
+        }
+
+        var trl = Instantiate(updateTrail, valueFromPosition, Quaternion.Euler(Vector3.zero));
+
+        var transTail = trl.GetComponent<TransitionTrail>();
+        
+        transTail.target = target.gameObject;
+
+        // This actually fires off the transition trail. The TransitionTrail class linearly interpolates the position of 
+        // the trail at each frame before destroying itself once it's reached its destination. 
+        transTail.releaseTrail = true;
+
+        Debug.Log(
+            $"Transition from s{state.StateIndex} at {valueFromPosition} to s{transition.SuccessorStateIndex} at {valueToPosition}");
+        return Task.CompletedTask;
+    }
+
+    private Transform GetStateValueTargetPosition(MarkovState state) => _stateSpaceVisualStates[state.StateIndex].hoveringText.transform;
+    
+    private Transform GetActionValueTargetPosition(MarkovState state, GridAction action) => _stateSpaceVisualStates[state.StateIndex].actionTargetGameObjects[(int) action].transform;
+
+    private Vector3 GetOriginatingPosition(MarkovTransition transition) => _stateSpaceVisualStates[transition.SuccessorStateIndex].hoveringText.transform.position;
     
     
     // ─────────────────────── 
@@ -1134,7 +1241,9 @@ public class MdpManager : MonoBehaviour
 
     public void Toggle(string toToggle)
     {
+
         foreach (var state in Mdp.States.Where(state => state.IsStandard()))
+        {
             switch (toToggle)
             {
                 case "GridSquare":
@@ -1159,6 +1268,7 @@ public class MdpManager : MonoBehaviour
                     throw new ArgumentException(
                         "Incorrect string passed. Check that the string is either AS, PAS, or SAO");
             }
+        }
     }
 
     private async Task RunPauseLoop(CancellationToken cancellationToken)
