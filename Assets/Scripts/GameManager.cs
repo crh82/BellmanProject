@@ -21,9 +21,14 @@ public class GameManager : MonoBehaviour
     private const  BellmanScenes       Title              = BellmanScenes.Title;
     private const  BellmanScenes       DynamicProgramming = BellmanScenes.DynamicProgramming;
     private const  BellmanScenes       MdpBuilder         = BellmanScenes.MdpBuilder;
-    private const  BellmanScenes       DP2         = BellmanScenes.Dp2;
+    private const  BellmanScenes       DP2                = BellmanScenes.Dp2;
 
     public int currentScene;
+
+    public GameObject  cursorTrailObject;
+    public CursorTrail cursorTrail;
+    public Camera solverMainCamera;
+    public Camera solverTopDownCamera;
 
     private void Awake()
     {
@@ -78,6 +83,8 @@ public class GameManager : MonoBehaviour
     }
 
     public void SetMdpManager(MdpManager mdpManager) => _mdpManager = mdpManager;
+
+    public UIController GetUIController() => _mdpManager.uiController;
 }
 
 public enum BellmanScenes

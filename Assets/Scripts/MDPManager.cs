@@ -47,7 +47,7 @@ public class MdpManager : MonoBehaviour
 
     private readonly    Vector2            _offsetValuesFor2DimensionalGrids = new Vector2(0.5f, 0.5f);
 
-    public bool                            actionSpritesDisplayed;
+    public        bool                     actionSpritesDisplayed;
 
     public              Vector2            randomStateValueBounds;
     
@@ -59,9 +59,9 @@ public class MdpManager : MonoBehaviour
 
     public              GameObject         rabbit;
 
-    public  bool                           stateValueObjectsVisible  = true;
-    public  bool                           stateValueValuesVisible   = true;
-    public  bool                           actionValueObjectsVisible = true;
+    public        bool                     stateValueObjectsVisible  = true;
+    public        bool                     stateValueValuesVisible   = true;
+    public        bool                     actionValueObjectsVisible = true;
 
     
     // ┌───────────────────────────────────────────────────┐
@@ -77,15 +77,15 @@ public class MdpManager : MonoBehaviour
 
     public bool                            stepped;
 
-    private const int                      BySweep = 0;
+    private const int                      BySweep      = 0;
 
-    private const int                      ByState = 1;
+    private const int                      ByState      = 1;
 
-    private const int                      ByAction = 2;
+    private const int                      ByAction     = 2;
 
     private const int                      ByTransition = 3;
 
-    private const int                      Paused = -1;
+    private const int                      Paused       = -1;
 
     public bool                            focusAndFollowMode = true;
 
@@ -415,7 +415,10 @@ public class MdpManager : MonoBehaviour
     /// <remarks>
     /// Todo Add Russell and Norvig's implementation option.
     /// </remarks>
-    public async Task<StateValueFunction> PolicyEvaluationControlAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
+    public async Task<StateValueFunction> PolicyEvaluationControlAsync(
+        CancellationToken cancellationToken, 
+        StateValueFunction stateValueFunction = null, 
+        Policy policy = null)
     {
 
         // Turns off UI features that can crash the system if clicked during algorithm execution.
@@ -1319,6 +1322,14 @@ public class MdpManager : MonoBehaviour
         return stateValueFunctionV;
     }
 
+    /// <summary>
+    /// <para>
+    /// Checks which policy to use. If there isn't a policy already displayed (Policy Eval or Policy Iteration
+    /// running from fresh MDP) it displays the policy.
+    /// </para>
+    /// </summary>
+    /// <param name="policy"></param>
+    /// <returns></returns>
     private Policy AssignPolicy(Policy policy)
     {
         Policy policyPi;

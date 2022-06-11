@@ -136,11 +136,18 @@ public class UIController : MonoBehaviour
    // ╔═══════════════════════╗
    // ║ CORNER CAMERA CONTROL ║
    // ╚═══════════════════════╝
-   private CornerCameraController         _focusCam;
+   private CornerCameraController        _focusCam;
 
    public GameObject                     cornerCameraRig;
    
+   public GameObject                     cursorTrailObject;
    
+   public CursorTrail                    cursorTrail;
+   
+   public Camera                         solverMainCamera;
+   
+   public Camera                         solverTopDownCamera;
+
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
    // ╚═══════════════╝
@@ -432,6 +439,11 @@ public class UIController : MonoBehaviour
 
    public void DisableFocusAndFollow() => _mdpManager.focusAndFollowMode = false;
 
+   /// <summary>
+   /// <para>
+   /// Disables any features in the UI that can crash the system if clicked during algorithm execution.
+   /// </para>
+   /// </summary>
    public async void DisableRunFeatures()
    {
       await Task.Delay(100);

@@ -87,6 +87,17 @@ public class State : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// <para>
+    /// Sets a reference to the Scene's (usually the solver scene) MdpManager in this state object so the state can
+    /// communicate back to the MdpManager when it needs to. 
+    /// </para>
+    /// <para>
+    /// Also assigns the <c>StateInteractions</c> which handles click events on the individual states (for things like
+    /// highlighting and editing. 
+    /// </para>
+    /// </summary>
+    /// <param name="mdpManager">Scene's (usually the solver scene) MdpManager</param>
     public void DistributeMdpManagerReferenceToComponents(MdpManager mdpManager)
     {
         if (_stateInteractionsScript == null)
@@ -110,12 +121,8 @@ public class State : MonoBehaviour
         stateQuad.transform.localScale = new Vector3(stateScale.x,stateScale.z,stateScale.y);
     }
     
-    public void StateHighlightToggle()
-    {
-        
-        stateMesh.GetComponent<MeshRenderer>().material = selected ? highlighted : normalColor;
-    }
-    
+    public void StateHighlightToggle() => stateMesh.GetComponent<MeshRenderer>().material = selected ? highlighted : normalColor;
+
     // ┌────────────────┐
     // │ Initialization │
     // └────────────────┘
@@ -239,7 +246,7 @@ public class State : MonoBehaviour
 
     public void ToggleStateValue()            => stateMesh.SetActive(!stateMesh.activeSelf);
 
-    public void ToggleStateValueText()           => hoverCanvas.gameObject.SetActive(!hoverCanvas.gameObject.activeSelf);
+    public void ToggleStateValueText()        => hoverCanvas.gameObject.SetActive(!hoverCanvas.gameObject.activeSelf);
 
     // ┌────────────────┐
     // │ Action Sprites │

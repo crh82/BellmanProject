@@ -58,15 +58,34 @@ public class CornerCameraController : MonoBehaviour
 
     private void SwitchTopDownToFullScreen()
     {
+        
         cornerCamera.rect = new Rect(0f, 0f, 1f, 1f);
         cornerCamera.clearFlags = CameraClearFlags.Skybox;
+        AssignTheCursorTrailToBeRenderedOnThisTopDownCamera();
     }
 
     private void SwitchTopDownToCornerMiniMap()
     {
         cornerCamera.rect = new Rect(0.75f, 0.65f, 0.4f, 1f);
         cornerCamera.clearFlags = CameraClearFlags.Depth;
+        RenderCursorTrailOnMainCamera();
     }
+
+    private void AssignTheCursorTrailToBeRenderedOnThisTopDownCamera()
+    {
+        var cursorTrail = GameManager.instance.GetUIController().cursorTrail;
+        cursorTrail.startWidth = 0.03f;
+        GameManager.instance.GetUIController().cursorTrail.cameraRenderingTheCursorTrail = cornerCamera;
+    }
+
+    private void RenderCursorTrailOnMainCamera()
+    {
+        var uiController = GameManager.instance.GetUIController();
+        var cursorTrail = GameManager.instance.GetUIController().cursorTrail;
+        cursorTrail.startWidth = 0.007f;
+        GameManager.instance.GetUIController().cursorTrail.cameraRenderingTheCursorTrail = uiController.solverMainCamera;
+    }
+
 
     public void FocusOn(GameObject quad)
     {
