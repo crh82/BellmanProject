@@ -11,6 +11,9 @@ using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
+   // ╔════════════════════╗
+   // ║ GENERAL OR UI WIDE ║
+   // ╚════════════════════╝
    public TMP_Dropdown       mdpMenu;
    
    public GameObject         mdpGameObject;
@@ -33,8 +36,6 @@ public class UIController : MonoBehaviour
 
    public GameObject         resetButtonContainer;
 
-   
-   // public RadialSlider       gammaSlider;
    
    public Slider             gammaSlider;
    
@@ -78,55 +79,59 @@ public class UIController : MonoBehaviour
    public HorizontalSelector algorithmViewLevelSelector;
 
    public HorizontalSelector algorithmSelector;
+   
+   public SwitchManager      focusAndFollowToggle;
 
-   private DropdownMultiSelect     _settingsItemsDropdown;
-
-   public GameObject         settingsItemsDropdownPanel;
-
+   public List<GameObject>   focusAndFollowUIObjects;
+   
    public Button             runButton;
 
    public GameObject         runButtonContainer;
 
-   public SwitchManager      focusAndFollowToggle;
+   private DropdownMultiSelect _settingsItemsDropdown;
 
-   public List<GameObject>   focusAndFollowUIObjects;
-
-
-   // ╔═════════════════════════════════════════════════╗
-   // ║ CENTER CONTROL PANEL — STATE INFORMATION WINDOW ║
-   // ╚═════════════════════════════════════════════════╝
-   public ModalWindowManager stateInformationWindow;
+   public GameObject         settingsItemsDropdownPanel;
    
+   
+   // ╔════════════════════════════════════╗
+   // ║ CENTER CONTROL PANEL & INFORMATION ║
+   // ╚════════════════════════════════════╝
+   
+   public TextMeshProUGUI    algorithmTitleText;
+   
+   public TextMeshProUGUI    maxDelta;
+   
+   public TextMeshProUGUI    numberOfIterationsDisplay;
+   
+   public GameObject         pauseBanner;
+   
+   public GameObject         progressBar;
+   
+   public ProgressBar        progressPercentageBar;
+   
+   
+   // ╔══════════════════════════╗
+   // ║ STATE INFORMATION WINDOW ║
+   // ╚══════════════════════════╝
    public HorizontalSelector actionEdit;
 
    public GameObject         actionToEditPanel;
-
-   private int               _currentStateToEdit;
-
-   public TMP_InputField     rewardEditor;
-
-   public GameObject         progressBar;
-
-   public GameObject         pauseBanner;
    
-   public TextMeshProUGUI    numberOfIterationsDisplay;
+   private int               _currentStateToEdit;
+   
+   public TMP_InputField     rewardEditor;
+   
+   public ModalWindowManager stateInformationWindow;
 
-   public ProgressBar        progressPercentageBar;
-
-   public TextMeshProUGUI    maxDelta;
-
-   public TextMeshProUGUI    algorithmTitleText;
-
-
-   private const string RegexRealNumber =
+   private const string      RegexRealNumber =
       @"/^(?:-(?:[1-9](?:\d{0,2}(?:,\d{3})+|\d*))|(?:0|(?:[1-9](?:\d{0,2}(?:,\d{3})+|\d*))))(?:.\d+|)$/";
    
    // ╔═════════════════════╗
    // ║ MAIN CAMERA CONTROL ║
    // ╚═════════════════════╝
-   public CameraController mainCameraController;
+   public CameraController              mainCameraController;
    
-   public GameObject mainCameraRig;
+   public GameObject                    mainCameraRig;
    
    // ╔═══════════════════════╗
    // ║ CORNER CAMERA CONTROL ║
@@ -139,7 +144,7 @@ public class UIController : MonoBehaviour
    // ╔═══════════════╗
    // ║ ASYNC RELATED ║
    // ╚═══════════════╝
-   private CancellationTokenSource  _cancellationTokenSource;
+   private CancellationTokenSource        _cancellationTokenSource;
 
 
    // ———————————————————————————————————————————————————————
@@ -703,7 +708,7 @@ public class UIController : MonoBehaviour
       float currentReward = _mdpManager.GetStateFromCurrentMdp(_currentStateToEdit).Reward;
       rewardEditor.text = $"{currentReward}";
    }
-   
+
    // ┌──────────────────┐
    // │ Settings Methods │
    // └──────────────────┘
