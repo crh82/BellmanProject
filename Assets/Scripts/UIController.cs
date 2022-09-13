@@ -35,6 +35,10 @@ public class UIController : MonoBehaviour
    
    private readonly int[]  _algorithmDelayValues = {1, 10, 100, 300, 500, 1000};
 
+   public TooltipManager     mouseHoverHelper;
+
+   private bool              _mouseHoverHelpOn;
+
    // ╔════════════════════╗
    // ║ LEFT CONTROL PANEL ║
    // ╚════════════════════╝
@@ -298,6 +302,12 @@ public class UIController : MonoBehaviour
    // └──────────────────────┘
    public void SetAlgorithmTitleText(string algorithmTitle) => algorithmTitleText.text = algorithmTitle;
 
+   public void ToggleMouseHoverHelp()
+   {
+      _mouseHoverHelpOn = !_mouseHoverHelpOn;
+
+      mouseHoverHelper.gameObject.SetActive(!_mouseHoverHelpOn);
+   }
 
    // ┌────────────────┐
    // │ Policy Related │
