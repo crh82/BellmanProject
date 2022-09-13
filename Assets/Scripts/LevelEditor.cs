@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
+using UnityEngine.EventSystems;
 
 public class LevelEditor : MonoBehaviour
 {
@@ -31,7 +32,8 @@ public class LevelEditor : MonoBehaviour
     public Dictionary<int, GridRewardText> rewardText = new Dictionary<int, GridRewardText>();
     public Dictionary<int, Vector3Int> rewardTileLocations = new Dictionary<int, Vector3Int>();
     public GameObject displayRewardPrefab;
-    
+
+    public GridBuilderManager gridBuilderManager;
 
     public Dictionary<int, string> rewardDict = new Dictionary<int, string>();
     
@@ -41,13 +43,9 @@ public class LevelEditor : MonoBehaviour
         
         if (Input.GetMouseButton(0))
         {
-            var mp = Input.mousePosition;
-            var sTWP = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            var W2SP = mainCamera.WorldToScreenPoint(sTWP);
-            var S2VP = mainCamera.ScreenToViewportPoint(Input.mousePosition);
             var location = currentTileMap.WorldToCell(mainCamera.ScreenToWorldPoint(Input.mousePosition));
             PlaceTile(location);
-            Debug.Log($"Cell{location} MP{mp} Scr2WP{sTWP} W2SP{W2SP} S2VP{S2VP} CCLocal{currentTileMap.GetCellCenterLocal(location)} CCWorld{currentTileMap.GetCellCenterWorld(location)}");
+            
         }
 
         if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButton(0))
@@ -72,43 +70,53 @@ public class LevelEditor : MonoBehaviour
         if (Input.GetKey(KeyCode.Alpha5)){mdpDynamicsType = (MdpRules) 5;}
         if (Input.GetKey(KeyCode.Alpha6)){mdpDynamicsType = (MdpRules) 6;}
         
-        if (Input.GetKey(KeyCode.P))
-        {
-            AssignCurrentLayer(2);
-            inPolicyLayer = true;
-            inRewardLayer = false;
-        }
+        if (Input.GetKey(KeyCode.P)) {SwitchToPolicyLayer();}
+     
+        if (Input.GetKey(KeyCode.O)) {SwitchToGridEditorLayer();}
 
-        if (Input.GetKey(KeyCode.O))
-        {
-            AssignCurrentLayer(1);
-            inPolicyLayer = false;
-            inRewardLayer = false;
-        }
-
+        if (Input.GetKey(KeyCode.R)) {SwitchToRewardEditorLayer();}
+        
         if (Input.GetKeyDown(KeyCode.T))
         {
             PrintMap();
         }
 
-        if (Input.GetKey(KeyCode.R))
-        {
-            AssignCurrentLayer(3);
-            inPolicyLayer = false;
-            inRewardLayer = true;
-        }
+       
+    }
+
+    public void SwitchToRewardEditorLayer()
+    {
+        AssignCurrentLayer(3);
+        inPolicyLayer = false;
+        inRewardLayer = true;
+    }
+
+    public void SwitchToGridEditorLayer()
+    {
+        AssignCurrentLayer(1);
+        inPolicyLayer = false;
+        inRewardLayer = false;
+    }
+
+    private void SwitchToPolicyLayer()
+    {
+        AssignCurrentLayer(2);
+        inPolicyLayer = true;
+        inRewardLayer = false;
     }
 
 
     void PlaceTile(Vector3Int position)
     {
+        if (!gridBuilderManager.TilesCanBePlaced()) return;
+        
         if (PositionIsOutsideGridBoundaries(position)) return;
 
         var correspondingTileInMainLayer = tileMaps[1].GetTile(position);
 
         bool nope = nonStandardTiles.Contains(correspondingTileInMainLayer);
         
-        int idx = LocationToIndex(position.x, position.y, tileMaps[1].cellBounds.xMax);
+        int index = LocationToIndex(position.x, position.y, tileMaps[1].cellBounds.xMax);
 
         switch (currentLayer)
         {
@@ -118,9 +126,9 @@ public class LevelEditor : MonoBehaviour
             case MainTileLayer:
                 
                 if (correspondingTileInMainLayer.name == "o") 
-                    DisableRewardTextDisplayInUI(idx);
+                    DisableRewardTextDisplayInUI(index);
                 else 
-                    EnableRewardTextDisplayInUI(idx);
+                    EnableRewardTextDisplayInUI(index);
                 
                 currentTileMap.SetTile(position, currentTile);
                 
@@ -143,7 +151,7 @@ public class LevelEditor : MonoBehaviour
                     case "s":
                     case "g":
                     case "t":
-                        SetRewardValue(idx);
+                        SetRewardValue(index);
                         
                         // if (rewardDict.ContainsKey(idx))
                         //     rewardDict[idx] = rewardTile.name;
@@ -194,11 +202,11 @@ public class LevelEditor : MonoBehaviour
 
     private bool PositionIsOutsideGridBoundaries(Vector3Int position) => !tileMaps[1].cellBounds.Contains(position);
 
-    void DeleteTile(Vector3Int position) => currentTileMap.SetTile(position, null);
+    private void DeleteTile(Vector3Int position) => currentTileMap.SetTile(position, null);
 
-    void AssignCurrentTile(int tileIndex) => currentTile = tiles[tileIndex];
+    public void AssignCurrentTile(int tileIndex) => currentTile = tiles[tileIndex];
 
-    void AssignCurrentLayer(int layer)
+    private void AssignCurrentLayer(int layer)
     {
         currentTileMap = tileMaps[layer];
         currentLayer   = layer;
@@ -218,9 +226,9 @@ public class LevelEditor : MonoBehaviour
         // }
     }
 
-    public MDP GenerateMdpFromTileMaps()
+    public MDP GenerateMdpFromTileMaps(string mdpName)
     {
-
+        
         var mainTileMap = tileMaps[1];
         
         var mdpBoundaries = mainTileMap.cellBounds;
@@ -229,7 +237,7 @@ public class LevelEditor : MonoBehaviour
         
         var newMdp = new MDP
         {
-            Name     = "TestFromGridEditor",
+            Name     = $"{mdpName}",
             Width    = mdpBoundaries.xMax,
             Height   = mdpBoundaries.yMax,
             States   = new List<MarkovState>(),
@@ -273,13 +281,15 @@ public class LevelEditor : MonoBehaviour
     public void GenerateRewardTextOverTiles()
     {
         var rewardTileMap = tileMaps[1];
-        Vector3 offset = new Vector3(1, 1, 0);
+        
+        var offset = new Vector3(1, 1, 0);
         
         var tilesInMap = rewardTileMap.GetTilesBlock(rewardTileMap.cellBounds);
         
         for (var index = 0; index < tilesInMap.Length; index++)
         {
             var tileBase = tilesInMap[index];
+            
             var tileCoords = IndexToLocation(index, rewardTileMap.cellBounds.xMax);
 
             var pos = new Vector3(tileCoords.x, tileCoords.y, 0) + offset;
@@ -290,45 +300,19 @@ public class LevelEditor : MonoBehaviour
                 case "s":
                 case "g":
                 case "t":
-                    var rewardTextDisplay = 
-                        Instantiate(displayRewardPrefab, pos, Quaternion.identity);
-                    
+                    var rewardTextDisplay = Instantiate(
+                        displayRewardPrefab, 
+                        pos, 
+                        Quaternion.identity, 
+                        gridBuilderManager.stateSpace.transform);
+                        
                     rewardText.Add(
                         index,
                         rewardTextDisplay.GetComponentInChildren<GridRewardText>());
-                    Debug.Log($"{tileBase.name} ({tileCoords.x},{tileCoords.y}) Reward {rewardText[index].RewardFloat}");
+                    // Debug.Log($"{tileBase.name} ({tileCoords.x},{tileCoords.y}) Reward {rewardText[index].RewardFloat}");
                     break;
-            } 
-            
-           
-            
+            }
         }
-        // var tilesInMap = rewardTileMap.GetTilesBlock(rewardTileMap.cellBounds);
-        // foreach (var rTile in rewardTileMap.cellBounds.allPositionsWithin)
-        // {
-        //     var tile = rewardTileMap.GetTile(rTile);
-        //
-        //     switch (tile.name)
-        //     {
-        //         case "o": break;
-        //         case "s":
-        //         case "g":
-        //         case "t":
-        //             var rewardTextDisplay = 
-        //                 Instantiate(displayRewardPrefab, rTile + offset, Quaternion.identity);
-        //             
-        //             rewardText.Add(
-        //                 LocationToIndex(rTile.x, rTile.y, rewardTileMap.cellBounds.xMax), 
-        //                 value: rewardTextDisplay.GetComponentInChildren<GridRewardText>());
-        //             break;
-        //     }
-        //     
-        //     
-        //     
-        //     
-        //     // Debug.Log(rTile);
-        //     // var rTileTextCanvas = Instantiate
-        // }
     }
 
     private StateType AssignStateTypeFromTileType(TileBase tile)
@@ -351,4 +335,6 @@ public class LevelEditor : MonoBehaviour
     {
         return (y * xDimension) + x;
     }
+
+    public void SetRewardValue(float value) => reward = value;
 }
