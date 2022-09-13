@@ -8,8 +8,23 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-// Creates the model of the environment — the underlying MDP data rather than the physical/visual MDP.
-/// <include file='include.xml' path='docs/members[@name="mdpmanager"]/MDPManager/*'/>
+/// <summary>
+/// <para>
+/// The <c>MdpManager</c> class managers most of the behaviour of the general solver. The <c>UIController</c> and it
+/// communicate back and forth to handle most behaviour.
+/// </para>
+/// <para>
+/// Where this can get a little confusing is the <c>MdpManager</c>'s interactions with the <c>Algorithms</c> class.
+/// Originally I had intended that the <c>Algorithms</c> class would run all the algorithms (it wasn't supposed to hold
+/// any state), however, in wanting to run all the major algorithms "anytime" and also be able to dynamically control
+/// the execution of them, it became apparent that the manager (which holds state) would need to have each unravelled
+/// part of the algorithms running in the manager itself so that it has access to all the <c>MdpManager</c>'s fields and
+/// properties.
+/// </para>
+/// <para>
+/// <b>Author:</b> <i>Christopher Howell</i>
+/// </para>
+/// </summary>
 public class MdpManager : MonoBehaviour
 {
     // ┌─────────┐
@@ -71,7 +86,7 @@ public class MdpManager : MonoBehaviour
     
     public int                             algorithmViewLevel;
     
-    public bool                            keepGoing = true;
+    public bool                            maxDeltaGreaterThanThetaOrNumberOfIterationsLessThanK = true;
 
     public bool                            paused;
 
@@ -238,7 +253,7 @@ public class MdpManager : MonoBehaviour
     {
         // Resets the grid square holder (this allows access to the toggle visibility the white boxes with the indices
         // and coordinates). 
-        _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
+        ResetGridSquareDictionary();
         
         var mdpForCreation = mdpToBuild; // Inevitably this is unnecessary I did it for some reason at some point. 
         
@@ -427,7 +442,7 @@ public class MdpManager : MonoBehaviour
         _currentAlgorithmExecutionIterations = 0;  
 
         // Checks which policy to use. If there isn't a policy already displayed (Policy Eval or Policy Iteration
-        // running from fresh MDP) it displays the policy.
+        // running from fresh MDP) it displays the policy. Note: that the default policy input parameter is null.
         currentPolicy = AssignPolicy(policy);
 
         if (!actionSpritesDisplayed)
@@ -442,11 +457,11 @@ public class MdpManager : MonoBehaviour
         
         await SetAllStateHeightsAsync(stateValueFunctionV);
         
-        SetKeepGoingTrue();
+        ResetMainLoopBoolConditionToTrue();
 
         float maxDelta;
         
-        while (keepGoing)
+        while (maxDeltaGreaterThanThetaOrNumberOfIterationsLessThanK)
         {
             // Control flow handles the algorithm's execution speed for displaying how the algorithm functions.
             if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
@@ -618,11 +633,11 @@ public class MdpManager : MonoBehaviour
         // showing monotonic convergence, for example). Then displays the state heights.
         var stateValueFunctionV = AssignStateValueFunction(stateValueFunction);
         
-        SetKeepGoingTrue();
+        ResetMainLoopBoolConditionToTrue();
 
         float maxDelta;
 
-        while (keepGoing)
+        while (maxDeltaGreaterThanThetaOrNumberOfIterationsLessThanK)
         {
             stateValueFunctionV = await algorithms.SingleStateSweepAsync(Mdp, currentPolicy, Gamma, stateValueFunctionV);
             
@@ -691,6 +706,13 @@ public class MdpManager : MonoBehaviour
     /// <returns>An improved policy</returns>
     public async Task<Policy> PolicyImprovementControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
     {
+        
+        // ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        // │ I have removed most comments from the internals of the remaining algs (this, Policy Iteration, and Value │
+        // │ Iteration) because it is effectively the same as expressed in Policy Evaluation above. Moreover, each of │
+        // │ the methods are commented.                                                                               │
+        // └──────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        
         uiController.DisableRunFeatures();
         
         var stateValueFunctionV = AssignStateValueFunction(stateValueFunction);
@@ -704,9 +726,7 @@ public class MdpManager : MonoBehaviour
         foreach (var state in Mdp.States.Where(state => state.IsStandard()))
         {
             if (focusAndFollowMode) SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
-            
-            // if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
-            
+
             if (paused) await RunPauseLoop(cancellationToken);
             
             foreach (var action in state.ApplicableActions)
@@ -720,12 +740,10 @@ public class MdpManager : MonoBehaviour
                 {
                     foreach (var transition in Mdp.TransitionFunction(state, action))
                     {
-                        // transition.SuccessorStateIndex
-                        // StartCoroutine("SendTransitionTrailFromSuccessorToVSorQSA");
-                        await SendTransitionTrailFromSuccessorToVSorQSA(transition, state, action.Action);
-
                         if (paused) await RunPauseLoop(cancellationToken);
-                            
+                        
+                        await SendTransitionTrailFromSuccessorToVSorQSA(transition, state, action.Action);
+                        
                         float valueFromSuccessor = 
                             await algorithms.CalculateSingleTransitionAsync(Mdp, Gamma, transition, stateValueFunctionV);
                         
@@ -748,11 +766,8 @@ public class MdpManager : MonoBehaviour
                     
             if (currentPolicy.GetAction(state) != argMaxAction) SetActionImage(state, argMaxAction);
     
-            if (algorithmViewLevel == ByState)
-            {
-                // await SetAllActionHeightsAsync(state, actionValueFunctionQ);
-                await Task.Delay(playSpeed, cancellationToken);
-            }
+            if (algorithmViewLevel == ByState) await Task.Delay(playSpeed, cancellationToken);
+         
         }
         
         currentPolicy = improvedPolicy;
@@ -769,7 +784,12 @@ public class MdpManager : MonoBehaviour
     // ──────────────────
     //  Policy Iteration 
     // ──────────────────
-    
+    /// <summary>
+    /// Asynchronous Execution speed controlled version of policy iteration. 
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="stateValueFunction"></param>
+    /// <param name="policy"></param>
     public async Task PolicyIterationControlledAsync(
         CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
     {
@@ -785,9 +805,9 @@ public class MdpManager : MonoBehaviour
 
         await SetAllStateHeightsAsync(valueOfPolicy);
 
-        SetKeepGoingTrue();
+        ResetMainLoopBoolConditionToTrue();
         
-        while (keepGoing)
+        while (maxDeltaGreaterThanThetaOrNumberOfIterationsLessThanK)
         {
             if (paused) await RunPauseLoop(cancellationToken);
             
@@ -834,8 +854,6 @@ public class MdpManager : MonoBehaviour
     
     public async Task ValueIterationControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
     {
-        // Disables the run button in the UI so multiple calls can't be made. Multiple calls are a problem because the 
-        // algorithm runs asynchronously.
         uiController.DisableRunFeatures();
         
         _currentAlgorithmExecutionIterations = 0;
@@ -844,13 +862,13 @@ public class MdpManager : MonoBehaviour
 
         await SetAllStateHeightsAsync(stateValueFunctionV);
         
-        SetKeepGoingTrue();
+        ResetMainLoopBoolConditionToTrue();
         
         var actionValueFunctionQ = new ActionValueFunction(Mdp);
 
         float maxDelta;
         
-        while (keepGoing)
+        while (maxDeltaGreaterThanThetaOrNumberOfIterationsLessThanK)
         {
             if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
 
@@ -892,9 +910,7 @@ public class MdpManager : MonoBehaviour
                             
                             SetRabbitPosition(StateQuads[state.StateIndex].transform.position);
                         }
-                        
-                        // if (focusAndFollowMode) await uiController.FocusCornerCamera(state.StateIndex);
-                        
+
                         if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
                         
                         foreach (var action in state.ApplicableActions)
@@ -902,6 +918,18 @@ public class MdpManager : MonoBehaviour
                             if (algorithmViewLevel == Paused) await RunPauseLoop(cancellationToken);
 
                             float stateActionValueQsa = await algorithms.CalculateActionValueAsync(Mdp, state, action.Action, Gamma, stateValueFunctionV);
+                            
+                            if (algorithmViewLevel == ByTransition)
+                            {
+                                foreach (var transition in Mdp.TransitionFunction(state, action))
+                                {
+                                    if (paused) await RunPauseLoop(cancellationToken);
+                                    
+                                    await SendTransitionTrailFromSuccessorToVSorQSA(transition, state, action.Action);
+                                    
+                                    await Task.Delay(playSpeed, cancellationToken);
+                                }
+                            }
             
                             actionValueFunctionQ.SetValue(state, action, stateActionValueQsa);
             
@@ -1056,7 +1084,9 @@ public class MdpManager : MonoBehaviour
 
     
     
-
+    // ───────────────────────── 
+    //  State Information Panel  <- This is the panel that comes up when you click on an individual visual state.
+    // ───────────────────────── 
     public MarkovState GetStateFromCurrentMdp(int stateIndex) => Mdp.States[stateIndex];
 
     public Dictionary<string, string> GetStateAndActionInformationForDisplayAndEdit(int stateIndex)
@@ -1087,10 +1117,7 @@ public class MdpManager : MonoBehaviour
         return stateInformation;
     }
 
-    public string StateNameFormatted(int stateIndex)
-    {
-        return $"<b>S</b>{stateIndex}";
-    }
+    public string StateNameFormatted(int stateIndex) => $"<b>S</b>{stateIndex}";
 
     public string ActionInStateFormatted(int stateIndex)
     {
@@ -1098,47 +1125,47 @@ public class MdpManager : MonoBehaviour
         return $"π({StateNameFormatted(stateIndex)}) = {action}";
     }
 
-    public void EditRewardOfState(int stateIndex, float newReward)
-    {
-        Mdp.States[stateIndex].Reward = newReward;
-    }
+    public void EditRewardOfState(int stateIndex, float newReward) => Mdp.States[stateIndex].Reward = newReward;
+    
+    public void SetIndividualStateHeight(MarkovState state, float value) => SetIndividualStateHeight(state.StateIndex, value);
+
+    public async void SetIndividualStateHeight(int stateIndex, float value) => await _stateSpaceVisualStates[stateIndex].UpdateStateHeightAsync(value);
+    
+    public void EditCurrentPolicy(MarkovState state, MarkovAction action) => currentPolicy.SetAction(state, action.Action);
+
+    public void EditCurrentPolicy(MarkovState state, GridAction action) => currentPolicy.SetAction(state, action);
+
+    public void EditCurrentPolicy(int stateIndex, int action) => currentPolicy.SetAction(stateIndex, (GridAction) action);
 
 
-    public void SetIndividualStateHeight(MarkovState state, float value)
-    {
-        SetIndividualStateHeight(state.StateIndex, value);
-    }
-
-    public async void SetIndividualStateHeight(int stateIndex, float value)
-    {
-        await _stateSpaceVisualStates[stateIndex].UpdateStateHeightAsync(value);
-    }
-    // => _stateSpaceVisualStates[stateIndex].UpdateHeight(value);
-
-
+    // ────────────────────────── 
+    //  State and Action Heights  <- Methods (and overloads) to set all heights (and positions of invisible target 
+    // ──────────────────────────    objects). There are both the regular synchronous and asynchronous versions in here.
     private void SetAllStateHeights(StateValueFunction valueOfCurrentPolicy)
     {
         foreach (var state in Mdp.States.Where(state => state.IsStandard()))
             SetIndividualStateHeight(state, valueOfCurrentPolicy.Value(state));
     }
 
-    public Task SetIndividualStateHeightAsync(MarkovState state, float value)
-    {
-        var setHeight = SetIndividualStateHeightAsync(state.StateIndex, value);
-        return setHeight;
-    }
-
-    public Task SetIndividualStateHeightAsync(int stateIndex, float value)
-    {
-        return _stateSpaceVisualStates[stateIndex].UpdateStateHeightAsync(value);
-    }
-
+    /// <summary>
+    /// Sets the visual representations of the state values. Note, it's currently set to leverage PLINQ (run in
+    /// parallel) for a, hopefully, speed up on very large state spaces—that said, prolly does squat. 
+    /// </summary>
+    /// <param name="valueOfCurrentPolicy"></param>
     private async Task SetAllStateHeightsAsync(StateValueFunction valueOfCurrentPolicy)
     {
         foreach (var state in Mdp.States.AsParallel().Where(state => state.IsStandard()))
             // foreach (var state in mdp.States.Where(state => state.IsStandard()))
             await SetIndividualStateHeightAsync(state, valueOfCurrentPolicy.Value(state));
     }
+    public Task SetIndividualStateHeightAsync(MarkovState state, float value)
+    {
+        var setHeight = SetIndividualStateHeightAsync(state.StateIndex, value);
+        return setHeight;
+    }
+
+    public Task SetIndividualStateHeightAsync(int stateIndex, float value) => _stateSpaceVisualStates[stateIndex].UpdateStateHeightAsync(value);
+
 
     public async Task SetIndividualActionHeightAsync(MarkovState state, MarkovAction action, float stateActionValue)
     {
@@ -1161,6 +1188,10 @@ public class MdpManager : MonoBehaviour
         await Task.WhenAll(tasks);
     }
 
+    
+    // ────────────
+    //  Re-setters 
+    // ────────────
     private void ResetPolicyRecord()
     {
         if (policiesHistory.Count > 0) policiesHistory = new List<Policy>();
@@ -1171,26 +1202,20 @@ public class MdpManager : MonoBehaviour
         if (valueFunctionsHistory.Count > 0) valueFunctionsHistory = new List<StateValueFunction>();
     }
 
-    public void ResetPolicy()
-    {
-        currentPolicy = null;
-    }
+    public void ResetPolicy() => currentPolicy = null;
 
-    public void ResetCurrentStateValueFunction()
-    {
-        currentStateValueFunction = null;
-    }
+    public void ResetCurrentStateValueFunction() => currentStateValueFunction = null;
 
-    public void ResetStateQuadDictionary()
-    {
-        StateQuads = new Dictionary<int, GameObject>();
-    }
+    public void ResetStateQuadDictionary() => StateQuads = new Dictionary<int, GameObject>();
 
-    public void ResetGridSquareDictionary()
-    {
-        _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
-    }
-
+    /// <summary>
+    /// <para>
+    /// Resets the grid square holder (this allows access to the toggle visibility the white boxes with the indices and
+    /// coordinates).
+    /// </para>
+    /// </summary>
+    public void ResetGridSquareDictionary() => _stateSpaceGridSquares = new Dictionary<int, GridSquareData>();
+    
     public void GenerateRandomStateValueFunction()
     {
         currentStateValueFunction = 
@@ -1206,28 +1231,18 @@ public class MdpManager : MonoBehaviour
     {
         if (Mdp == null) return;
         currentPolicy = new Policy(Mdp);
+        
         SetAllActionSprites(currentPolicy);
     }
-
-    public void SetKeepGoingFalse()
-    {
-        keepGoing = false;
-    }
-
-    public void SetKeepGoingTrue()
-    {
-        keepGoing = true;
-    }
-
+    
     public MDP GetCurrentMdp() => Mdp;
 
-    public void EditCurrentPolicy(MarkovState state, MarkovAction action) => currentPolicy.SetAction(state, action.Action);
-
-    public void EditCurrentPolicy(MarkovState state, GridAction action) => currentPolicy.SetAction(state, action);
-
-    public void EditCurrentPolicy(int stateIndex, int action) => currentPolicy.SetAction(stateIndex, (GridAction) action);
-
-
+    
+    // ───────── 
+    //  Visuals  <- Methods and overloads handling the action sprites and the visibility of each element (Coordinates 
+    // ─────────    and indices on the grid squares, visual state value heights, visual state value values, visual
+    //              action value heights, current policy action sprites, and previous policy action sprites.
+    
     public void SetActionImage(MarkovState state, MarkovAction action) => SetActionImage(state.StateIndex, (int) action.Action);
 
     public void SetActionImage(MarkovState state, GridAction action) => SetActionImage(state.StateIndex, (int) action);
@@ -1240,11 +1255,26 @@ public class MdpManager : MonoBehaviour
             SetActionImage(stateAction.Key, (int) stateAction.Value);
     }
 
+    public Task ShowActionSpritesAtopStateValueVisuals()
+    {
+        if (currentPolicy == null) throw new ArgumentNullException();
+
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
+        {
+            var currentAction = currentPolicy.GetAction(state);
+            var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
+            currentStateVisual.UpdateActionSprite(currentAction);
+        }
+
+        return Task.CompletedTask;
+    }
+    
+    // The instruction for this comes from the UI controller from the state interactions object in the visual state.
     public void ToggleStateHighlight(int stateIndex) => _stateSpaceVisualStates[stateIndex].StateHighlightToggle();
 
+    // UI Calls this to toggle the visibility.
     public void Toggle(string toToggle)
     {
-
         foreach (var state in Mdp.States.Where(state => state.IsStandard()))
         {
             switch (toToggle)
@@ -1274,6 +1304,13 @@ public class MdpManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// <para>
+    /// Runs an infinite loop until the pause button in the UI sends the signal to release it. There is a
+    /// (semi-functional) step button. It's buggy as hell at the moment and I haven't had the time to fix it. 
+    /// </para>
+    /// </summary>
+    /// <param name="cancellationToken"></param>
     private async Task RunPauseLoop(CancellationToken cancellationToken)
     {
         while (paused && !stepped) await Task.Delay(5, cancellationToken);
@@ -1281,6 +1318,10 @@ public class MdpManager : MonoBehaviour
         if (stepped) stepped = false;
     }
 
+    public void SetMainLoopBoolConditionFalse() => maxDeltaGreaterThanThetaOrNumberOfIterationsLessThanK = false;
+
+    public void ResetMainLoopBoolConditionToTrue() => maxDeltaGreaterThanThetaOrNumberOfIterationsLessThanK = true;
+    
     public void EnsureMdpAndPolicyAreNotNull()
     {
         if (currentPolicy == null)
@@ -1294,21 +1335,16 @@ public class MdpManager : MonoBehaviour
 
         if (Mdp == null) throw new NullReferenceException("No MDP specified.");
     }
+    
 
-    public Task ShowActionSpritesAtopStateValueVisuals()
-    {
-        if (currentPolicy == null) throw new ArgumentNullException();
-
-        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
-        {
-            var currentAction = currentPolicy.GetAction(state);
-            var currentStateVisual = _stateSpaceVisualStates[state.StateIndex];
-            currentStateVisual.UpdateActionSprite(currentAction);
-        }
-
-        return Task.CompletedTask;
-    }
-
+    /// <summary>
+    /// <para>
+    /// Assigns the relevant value function object. Either a new one, a continuation of current one, or a specific
+    /// inputted one (for example, assigning random values, for showing monotonic convergence).
+    /// </para>
+    /// </summary>
+    /// <param name="stateValueFunction">StateValueFunction object containing the state values (<c>float</c>)</param>
+    /// <returns>The actual state value function</returns>
     private StateValueFunction AssignStateValueFunction(StateValueFunction stateValueFunction)
     {
         StateValueFunction stateValueFunctionV;
