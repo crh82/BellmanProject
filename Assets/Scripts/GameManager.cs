@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
         {
             currentScene += 1;
 
-            if (currentScene > 3) currentScene = 0;
+            if (currentScene > 2) currentScene = 0;
            
             instance.SwitchScene((BellmanScenes) currentScene);          
         }
@@ -66,15 +66,19 @@ public class GameManager : MonoBehaviour
         switch (bellmanScene)
         {
             case Title:
+                currentScene = 0;
                 SceneManager.LoadScene(0);
                 break;
             case DynamicProgramming:
+                currentScene = 1;
                 SceneManager.LoadScene(1);
                 break;
             case MdpBuilder:
+                currentScene = 2;
                 SceneManager.LoadScene(2);
                 break;
             case DP2:
+                currentScene = 3;
                 SceneManager.LoadScene(3);
                 break;
             default:
