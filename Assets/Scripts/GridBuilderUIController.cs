@@ -56,9 +56,9 @@ public class GridBuilderUIController : MonoBehaviour
     private const int         TerminalStateGreenOrGoal = 6;
     private const int         TerminalStateRed         = 7;
 
-    private void Start()
+    private void Awake()
     {
-        
+        GameManager.instance.currentScene = (int) BellmanScenes.MdpBuilder;
     }
 
 
