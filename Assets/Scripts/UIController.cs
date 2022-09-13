@@ -9,6 +9,15 @@ using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.UI;
 
+/// <summary>
+/// <para></para>
+/// <para>
+/// <b>Author:</b> <i>Christopher Howell</i>
+/// </para>
+/// <para>
+/// <b>Citations:</b>
+/// </para>
+/// </summary>
 public class UIController : MonoBehaviour
 {
    // ╔════════════════════╗
@@ -162,18 +171,18 @@ public class UIController : MonoBehaviour
    
    private void Awake()
    {
-      _mdpManager = mdpGameObject.GetComponent<MdpManager>();
+                         _mdpManager = mdpGameObject.GetComponent<MdpManager>();
       _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.defaultIndex;
-      _cancellationTokenSource = new CancellationTokenSource();
-      _focusCam = cornerCameraRig.GetComponent<CornerCameraController>();
-      mainCameraController = mainCameraRig.GetComponent<CameraController>();
+            _cancellationTokenSource = new CancellationTokenSource();
+                           _focusCam = cornerCameraRig.GetComponent<CornerCameraController>();
+                mainCameraController = mainCameraRig.GetComponent<CameraController>();
    }
 
    private void Update()
    {
       // if (Input.GetKeyDown(KeyCode.Escape))
       // {
-      //    _mdpManager.SetKeepGoingFalse();
+      //    _mdpManager.SetMainLoopBoolConditionFalse();
       //    // Debug.Log("Escape key was pressed");
       // }
       //
@@ -190,7 +199,7 @@ public class UIController : MonoBehaviour
       //    ToggleActionsVisuals("PreviousActionSprites");
       // }
       
-      if (Input.GetKeyDown(KeyCode.Escape)) _mdpManager.SetKeepGoingFalse();
+      if (Input.GetKeyDown(KeyCode.Escape)) _mdpManager.SetMainLoopBoolConditionFalse();
         
       if (Input.GetKeyDown(KeyCode.Alpha1)) _mdpManager.Toggle("GridSquare");
        
@@ -406,7 +415,7 @@ public class UIController : MonoBehaviour
    public void StopAlgorithm()
    {
       _mdpManager.DisableRabbit();
-      _mdpManager.SetKeepGoingFalse();
+      _mdpManager.SetMainLoopBoolConditionFalse();
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
@@ -422,7 +431,7 @@ public class UIController : MonoBehaviour
    public Task StopAlgorithmAsync()
    {
       _mdpManager.DisableRabbit();
-      _mdpManager.SetKeepGoingFalse();
+      _mdpManager.SetMainLoopBoolConditionFalse();
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
