@@ -66,13 +66,13 @@ public class GameManager : MonoBehaviour
         switch (bellmanScene)
         {
             case Title:
-                SceneManager.LoadScene("Scenes/TitleMenuScene");
+                SceneManager.LoadScene(0);
                 break;
             case DynamicProgramming:
-                SceneManager.LoadScene("Scenes/MarkovDecisionProcess");
+                SceneManager.LoadScene(1);
                 break;
             case MdpBuilder:
-                SceneManager.LoadScene("Scenes/MdpBuilder");
+                SceneManager.LoadScene(2);
                 break;
             case DP2:
                 SceneManager.LoadScene(3);
@@ -92,5 +92,5 @@ public enum BellmanScenes
     Title              = 0,
     DynamicProgramming = 1,
     MdpBuilder         = 2,
-    Dp2 = 3
+    Dp2                = 3
 }
