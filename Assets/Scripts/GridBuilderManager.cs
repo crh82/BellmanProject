@@ -11,6 +11,10 @@ public class GridBuilderManager : MonoBehaviour
 
     public Grid gridPrefab;
 
+    public GameObject stateSpacePrefab;
+
+    public GameObject stateSpace;
+
     public Tilemap tilemap;
 
     public Grid currentGrid;
@@ -26,6 +30,8 @@ public class GridBuilderManager : MonoBehaviour
     public Vector2Int dimensions;
 
     public MDP        sceneMdp;
+
+    private bool _canPlaceTiles = true;
 
     private void Awake()
     {
@@ -43,42 +49,45 @@ public class GridBuilderManager : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.M) && Input.GetKey(KeyCode.LeftShift))
         {
-            // SavePolicy();
             TransitionToMarkovDecisionProcessScene();
         }
 
         if (Input.GetKey(KeyCode.B) && !gridLoaded)
         {
             BuildGrid();
-            gridLoaded = true;
+            
         }
 
     }
 
-    void SavePolicy()
+    private void SaveGridWorldAsMdp()
     {
-        MDP test = levelEditor.GenerateMdpFromTileMaps();
+        MDP test = levelEditor.GenerateMdpFromTileMaps("ChrisPathDecision");
 
         MdpAdmin.SaveMdpToFile(test, "Assets/Resources/TestMDPs");
     }
 
-    private void TransitionToMarkovDecisionProcessScene()
+    public void TransitionToMarkovDecisionProcessScene()
     {
-        GameManager.instance.currentMdp = levelEditor.GenerateMdpFromTileMaps();
+        GameManager.instance.currentMdp = levelEditor.GenerateMdpFromTileMaps("ChrisPathDecision");
         GameManager.instance.sendMdp    = true;
         GameManager.instance.SwitchScene(BellmanScenes.DynamicProgramming);
     }
 
-    void BuildGrid(MDP buildMdp = null)
+    public void BuildGrid(MDP buildMdp = null)
     {
+        if (stateSpace != null) Destroy(stateSpace.gameObject);
+   
+        stateSpace = Instantiate(stateSpacePrefab);
+
         var buildDimensions = buildMdp == null 
             ? dimensions 
             : new Vector2Int(buildMdp.Width, buildMdp.Height);
         
-        currentGrid = Instantiate(gridPrefab);
+        currentGrid = Instantiate(gridPrefab, stateSpace.transform, true);
         
         currentGrid.transform.position = Vector3.zero;
-        
+
         levelEditor = currentGrid.GetComponent<LevelEditor>();
 
         var bgTiles     = levelEditor.tileMaps[0];
@@ -106,8 +115,12 @@ public class GridBuilderManager : MonoBehaviour
         mainCamera.orthographicSize = Math.Max(targetPos.x, targetPos.y);
         
         levelEditor.mainCamera = Camera.main;
+
+        levelEditor.gridBuilderManager = this;
         
         levelEditor.GenerateRewardTextOverTiles();
+        
+        gridLoaded = true;
        
     }
 
@@ -142,4 +155,9 @@ public class GridBuilderManager : MonoBehaviour
 
         return map;
     }
+
+    public void EnableTilePlacement()  => _canPlaceTiles = true;
+    public void DisableTilePlacement() => _canPlaceTiles = false;
+
+    public bool TilesCanBePlaced() => _canPlaceTiles;
 }
