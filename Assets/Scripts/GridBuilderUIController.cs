@@ -272,5 +272,10 @@ public class GridBuilderUIController : MonoBehaviour
         rewardValueDisplay.text = $"{rewardValue}";
         rewardValueInputField.text = "";
     }
+    
+    // ┌────────────┐
+    // │ Navigation │
+    // └────────────┘
+    public void NavigateToMainMenuScreen() => GameManager.instance.SwitchScene(BellmanScenes.Title);
 
 }
