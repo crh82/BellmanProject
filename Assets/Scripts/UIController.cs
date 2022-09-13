@@ -33,11 +33,14 @@ public class UIController : MonoBehaviour
    
    private MdpManager        _mdpManager;
    
-   private readonly int[]  _algorithmDelayValues = {1, 10, 100, 300, 500, 1000};
+   private readonly int[]    _algorithmDelayValues = {1, 10, 100, 300, 500, 1000};
 
    public TooltipManager     mouseHoverHelper;
 
    private bool              _mouseHoverHelpOn;
+
+   public TextMeshProUGUI    toolTipsOnText;
+   
 
    // ╔════════════════════╗
    // ║ LEFT CONTROL PANEL ║
@@ -180,6 +183,11 @@ public class UIController : MonoBehaviour
             _cancellationTokenSource = new CancellationTokenSource();
                            _focusCam = cornerCameraRig.GetComponent<CornerCameraController>();
                 mainCameraController = mainCameraRig.GetComponent<CameraController>();
+                //    _mouseHoverHelpOn = false;
+                // mouseHoverHelper.gameObject.SetActive(false);
+                // toolTipsOnText.gameObject.SetActive(false);
+
+                GameManager.instance.currentScene = (int) BellmanScenes.DynamicProgramming;
    }
 
    private void Update()
@@ -301,13 +309,6 @@ public class UIController : MonoBehaviour
    // │ Central Area Related │
    // └──────────────────────┘
    public void SetAlgorithmTitleText(string algorithmTitle) => algorithmTitleText.text = algorithmTitle;
-
-   public void ToggleMouseHoverHelp()
-   {
-      _mouseHoverHelpOn = !_mouseHoverHelpOn;
-
-      mouseHoverHelper.gameObject.SetActive(!_mouseHoverHelpOn);
-   }
 
    // ┌────────────────┐
    // │ Policy Related │
@@ -771,4 +772,16 @@ public class UIController : MonoBehaviour
    {
       GameManager.instance.ApplicationQuit();
    }
+   
+   public void ToggleMouseHoverHelp()
+   {
+      _mouseHoverHelpOn = !_mouseHoverHelpOn;
+
+      mouseHoverHelper.gameObject.SetActive(_mouseHoverHelpOn);
+      
+      toolTipsOnText.gameObject.SetActive(_mouseHoverHelpOn);
+      
+   }
+
+   public void NavigateToMainMenuScreen() => GameManager.instance.SwitchScene(BellmanScenes.Title);
 }
