@@ -26,6 +26,8 @@ public class GridBuilderUIController : MonoBehaviour
     public TMP_InputField     rewardValueInputField;
 
     public TextMeshProUGUI    rewardValueDisplay;
+
+    public TextMeshProUGUI    tileDescriptionText;
     
     // ┌──────────────────────────────┐
     // │ Environment Dynamics Related │
@@ -233,6 +235,27 @@ public class GridBuilderUIController : MonoBehaviour
         // }
         
         
+    }
+
+    public void SetTileDescriptionOnTileSelection(string tileIdentifier)
+    {
+        switch (tileIdentifier)
+        {
+            case "s":
+                tileDescriptionText.text = "This is a standard tile representing a location in the state space.";
+                break;
+            case "o":
+                tileDescriptionText.text = "This is an obstacle or unreachable state tile. The solver ignores it.";
+                break;
+            case "tg":
+                tileDescriptionText.text =
+                    "This is a terminal state. The green indicates a non-negative reward, though this is not enforced.";
+                break;
+            case "tr":
+                tileDescriptionText.text =
+                    "This is a terminal state. The red indicates a negative reward, though this is not enforced.";
+                break;
+        }
     }
 
     public void EnableTilePlacement()     => gridBuilderManager.EnableTilePlacement();

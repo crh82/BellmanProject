@@ -1026,6 +1026,18 @@ MonoBehaviour:
           m_StringArgument: t
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1615202838}
+        m_TargetAssemblyTypeName: GridBuilderUIController, ScriptsAssemblyDef
+        m_MethodName: SetTileDescriptionOnTileSelection
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: tr
+          m_BoolArgument: 0
+        m_CallState: 2
   hoverEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -8131,6 +8143,18 @@ MonoBehaviour:
       - m_Target: {fileID: 1615202838}
         m_TargetAssemblyTypeName: GridBuilderUIController, ScriptsAssemblyDef
         m_MethodName: SetTileToPaint
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: s
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1615202838}
+        m_TargetAssemblyTypeName: GridBuilderUIController, ScriptsAssemblyDef
+        m_MethodName: SetTileDescriptionOnTileSelection
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -18239,6 +18263,7 @@ MonoBehaviour:
   sendGridToSolver: {fileID: 2083726717}
   rewardValueInputField: {fileID: 1314500862}
   rewardValueDisplay: {fileID: 1372103669}
+  tileDescriptionText: {fileID: 1987101972}
   currentlyDisplayedEnvironmentDynamicsImageIndex: 0
   currentlyDisplayedEnvironmentDynamicsImage: {fileID: 406319437}
   environmentDynamicsPrefix: RN
@@ -21685,6 +21710,18 @@ MonoBehaviour:
           m_StringArgument: o
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1615202838}
+        m_TargetAssemblyTypeName: GridBuilderUIController, ScriptsAssemblyDef
+        m_MethodName: SetTileDescriptionOnTileSelection
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: o
+          m_BoolArgument: 0
+        m_CallState: 2
   hoverEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -22399,7 +22436,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: This contains the description of the tile that is currently selected.
+  m_text: This is a standard tile representing a location in the state space.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4bd810f1cbcb0f446a8f5a31453e243f, type: 2}
   m_sharedMaterial: {fileID: 21539420542967178, guid: 4bd810f1cbcb0f446a8f5a31453e243f, type: 2}
@@ -22942,6 +22979,18 @@ MonoBehaviour:
           m_StringArgument: g
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1615202838}
+        m_TargetAssemblyTypeName: GridBuilderUIController, ScriptsAssemblyDef
+        m_MethodName: SetTileDescriptionOnTileSelection
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: tg
+          m_BoolArgument: 0
+        m_CallState: 2
   hoverEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -23007,7 +23056,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 1127, y: 0}
+  m_AnchoredPosition: {x: 1220, y: 0}
   m_SizeDelta: {x: 826, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2016163584
