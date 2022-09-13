@@ -9,12 +9,12 @@ EditorBuildSettings:
     path: Assets/Scenes/TitleMenuScene.unity
     guid: e03f7ba4592724225a9e335c29dd3a74
   - enabled: 1
-    path: Assets/Scenes/MarkovDecisionProcess.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/MarkovDecisionProcessTesttingNewColours.unity
+    guid: 285e430460d294c07aa530daf22fc6a2
   - enabled: 1
     path: Assets/Scenes/MdpBuilder.unity
     guid: 103cba223f12a4683a2db249d7c380bd
   - enabled: 1
-    path: Assets/Scenes/MarkovDecisionProcessTesttingNewColours.unity
-    guid: 285e430460d294c07aa530daf22fc6a2
+    path: Assets/Scenes/MarkovDecisionProcess.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
   m_configObjects: {}
