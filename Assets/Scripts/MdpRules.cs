@@ -53,8 +53,13 @@ public static class RuleProbabilityDistributor
     /// </listheader>
     /// <item>Intended successor state ( 100% ) </item>
     /// </list>
+    /// <para>
+    /// <b>Author:</b> <i>Christopher Howell</i>
+    /// </para>
+    /// <para>
+    /// <b>Citations:</b>
+    /// </para>
     /// </summary>
-    /// 
     /// <param name="mdpRuleSet"></param>
     /// <returns></returns>
     [SuppressMessage("ReSharper", "CommentTypo")]
