@@ -2083,8 +2083,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 250, y: 0}
+  m_SizeDelta: {x: 470, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &139950720
 MonoBehaviour:
@@ -3187,8 +3187,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  description: 'Toggles whether algorithm runs in a finite number of iterations.
-    The slider sets that maximum number of iterations. '
+  description: "<b>Finite Horizon / Infinie Horizon</b>\n\n<b>Toggle:</b> \n[ ON
+    ] Finite Horizon \n[ OFF ] Infinie Horizon\n\n<b>Slider:</b> \nIf finite horizon,
+    sets the maximum number of iterations. "
   delay: 0
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
@@ -5623,6 +5624,7 @@ GameObject:
   - component: {fileID: 367743357}
   - component: {fileID: 367743356}
   - component: {fileID: 367743358}
+  - component: {fileID: 367743359}
   m_Layer: 5
   m_Name: LevelOfExecutionContainer
   m_TagString: Untagged
@@ -5746,6 +5748,32 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &367743359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 367743352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: "Selects the <b>level</b> at which the <b>DELAY</b> occurs. \n\n<b>State
+    Space</b>: \nApplies a delay of [ <i>n</i> ] ms between each sweep of the state
+    space [ <i>S</i> ].\n\n<b>States</b>: \nApplies the delay of [ <i>n</i> ] ms
+    between each update of an individual state [ <i>s</i> ].\n\n<b>Action</b>:\nApplies
+    the delay of  [ <i>n</i> ] ms between each update of an Individual action [ <i>a</i>
+    ] in each state [ <i>s</i> ].\n\n<b>Transition</b>: \nApplies the delay of [
+    <i>n</i> ] ms between each transition to a successor state [ <i>s'</i> ], calculated
+    from taking action [ <i>a</i> ] in state [ <i>s</i> ]."
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &371540606
 GameObject:
   m_ObjectHideFlags: 0
@@ -6255,7 +6283,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3163504955301408706, guid: 5209f201c34954455ac6cc1af8b5287b, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 332.8697
       objectReference: {fileID: 0}
     - target: {fileID: 3163504955301408706, guid: 5209f201c34954455ac6cc1af8b5287b, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -7444,6 +7472,7 @@ GameObject:
   - component: {fileID: 470062805}
   - component: {fileID: 470062804}
   - component: {fileID: 470062803}
+  - component: {fileID: 470062808}
   m_Layer: 5
   m_Name: RandomizePolicyButton
   m_TagString: Untagged
@@ -7659,6 +7688,27 @@ MonoBehaviour:
   renderOnTop: 1
   centered: 0
   isPreset: 0
+--- !u!114 &470062808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 470062801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Generates a random policy of actions in the current MDP. Can be set
+    at anytime during algorithm running (though will only be noticeable if done so
+    during policy evaluation).
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &474992541
 GameObject:
   m_ObjectHideFlags: 0
@@ -9708,6 +9758,7 @@ GameObject:
   - component: {fileID: 655287354}
   - component: {fileID: 655287353}
   - component: {fileID: 655287352}
+  - component: {fileID: 655287356}
   m_Layer: 5
   m_Name: RunButtonContainer
   m_TagString: Untagged
@@ -9811,6 +9862,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 655287350}
   m_CullTransparentMesh: 1
+--- !u!114 &655287356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655287350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Runs the selected algorithm.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &677977181
 GameObject:
   m_ObjectHideFlags: 0
@@ -12299,8 +12369,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 373.89294, y: 0}
+  m_SizeDelta: {x: 747.7859, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &855314279
 MonoBehaviour:
@@ -14134,7 +14204,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 186.08, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1001397619
@@ -15710,6 +15780,7 @@ GameObject:
   - component: {fileID: 1081818179}
   - component: {fileID: 1081818181}
   - component: {fileID: 1081818180}
+  - component: {fileID: 1081818182}
   m_Layer: 5
   m_Name: PB - Standard
   m_TagString: Untagged
@@ -15788,6 +15859,25 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   eventSource: {fileID: 0}
+--- !u!114 &1081818182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1081818178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Displays the <I>approximate</i> progress of the running algorithm.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1091528098
 GameObject:
   m_ObjectHideFlags: 0
@@ -17517,6 +17607,7 @@ GameObject:
   - component: {fileID: 1175792800}
   - component: {fileID: 1175792799}
   - component: {fileID: 1175792798}
+  - component: {fileID: 1175792802}
   m_Layer: 5
   m_Name: HelpButton
   m_TagString: Untagged
@@ -17712,6 +17803,25 @@ MonoBehaviour:
   renderOnTop: 1
   centered: 0
   isPreset: 0
+--- !u!114 &1175792802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175792796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Toggles these <b>tips</b> on and off.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1176108668
 GameObject:
   m_ObjectHideFlags: 0
@@ -17781,7 +17891,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 114101850958444158, guid: eb743563919171a4587d60b1da95bf23, type: 3}
   m_PrefabInstance: {fileID: 1614335033}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1467326847}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
@@ -18817,6 +18927,7 @@ GameObject:
   - component: {fileID: 1313209212}
   - component: {fileID: 1313209211}
   - component: {fileID: 1313209210}
+  - component: {fileID: 1313209213}
   m_Layer: 5
   m_Name: ThetaPanel
   m_TagString: Untagged
@@ -18910,6 +19021,28 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1313209213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1313209208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Sets the small value threshold at which the algorithms will terminate.
+    In other words, once the maximum absolute difference across the statespace between
+    the current iteration and the previous iteration is less than theta, then we
+    are guaranteed to be within theta of the true optimal value.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1319282793
 GameObject:
   m_ObjectHideFlags: 0
@@ -19355,7 +19488,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 20, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1345962622
@@ -20481,8 +20614,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 250, y: 0}
+  m_SizeDelta: {x: 470, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1450371388
 MonoBehaviour:
@@ -20700,6 +20833,31 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5128942603092898043, guid: c68adab5dc8b74ced851ffae7a7f13d1, type: 3}
   m_PrefabInstance: {fileID: 1079312578}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1467326847 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1808330357133296, guid: eb743563919171a4587d60b1da95bf23, type: 3}
+  m_PrefabInstance: {fileID: 1614335033}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1467326852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1467326847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: 'Resets the current MDP to its original conditions. WARNING: If gridworld
+    is user created, it will delete the gridworld.'
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1469475165
 GameObject:
   m_ObjectHideFlags: 0
@@ -20736,8 +20894,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 373.89294, y: 0}
+  m_SizeDelta: {x: 707.7859, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1469475167
 MonoBehaviour:
@@ -21262,6 +21420,7 @@ GameObject:
   - component: {fileID: 1515634092}
   - component: {fileID: 1515634091}
   - component: {fileID: 1515634090}
+  - component: {fileID: 1515634093}
   m_Layer: 5
   m_Name: GammaPanel
   m_TagString: Untagged
@@ -21355,6 +21514,26 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1515634093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1515634088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: "Discount Factor\n\nToggle: When switched OFF it is akin to \u03B3
+    = 1, when switched ON \u03B3 = slider value.\n\nSlider: Sets the value of \u03B3 "
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1524916416
 GameObject:
   m_ObjectHideFlags: 0
@@ -22100,6 +22279,7 @@ GameObject:
   - component: {fileID: 1578470559}
   - component: {fileID: 1578470558}
   - component: {fileID: 1578470557}
+  - component: {fileID: 1578470560}
   m_Layer: 5
   m_Name: StopButtonContainer
   m_TagString: Untagged
@@ -22191,6 +22371,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1578470555}
   m_CullTransparentMesh: 1
+--- !u!114 &1578470560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1578470555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Stops the execution of the currently running algorithm.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1596964224
 GameObject:
   m_ObjectHideFlags: 0
@@ -23029,6 +23228,7 @@ GameObject:
   - component: {fileID: 1634620989}
   - component: {fileID: 1634620988}
   - component: {fileID: 1634620987}
+  - component: {fileID: 1634620990}
   m_Layer: 5
   m_Name: Step
   m_TagString: Untagged
@@ -23120,6 +23320,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1634620985}
   m_CullTransparentMesh: 1
+--- !u!114 &1634620990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634620985}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Steps one step in a paused algorithm at the above selected <b>Focus
+    Level</b>.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1001 &1644617713
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23914,6 +24134,7 @@ GameObject:
   - component: {fileID: 1654624336}
   - component: {fileID: 1654624335}
   - component: {fileID: 1654624334}
+  - component: {fileID: 1654624339}
   m_Layer: 5
   m_Name: RandomizeStateValuesButton
   m_TagString: Untagged
@@ -24129,6 +24350,25 @@ MonoBehaviour:
   renderOnTop: 1
   centered: 0
   isPreset: 0
+--- !u!114 &1654624339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1654624332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Sets the value of states to random values within the range [-15. 15].
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1665244214
 GameObject:
   m_ObjectHideFlags: 0
@@ -24141,6 +24381,7 @@ GameObject:
   - component: {fileID: 1665244218}
   - component: {fileID: 1665244217}
   - component: {fileID: 1665244216}
+  - component: {fileID: 1665244219}
   m_Layer: 5
   m_Name: Pause
   m_TagString: Untagged
@@ -24232,6 +24473,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1665244214}
   m_CullTransparentMesh: 1
+--- !u!114 &1665244219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1665244214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Pauses the execution of the currently running algorithm.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!224 &1671564764 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4423239208395407387, guid: 329d16766593241d8a5c7f0a37283a11, type: 3}
@@ -24989,6 +25249,7 @@ GameObject:
   - component: {fileID: 1713719534}
   - component: {fileID: 1713719533}
   - component: {fileID: 1713719532}
+  - component: {fileID: 1713719531}
   m_Layer: 5
   m_Name: MainMenuButton
   m_TagString: Untagged
@@ -25018,6 +25279,25 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 55, y: 55}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1713719531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1713719529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Return to <b>Main Menu</b>
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!114 &1713719532
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25437,7 +25717,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  description: 'This allows you to select from premade and chanocical grid worlds. '
+  description: 'This allows you to select from premade and canonical grid worlds. '
   delay: 0
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
@@ -27260,6 +27540,7 @@ GameObject:
   - component: {fileID: 1903488014}
   - component: {fileID: 1903488013}
   - component: {fileID: 1903488012}
+  - component: {fileID: 1903488015}
   m_Layer: 5
   m_Name: NumberOfIterationsContainer (1)
   m_TagString: Untagged
@@ -27352,6 +27633,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1903488010}
   m_CullTransparentMesh: 1
+--- !u!114 &1903488015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1903488010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Displays the current max absolute difference between the state space
+    [ <i>S</i> ] at [ </i>t</i> ] and the preceding state space at [ <i>t - 1</i>
+    ].
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1001 &1913932536
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28351,6 +28653,7 @@ GameObject:
   - component: {fileID: 1946233076}
   - component: {fileID: 1946233075}
   - component: {fileID: 1946233074}
+  - component: {fileID: 1946233077}
   m_Layer: 5
   m_Name: NumberOfIterationsContainer
   m_TagString: Untagged
@@ -28443,6 +28746,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1946233072}
   m_CullTransparentMesh: 1
+--- !u!114 &1946233077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1946233072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Displays the iteration count of the algorithm during its execution.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1951159760
 GameObject:
   m_ObjectHideFlags: 0
@@ -28579,6 +28901,7 @@ GameObject:
   - component: {fileID: 1991681250}
   - component: {fileID: 1991681249}
   - component: {fileID: 1991681248}
+  - component: {fileID: 1991681252}
   m_Layer: 5
   m_Name: EditPolicyButton
   m_TagString: Untagged
@@ -28777,6 +29100,25 @@ MonoBehaviour:
   renderOnTop: 1
   centered: 0
   isPreset: 0
+--- !u!114 &1991681252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1991681246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Allows editing of the current action in the state.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &1996610798
 GameObject:
   m_ObjectHideFlags: 0
@@ -28787,6 +29129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1996610799}
   - component: {fileID: 1996610800}
+  - component: {fileID: 1996610801}
   m_Layer: 5
   m_Name: FocusAndFollowModeContainer
   m_TagString: Untagged
@@ -28841,6 +29184,27 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1996610801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1996610798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: This is the feature where a yellow orb and trail hovers over the current
+    state being updated. It changes functionality depending on the execution level
+    and speed the user has set in the UI.
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &2011006469
 GameObject:
   m_ObjectHideFlags: 0
@@ -29803,6 +30167,7 @@ GameObject:
   - component: {fileID: 2112666059}
   - component: {fileID: 2112666058}
   - component: {fileID: 2112666061}
+  - component: {fileID: 2112666062}
   m_Layer: 5
   m_Name: AlgorithmPanel
   m_TagString: Untagged
@@ -29916,6 +30281,35 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &2112666062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2112666056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: 'Selects the algorithm to run:
+
+
+    1.) Policy Evaluation
+
+    2.)
+    Policy Improvement
+
+    3.) Policy Iteration
+
+    4.) Value Iteration'
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &2123090678 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4297283280072454051, guid: c68adab5dc8b74ced851ffae7a7f13d1, type: 3}
@@ -32438,6 +32832,7 @@ GameObject:
   - component: {fileID: 4271763523309101152}
   - component: {fileID: 4271763523309101159}
   - component: {fileID: 4271763523309101158}
+  - component: {fileID: 4271763523309101160}
   m_Layer: 5
   m_Name: AlgorithmSpeedControlPanel
   m_TagString: Untagged
@@ -32522,6 +32917,29 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 50
+--- !u!114 &4271763523309101160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4271763523309101156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: '<b>Slider</b>
+
+    Sets the number of milliseconds delay between
+    the selected [ <i>State Space / State / Action /Transition</i> ] <b>focus level</b>
+    above. '
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  forceToUpdate: 0
+  useIn3D: 0
+  tooltipAnimator: {fileID: 0}
 --- !u!114 &4271763523588162732
 MonoBehaviour:
   m_ObjectHideFlags: 0
