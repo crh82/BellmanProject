@@ -72,6 +72,9 @@ public class GridBuilderUIController : MonoBehaviour
         DisableTilePlacement();
     }
 
+    /// <summary>
+    /// The BuildGrid function builds the grid and initializes the level editor to be used for editing grid worlds.
+    /// </summary>
     public void BuildGrid()
     {
         gridBuilderManager.BuildGrid();
@@ -180,6 +183,12 @@ public class GridBuilderUIController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// The SetDynamics function sets the dynamics of the environment in the grid builder editor and loads the
+    /// appropriate images that visualise the transition probabilities.
+    /// </summary>
+    ///
+    /// <param name="dynamics"> The dynamics to set.</param>
     private void SetDynamics(string dynamics)
     {
         environmentDynamicsPrefix = dynamics;
@@ -222,19 +231,6 @@ public class GridBuilderUIController : MonoBehaviour
                 SetTile(TerminalStateRed);        
                 break;
         }
-
-        // void HandleTileImage(int tileIndex)
-        // {
-        //     foreach (var tileImage in paintTileImages)
-        //     {
-        //         tileImage.gameObject.SetActive(false);
-        //     }
-        //     paintTileImages[tileIndex - 4].gameObject.SetActive(true);
-        //     if (levelEditor == null) return;
-        //     levelEditor.AssignCurrentTile(tileIndex);
-        // }
-        
-        
     }
 
     public void SetTileDescriptionOnTileSelection(string tileIdentifier)
