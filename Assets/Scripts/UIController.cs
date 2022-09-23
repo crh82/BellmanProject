@@ -214,7 +214,7 @@ public class UIController : MonoBehaviour
    }
 
    /// <summary>
-   /// The LoadMdpFromDropdown function loads a MDP from the dropdown menu.
+   /// The LoadMdpFromDropdown method loads a pre-saved MDP from the dropdown menu.
    /// </summary>
    public void LoadMdpFromDropdown()
    {
@@ -272,7 +272,7 @@ public class UIController : MonoBehaviour
    }
 
    /// <summary>
-   /// The ResetGridWorldAsync function resets the GridWorld to its initial state.
+   /// The ResetGridWorldAsync method resets the GridWorld to its initial state.
    /// </summary>
    private async void ResetGridWorldAsync()
    {
@@ -303,7 +303,7 @@ public class UIController : MonoBehaviour
    
 
    /// <summary>
-   /// The BuildPolicyFromTestString function takes a string of actions and sets the current policy to that string. It
+   /// The BuildPolicyFromTestString method takes a string of actions and sets the current policy to that string. It
    /// functions with a hidden text input field used for testing policies with the solver during development.
    /// </summary>
    public void BuildPolicyFromTestString()
@@ -354,7 +354,7 @@ public class UIController : MonoBehaviour
    // └───────────────────────────┘
    
 
-   // Controls the execution of policy evaluation by state space sweep, individual state, or individual transition.
+   /// <summary>Controls the execution of policy evaluation by state space sweep, individual state, or individual transition.</summary>
    public void SendLevelInformationToMdp()
    {
       _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.index;
@@ -362,7 +362,7 @@ public class UIController : MonoBehaviour
    
 
    /// <summary>
-   /// The UpdateAlgorithmExecutionSpeedValue function updates the algorithm execution speed value text to reflect the
+   /// The UpdateAlgorithmExecutionSpeedValue method updates the algorithm execution speed value text to reflect the
    /// current slider value.
    /// </summary>
    public void UpdateAlgorithmExecutionSpeedValue()
@@ -380,7 +380,7 @@ public class UIController : MonoBehaviour
 
    
 
-   /// <summary> The RunAlgorithm function runs the user selected selected algorithm.</summary>
+   /// <summary> The RunAlgorithm method runs the user selected algorithm.</summary>
    public void RunAlgorithm()
    {
       if (!_mdpManager.mdpLoaded) return;
@@ -427,6 +427,7 @@ public class UIController : MonoBehaviour
    {
       _mdpManager.DisableRabbit();
       _mdpManager.SetMainLoopBoolConditionFalse();
+      
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
@@ -443,6 +444,7 @@ public class UIController : MonoBehaviour
    {
       _mdpManager.DisableRabbit();
       _mdpManager.SetMainLoopBoolConditionFalse();
+      
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
@@ -729,10 +731,9 @@ public class UIController : MonoBehaviour
          rewardEditor.textComponent.color = Color.HSVToRGB(152, 98, 75);
    }
    
+   
    public void EditReward()
    {
-      // if (!Regex.IsMatch(rewardEditor.text, RegexRealNumber)) return;
-      
       float newReward = float.Parse(rewardEditor.text);
       _mdpManager.EditRewardOfState(_currentStateToEdit, newReward);
       SetStateInformationWindowText(_currentStateToEdit);
@@ -762,10 +763,10 @@ public class UIController : MonoBehaviour
    /// <summary>
    /// The ToggleFocusAndFollowObjectsInRightUIControlPanel function toggles the focus and follow mode for the
    /// algorithms. This is the feature where a yellow orb and trail hovers over the current state being updated. It
-   /// changes functionality depending on the UI <b>FOCUS LEVEL</b> and <b>DELAY</b> the user has set in the UI. It also toggles the
-   /// visibility of all UI objects in focusAndFollowUIObjects.</summary>
+   /// changes functionality depending on the UI <b>FOCUS LEVEL</b> and <b>DELAY</b> the user has set in the UI. It also
+   /// toggles the visibility of all UI objects in focusAndFollowUIObjects.</summary>
    ///
-   /// <param name="toggleState"> True if the ui should be enabled, false otherwise.</param>
+   /// <param name="toggleState"> True if the orb should be enabled, false otherwise.</param>
    public void ToggleFocusAndFollowObjectsInRightUIControlPanel(bool toggleState)
    {
       _mdpManager.focusAndFollowMode = toggleState;
