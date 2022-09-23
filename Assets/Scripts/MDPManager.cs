@@ -811,7 +811,6 @@ public class MdpManager : MonoBehaviour
         {
             if (paused) await RunPauseLoop(cancellationToken);
             
-            // Todo add pseudocode thing
             var oldPolicy = newPolicy.Copy();
 
             if (focusAndFollowMode)

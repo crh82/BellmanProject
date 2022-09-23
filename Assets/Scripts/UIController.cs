@@ -759,6 +759,13 @@ public class UIController : MonoBehaviour
       }
    }
 
+   /// <summary>
+   /// The ToggleFocusAndFollowObjectsInRightUIControlPanel function toggles the focus and follow mode for the
+   /// algorithms. This is the feature where a yellow orb and trail hovers over the current state being updated. It
+   /// changes functionality depending on the UI <b>FOCUS LEVEL</b> and <b>DELAY</b> the user has set in the UI. It also toggles the
+   /// visibility of all UI objects in focusAndFollowUIObjects.</summary>
+   ///
+   /// <param name="toggleState"> True if the ui should be enabled, false otherwise.</param>
    public void ToggleFocusAndFollowObjectsInRightUIControlPanel(bool toggleState)
    {
       _mdpManager.focusAndFollowMode = toggleState;
