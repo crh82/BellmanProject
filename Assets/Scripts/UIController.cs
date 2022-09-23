@@ -192,25 +192,6 @@ public class UIController : MonoBehaviour
 
    private void Update()
    {
-      // if (Input.GetKeyDown(KeyCode.Escape))
-      // {
-      //    _mdpManager.SetMainLoopBoolConditionFalse();
-      //    // Debug.Log("Escape key was pressed");
-      // }
-      //
-      // if (Input.GetKeyDown(KeyCode.Alpha1))
-      // {
-      //    ToggleActionsVisuals("ActionObjects");
-      // }
-      // if (Input.GetKeyDown(KeyCode.Alpha2))
-      // {
-      //    ToggleActionsVisuals("ActionSprites");
-      // }
-      // if (Input.GetKeyDown(KeyCode.Alpha3))
-      // {
-      //    ToggleActionsVisuals("PreviousActionSprites");
-      // }
-      
       if (Input.GetKeyDown(KeyCode.Escape)) _mdpManager.SetMainLoopBoolConditionFalse();
         
       if (Input.GetKeyDown(KeyCode.Alpha1)) _mdpManager.Toggle("GridSquare");
@@ -232,6 +213,9 @@ public class UIController : MonoBehaviour
       _cancellationTokenSource.Cancel();
    }
 
+   /// <summary>
+   /// The LoadMdpFromDropdown function loads a MDP from the dropdown menu.
+   /// </summary>
    public void LoadMdpFromDropdown()
    {
 
@@ -287,6 +271,9 @@ public class UIController : MonoBehaviour
      InitializeSettingsPanel();
    }
 
+   /// <summary>
+   /// The ResetGridWorldAsync function resets the GridWorld to its initial state.
+   /// </summary>
    private async void ResetGridWorldAsync()
    {
       var existingStateSpace = GameObject.FindGameObjectWithTag("State Space");
@@ -314,6 +301,11 @@ public class UIController : MonoBehaviour
    // │ Policy Related │
    // └────────────────┘
    
+
+   /// <summary>
+   /// The BuildPolicyFromTestString function takes a string of actions and sets the current policy to that string. It
+   /// functions with a hidden text input field used for testing policies with the solver during development.
+   /// </summary>
    public void BuildPolicyFromTestString()
    {
       string textInput = GameObject.FindGameObjectWithTag("Policy Input").GetComponent<TMP_InputField>().text.Replace(" ", "");
@@ -368,6 +360,11 @@ public class UIController : MonoBehaviour
       _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.index;
    }
    
+
+   /// <summary>
+   /// The UpdateAlgorithmExecutionSpeedValue function updates the algorithm execution speed value text to reflect the
+   /// current slider value.
+   /// </summary>
    public void UpdateAlgorithmExecutionSpeedValue()
    {
 
@@ -381,6 +378,9 @@ public class UIController : MonoBehaviour
       }
    }
 
+   
+
+   /// <summary> The RunAlgorithm function runs the user selected selected algorithm.</summary>
    public void RunAlgorithm()
    {
       if (!_mdpManager.mdpLoaded) return;
@@ -509,6 +509,9 @@ public class UIController : MonoBehaviour
       return Task.CompletedTask;
    }
 
+   // ┌──────────────────────────────────────────────────────────────┐
+   // │ Algorithms available for the RunAlgorithm() function to call │
+   // └──────────────────────────────────────────────────────────────┘
    private async void EvaluatePolicyNoDelay(CancellationToken cancellationToken)
    {
       try
