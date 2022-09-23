@@ -7,28 +7,29 @@ public class GameManager : MonoBehaviour
     public static  GameManager         instance;
     
     // These are set to null unless a scene is sending one or of them between scenes.
-    public         MDP                 currentMdp;
-    public         Policy              currentPolicy;
-    public         StateValueFunction  currentStateValueFunction;
-    public         ActionValueFunction currentActionValueFunction;
-    public bool                        sendMdp;
-    public bool                        sendPolicy;
-    public bool                        sendStateValueFunction;
-    public bool                        sendActionValueFunction;
+    public MDP                 currentMdp;
+    public Policy              currentPolicy;
+    public StateValueFunction  currentStateValueFunction;
+    public ActionValueFunction currentActionValueFunction;
+    public bool                sendMdp;
+    public bool                sendPolicy;
+    public bool                sendStateValueFunction;
+    public bool                sendActionValueFunction;
 
-    private MdpManager                 _mdpManager;
+    private MdpManager         _mdpManager;
     
-    private const  BellmanScenes       Title              = BellmanScenes.Title;
-    private const  BellmanScenes       DynamicProgramming = BellmanScenes.DynamicProgramming;
-    private const  BellmanScenes       MdpBuilder         = BellmanScenes.MdpBuilder;
-    private const  BellmanScenes       DP2                = BellmanScenes.Dp2;
+    private const  BellmanScenes  Title              = BellmanScenes.Title;
+    private const  BellmanScenes  DynamicProgramming = BellmanScenes.DynamicProgramming;
+    private const  BellmanScenes  MdpBuilder         = BellmanScenes.MdpBuilder;
+    private const  BellmanScenes  DP2                = BellmanScenes.Dp2;
 
     public int currentScene;
 
     public GameObject  cursorTrailObject;
     public CursorTrail cursorTrail;
-    public Camera solverMainCamera;
-    public Camera solverTopDownCamera;
+    public Camera      solverMainCamera;
+    public Camera      solverTopDownCamera;
+
 
     private void Awake()
     {
@@ -52,11 +53,6 @@ public class GameManager : MonoBehaviour
            
             instance.SwitchScene((BellmanScenes) currentScene);          
         }
-
-        // if (Input.GetKeyDown(KeyCode.L) && SceneManager.GetActiveScene().name == "TitleMenuScene")
-        // {
-        //     instance.SwitchScene(BellmanScenes.DynamicProgramming);          
-        // }
     }
 
     public void ApplicationQuit() => Application.Quit();

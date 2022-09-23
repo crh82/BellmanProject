@@ -82,7 +82,7 @@ public class ActionValueFunction
                         Debug.Log($"ActionValueFunction tried to access an uninitialized value. " +
                                   $"{state} was present but {action} was not. " +
                                   $"Stored Q({state},{action}) = {0.0f} instead. " +
-                                  $"Check for unintended consequences"); // Todo remove once stable
+                                  $"Check for unintended consequences"); 
                         return 0;
                 }
             default:
@@ -90,11 +90,18 @@ public class ActionValueFunction
                 Debug.Log($"ActionValueFunction tried to access an uninitialized value. " +
                           $"Neither {state} nor {action} were present. " +
                           $"Stored Q({state},{action}) = {0.0f} instead. " +
-                          $"Check for unintended consequences"); // Todo remove once stable
+                          $"Check for unintended consequences");
                 return 0;
         }
     }
 
+    /// <summary>
+    /// The ArgMaxAction method returns the maximally valued action of a given state.
+    /// </summary>
+    ///
+    /// <param name="state"> The state to evaluate</param>
+    ///
+    /// <returns> Maximally valued action.</returns>
     public GridAction ArgMaxAction(MarkovState state)
     {
         float maxStateActionValue = MaxValue(state);
