@@ -16,7 +16,7 @@ public class TitleScreenUIController : MonoBehaviour
     
     public void LoadGridBuilderScene() => GameManager.instance.SwitchScene(BellmanScenes.MdpBuilder);
 
-    public void LoadSolver() => GameManager.instance.SwitchScene(BellmanScenes.DynamicProgramming);
+    public void LoadSolver() => GameManager.instance.SwitchScene(BellmanScenes.MdpSolver);
 
     public void OpenHelpWindow() => helpWindow.OpenWindow();
 

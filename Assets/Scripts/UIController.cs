@@ -187,7 +187,7 @@ public class UIController : MonoBehaviour
                 // mouseHoverHelper.gameObject.SetActive(false);
                 // toolTipsOnText.gameObject.SetActive(false);
 
-                GameManager.instance.currentScene = (int) BellmanScenes.DynamicProgramming;
+                GameManager.instance.currentScene = (int) BellmanScenes.MdpSolver;
    }
 
    private void Update()

@@ -71,13 +71,13 @@ public class GridBuilderManager : MonoBehaviour
     /// <summary>
     /// The TransitionToMarkovDecisionProcessScene function sets the currentMdp variable to a new MDP object,
     /// and then sets sendMdp to true. This will cause GameManager.SwitchScene() to be called with the
-    /// DynamicProgramming scene.
+    /// MdpSolver scene.
     /// </summary>
     public void TransitionToMarkovDecisionProcessScene()
     {
         GameManager.instance.currentMdp = levelEditor.GenerateMdpFromTileMaps("ChrisPathDecision");
         GameManager.instance.sendMdp    = true;
-        GameManager.instance.SwitchScene(BellmanScenes.DynamicProgramming);
+        GameManager.instance.SwitchScene(BellmanScenes.MdpSolver);
     }
 
     /// <summary>

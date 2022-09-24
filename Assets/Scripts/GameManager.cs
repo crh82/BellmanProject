@@ -18,10 +18,10 @@ public class GameManager : MonoBehaviour
 
     private MdpManager         _mdpManager;
     
-    private const  BellmanScenes  Title              = BellmanScenes.Title;
-    private const  BellmanScenes  DynamicProgramming = BellmanScenes.DynamicProgramming;
-    private const  BellmanScenes  MdpBuilder         = BellmanScenes.MdpBuilder;
-    private const  BellmanScenes  DP2                = BellmanScenes.Dp2;
+    private const  BellmanScenes  Title       = BellmanScenes.Title;
+    private const  BellmanScenes  MdpSolver   = BellmanScenes.MdpSolver;
+    private const  BellmanScenes  MdpBuilder  = BellmanScenes.MdpBuilder;
+    private const  BellmanScenes  DP2         = BellmanScenes.Dp2;
 
     public int currentScene;
 
@@ -57,6 +57,12 @@ public class GameManager : MonoBehaviour
 
     public void ApplicationQuit() => Application.Quit();
 
+    /// <summary>
+    /// The SwitchScene method loads the scene specified by the bellmanScene parameter. The currentScene variable is
+    /// used to keep track of which scene is currently loaded.
+    /// </summary>
+    ///
+    /// <param name="bellmanScene"> The scene to switch to</param>
     public void SwitchScene(BellmanScenes bellmanScene)
     {
         switch (bellmanScene)
@@ -65,7 +71,7 @@ public class GameManager : MonoBehaviour
                 currentScene = 0;
                 SceneManager.LoadScene(0);
                 break;
-            case DynamicProgramming:
+            case MdpSolver:
                 currentScene = 1;
                 SceneManager.LoadScene(1);
                 break;
@@ -90,7 +96,7 @@ public class GameManager : MonoBehaviour
 public enum BellmanScenes
 {
     Title              = 0,
-    DynamicProgramming = 1,
+    MdpSolver          = 1,
     MdpBuilder         = 2,
     Dp2                = 3
 }
