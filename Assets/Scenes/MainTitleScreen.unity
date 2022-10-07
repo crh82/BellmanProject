@@ -1428,7 +1428,7 @@ GameObject:
   - component: {fileID: 233909630}
   - component: {fileID: 233909631}
   m_Layer: 5
-  m_Name: GameObject
+  m_Name: ContentContainers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3882,9 +3882,10 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\nSOLVER
     FEATURE VISIBILITY\n\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n|
-    1| Coordinates                  [On/Off]\n| 2| State Value Heights     [On/Off]\n|
-    3| Numeric State Values [On/Off]\n| 4| Action Value Heights   [On/Off]\n| 5|
-    Current \u03C0's Actions      [On/Off]\n| 6| Previous \u03C0's Actions      [On/Off]\n\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\nOTHER\n\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n|
+    g| Coordinates                  [On/Off]\n| v| State Value Heights     [On/Off]\n|
+    t | Numeric State Values [On/Off]\n| b| Action Value Heights   [On/Off]\n| p|
+    Current \u03C0's Actions      [On/Off]\n| ; | Previous \u03C0's Actions     
+    [On/Off]\n\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\nOTHER\n\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n|
     = | Switch [Title/Solver/Builder]\n| ESC | Interrupt algorithm\n| LMB| (Hold)
     Draws on screen\n| ` | Erase screen drawing\n\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n\n\n\n\n\n\n"
   m_isRightToLeft: 0
@@ -10287,7 +10288,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1888935415}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
