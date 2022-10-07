@@ -8,7 +8,7 @@ public class CursorTrail : MonoBehaviour
 {
     public float         distanceFromCamera = 2;
     public float         startWidth = 0.007f;
-    public float         endWidth = 0f;
+    public float         endWidth = 0.007f;
     public Camera        cameraRenderingTheCursorTrail;
     public Transform     trail;
     public TrailRenderer trailRenderer;
@@ -27,6 +27,7 @@ public class CursorTrail : MonoBehaviour
     {
         if (Input.GetMouseButton(1))
         {
+            trailRenderer.time = Single.PositiveInfinity;
             trailRenderer.startWidth = startWidth;
             trailRenderer.endWidth = endWidth;
             trailRenderer.emitting = true;
@@ -34,13 +35,16 @@ public class CursorTrail : MonoBehaviour
         }
         else
         {
+            trailRenderer.time = Single.PositiveInfinity;
             trailRenderer.startWidth = startWidth;
             trailRenderer.endWidth = endWidth;
             trailRenderer.emitting = false;
             MoveTrailToCursor(Input.mousePosition);
         }
+
+        if (Input.GetKeyDown(KeyCode.BackQuote)) trailRenderer.time = 0f;
+        // trailRenderer.time = Input.GetKeyDown(KeyCode.BackQuote) ? 0f : Single.PositiveInfinity;
         
-        trailRenderer.time = Input.GetKeyDown(KeyCode.BackQuote) ? 0f : Single.PositiveInfinity;
         
     }
 
