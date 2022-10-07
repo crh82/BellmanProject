@@ -48,25 +48,20 @@ public class GridBuilderManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.M) && Input.GetKey(KeyCode.LeftShift))
-        {
-            TransitionToMarkovDecisionProcessScene();
-        }
-
-        if (Input.GetKey(KeyCode.B) && !gridLoaded)
-        {
-            BuildGrid();
-            
-        }
+        // if (Input.GetKey(KeyCode.M) && Input.GetKey(KeyCode.LeftShift))
+        // {
+        //     TransitionToMarkovDecisionProcessScene();
+        // }
+        //
+        // if (Input.GetKey(KeyCode.B) && !gridLoaded)
+        // {
+        //     BuildGrid();
+        //     
+        // }
 
     }
 
-    private void SaveGridWorldAsMdp()
-    {
-        MDP customGridWorld = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
-
-        MdpAdmin.SaveMdpToFile(customGridWorld, "Assets/Resources/TestMDPs");
-    }
+    private void SaveGridWorldAsMdp(MDP mdpToSave) => MdpAdmin.SaveMdpToFile(mdpToSave, "Assets/Resources/TestMDPs");
 
     /// <summary>
     /// The TransitionToMarkovDecisionProcessScene function sets the currentMdp variable to a new MDP object,
@@ -75,8 +70,9 @@ public class GridBuilderManager : MonoBehaviour
     /// </summary>
     public void TransitionToMarkovDecisionProcessScene()
     {
-        SaveGridWorldAsMdp();
-        GameManager.instance.currentMdp = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
+        MDP customGridWorld = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
+        SaveGridWorldAsMdp(customGridWorld);
+        GameManager.instance.currentMdp = customGridWorld;
         GameManager.instance.sendMdp    = true;
         GameManager.instance.SwitchScene(BellmanScenes.MdpSolver);
     }
