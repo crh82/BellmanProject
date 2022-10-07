@@ -68,7 +68,7 @@ public class MdpManager : MonoBehaviour
     
     private const       BellmanScenes      Title              = BellmanScenes.Title;
     
-    private const       BellmanScenes      DynamicProgramming = BellmanScenes.DynamicProgramming;
+    private const       BellmanScenes      DynamicProgramming = BellmanScenes.MdpSolver;
    
     private const       BellmanScenes      MdpBuilder         = BellmanScenes.MdpBuilder;
 
@@ -177,20 +177,6 @@ public class MdpManager : MonoBehaviour
         GameManager.instance.SetMdpManager(this);
 
         if (GameManager.instance.sendMdp) LoadMdpFromGameManager();
-        
-        // MDP grastiens = MdpAdmin.GenerateMdp(
-        //     "BloodMoon", 
-        //     MdpRules.RussellAndNorvig,
-        //     new[] {50, 50},
-        //     new int[] {901,801,701},
-        //     new int[] {225,775},
-        //     new int[] {549,450,550,650,551},
-        //     0.001f,
-        //     -2f,
-        //     5f,
-        //     false);
-        // grastiens.States[900].Reward = 10f;
-        // MdpAdmin.SaveMdpToFile(grastiens, "Assets/Resources/TestMDPs");
     }
     
 
@@ -610,8 +596,10 @@ public class MdpManager : MonoBehaviour
     /// <remarks>
     /// Todo Add Russell and Norvig's implementation option.
     /// </remarks>
-    public async Task<StateValueFunction> PolicyEvaluationNoDelay(CancellationToken cancellationToken,
-        StateValueFunction stateValueFunction = null, Policy policy = null)
+    public async Task<StateValueFunction> PolicyEvaluationNoDelay(
+        CancellationToken cancellationToken,
+        StateValueFunction stateValueFunction = null, 
+        Policy policy = null)
     {
         // Turns off UI features that can crash the system if clicked during algorithm execution.
         uiController.DisableRunFeatures();
@@ -704,7 +692,9 @@ public class MdpManager : MonoBehaviour
     /// <param name="cancellationToken">Token cancels the asynchronous execution</param>
     /// <param name="stateValueFunction">Values of the states under the policy to be improved.</param>
     /// <returns>An improved policy</returns>
-    public async Task<Policy> PolicyImprovementControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
+    public async Task<Policy> PolicyImprovementControlledAsync(
+        CancellationToken cancellationToken, 
+        StateValueFunction stateValueFunction = null)
     {
         
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -791,7 +781,9 @@ public class MdpManager : MonoBehaviour
     /// <param name="stateValueFunction"></param>
     /// <param name="policy"></param>
     public async Task PolicyIterationControlledAsync(
-        CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
+        CancellationToken cancellationToken, 
+        StateValueFunction stateValueFunction = null, 
+        Policy policy = null)
     {
         ResetPolicyRecord();
         
@@ -851,7 +843,12 @@ public class MdpManager : MonoBehaviour
     //  Value Iteration 
     // ─────────────────
     
-    public async Task ValueIterationControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
+
+    
+
+    public async Task ValueIterationControlledAsync(
+        CancellationToken cancellationToken, 
+        StateValueFunction stateValueFunction = null)
     {
         uiController.DisableRunFeatures();
         
@@ -1053,8 +1050,8 @@ public class MdpManager : MonoBehaviour
     
     
     // ─────────────────────── 
-    //  Progress of Algorithm  <- Deals with the data related to expressing: iterations, max difference, etc. Communicates with uiController.
-    // ─────────────────────── 
+    //  Progress of Algorithm  <- Deals with the data related to expressing: iterations, max difference, etc. 
+    // ───────────────────────    Communicates with uiController.
     public float ProgressOfAlgorithm
     {
         get => _progressOfAlgorithm;
@@ -1188,9 +1185,9 @@ public class MdpManager : MonoBehaviour
     }
 
     
-    // ────────────
-    //  Re-setters 
-    // ────────────
+    // ─────────────────
+    //  Reset functions 
+    // ─────────────────
     private void ResetPolicyRecord()
     {
         if (policiesHistory.Count > 0) policiesHistory = new List<Policy>();
