@@ -63,9 +63,9 @@ public class GridBuilderManager : MonoBehaviour
 
     private void SaveGridWorldAsMdp()
     {
-        MDP test = levelEditor.GenerateMdpFromTileMaps("ChrisPathDecision");
+        MDP customGridWorld = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
 
-        MdpAdmin.SaveMdpToFile(test, "Assets/Resources/TestMDPs");
+        MdpAdmin.SaveMdpToFile(customGridWorld, "Assets/Resources/TestMDPs");
     }
 
     /// <summary>
@@ -75,7 +75,8 @@ public class GridBuilderManager : MonoBehaviour
     /// </summary>
     public void TransitionToMarkovDecisionProcessScene()
     {
-        GameManager.instance.currentMdp = levelEditor.GenerateMdpFromTileMaps("ChrisPathDecision");
+        SaveGridWorldAsMdp();
+        GameManager.instance.currentMdp = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
         GameManager.instance.sendMdp    = true;
         GameManager.instance.SwitchScene(BellmanScenes.MdpSolver);
     }
