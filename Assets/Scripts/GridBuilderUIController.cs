@@ -79,7 +79,8 @@ public class GridBuilderUIController : MonoBehaviour
     {
         gridBuilderManager.BuildGrid();
         levelEditor = gridBuilderManager.levelEditor;
-        levelEditor.mdpDynamicsType = (MdpRules) environmentDynamicsSelector.index;
+        MdpRules currentDynamics = (MdpRules) environmentDynamicsSelector.index;
+        levelEditor.MDPDynamicsType = currentDynamics;
         SetTileToPaint(_currentlyDisplayedTile);
     }
 
@@ -195,7 +196,8 @@ public class GridBuilderUIController : MonoBehaviour
         LoadDynamicsSpriteFromResources();
         if (levelEditor == null) return;
         Debug.Assert(levelEditor != null, nameof(levelEditor) + " != null");
-        levelEditor.mdpDynamicsType = (MdpRules) environmentDynamicsSelector.index;
+        MdpRules currentDynamics = (MdpRules) environmentDynamicsSelector.index;
+        levelEditor.MDPDynamicsType = currentDynamics;
     }
 
     public void SetTileToPaint(string tile)
