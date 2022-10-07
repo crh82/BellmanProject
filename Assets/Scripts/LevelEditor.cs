@@ -21,9 +21,8 @@ public class LevelEditor : MonoBehaviour
     public bool     inPolicyLayer;
     public bool     inRewardLayer;
     public float    reward;
-    public MdpRules mdpDynamicsType;
-
-
+    private MdpRules _mdpDynamicsType;
+    
     private const int BackgroundLayer =  0;
     private const int MainTileLayer   =  1;
     private const int PolicyLayer     =  2;
@@ -55,35 +54,41 @@ public class LevelEditor : MonoBehaviour
             DeleteTile(currentTileMap.WorldToCell(mainCamera.ScreenToWorldPoint(Input.mousePosition)));
         }
         
-        if (Input.GetKey(KeyCode.Keypad0)){AssignCurrentTile(0);}
-        if (Input.GetKey(KeyCode.Keypad1)){AssignCurrentTile(1);}
-        if (Input.GetKey(KeyCode.Keypad2)){AssignCurrentTile(2);}
-        if (Input.GetKey(KeyCode.Keypad3)){AssignCurrentTile(3);}
-        if (Input.GetKey(KeyCode.Keypad4)){AssignCurrentTile(4);}
-        if (Input.GetKey(KeyCode.Keypad5)){AssignCurrentTile(5);}
-        if (Input.GetKey(KeyCode.Keypad6)){AssignCurrentTile(6);}
-        if (Input.GetKey(KeyCode.Keypad7)){AssignCurrentTile(7);}
-        
-        if (Input.GetKey(KeyCode.Alpha0)){mdpDynamicsType = (MdpRules) 0;}
-        if (Input.GetKey(KeyCode.Alpha1)){mdpDynamicsType = (MdpRules) 1;}
-        if (Input.GetKey(KeyCode.Alpha2)){mdpDynamicsType = (MdpRules) 2;}
-        if (Input.GetKey(KeyCode.Alpha3)){mdpDynamicsType = (MdpRules) 3;}
-        if (Input.GetKey(KeyCode.Alpha4)){mdpDynamicsType = (MdpRules) 4;}
-        if (Input.GetKey(KeyCode.Alpha5)){mdpDynamicsType = (MdpRules) 5;}
-        if (Input.GetKey(KeyCode.Alpha6)){mdpDynamicsType = (MdpRules) 6;}
-        
-        if (Input.GetKey(KeyCode.P)) {SwitchToPolicyLayer();}
-     
-        if (Input.GetKey(KeyCode.O)) {SwitchToGridEditorLayer();}
-
-        if (Input.GetKey(KeyCode.R)) {SwitchToRewardEditorLayer();}
-        
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            PrintMap();
-        }
+        // if (Input.GetKey(KeyCode.Keypad0)){AssignCurrentTile(0);}
+        // if (Input.GetKey(KeyCode.Keypad1)){AssignCurrentTile(1);}
+        // if (Input.GetKey(KeyCode.Keypad2)){AssignCurrentTile(2);}
+        // if (Input.GetKey(KeyCode.Keypad3)){AssignCurrentTile(3);}
+        // if (Input.GetKey(KeyCode.Keypad4)){AssignCurrentTile(4);}
+        // if (Input.GetKey(KeyCode.Keypad5)){AssignCurrentTile(5);}
+        // if (Input.GetKey(KeyCode.Keypad6)){AssignCurrentTile(6);}
+        // if (Input.GetKey(KeyCode.Keypad7)){AssignCurrentTile(7);}
+        //
+        // if (Input.GetKey(KeyCode.Alpha0)){mdpDynamicsType = (MdpRules) 0;}
+        // if (Input.GetKey(KeyCode.Alpha1)){mdpDynamicsType = (MdpRules) 1;}
+        // if (Input.GetKey(KeyCode.Alpha2)){mdpDynamicsType = (MdpRules) 2;}
+        // if (Input.GetKey(KeyCode.Alpha3)){mdpDynamicsType = (MdpRules) 3;}
+        // if (Input.GetKey(KeyCode.Alpha4)){mdpDynamicsType = (MdpRules) 4;}
+        // if (Input.GetKey(KeyCode.Alpha5)){mdpDynamicsType = (MdpRules) 5;}
+        // if (Input.GetKey(KeyCode.Alpha6)){mdpDynamicsType = (MdpRules) 6;}
+        //
+        // if (Input.GetKey(KeyCode.P)) {SwitchToPolicyLayer();}
+        //
+        // if (Input.GetKey(KeyCode.O)) {SwitchToGridEditorLayer();}
+        //
+        // if (Input.GetKey(KeyCode.R)) {SwitchToRewardEditorLayer();}
+        //
+        // if (Input.GetKeyDown(KeyCode.T))
+        // {
+        //     PrintMap();
+        // }
 
        
+    }
+    
+    public MdpRules MDPDynamicsType
+    {
+        get => _mdpDynamicsType;
+        set => _mdpDynamicsType = value;
     }
 
     public void SwitchToRewardEditorLayer()
@@ -204,7 +209,7 @@ public class LevelEditor : MonoBehaviour
             Width    = mdpBoundaries.xMax,
             Height   = mdpBoundaries.yMax,
             States   = new List<MarkovState>(),
-            MdpRules = mdpDynamicsType
+            MdpRules = _mdpDynamicsType
         };
 
         for (var index = 0; index < tilesFromTileMap.Length; index++)
@@ -229,7 +234,7 @@ public class LevelEditor : MonoBehaviour
     }
 
     
-    public void GenerateTilemapFromMdp(MDP buildMdp)
+    public void SetEnvironmentDynamics(MDP buildMdp)
     {
         
     }
