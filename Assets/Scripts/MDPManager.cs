@@ -207,6 +207,9 @@ public class MdpManager : MonoBehaviour
         uiController.uiMdpSelector.UpdateUI();
         uiController.SetEnvironmentDynamicsVisuals(GetRulesString(GetCurrentMDPDynamics()));
         
+        if (uiController.PolicyEvaluationMode()) SwitchOffActionValues();
+        else SwitchOnActionValues();
+        
         // GameManager instances of MDPs, value functions, and policies get reset to null after transitioning scenes
         // Also sets the send flag false.
         GameManager.instance.currentMdp = null;
@@ -312,7 +315,7 @@ public class MdpManager : MonoBehaviour
           
         // var obstacleScale        = new Vector3(stateXandZDimensions, 1f, stateXandZDimensions);
         // var   obstaclePosition   = new Vector3(_offsetToCenterVector.x + x, (obstacleScale.y / 2), _offsetToCenterVector.y + y);
-        var   obstacleScale      = new Vector3(1f, 1f, 1f);
+        var   obstacleScale      = new Vector3(1f, 0.2f, 1f);
         var   obstaclePosition   = new Vector3(_offsetToCenterVector.x + x, 0, _offsetToCenterVector.y + y);
         
         float terminalGoalScale  = mdp.States[id].Reward;
@@ -1320,9 +1323,28 @@ public class MdpManager : MonoBehaviour
                     _stateSpaceVisualStates[state.StateIndex].TogglePreviousActionSprites();
                     break;
                 default:
-                    throw new ArgumentException(
-                        "Incorrect string passed. Check that the string is either AS, PAS, or SAO");
+                    throw new ArgumentException("Incorrect string passed.");
             }
+        }
+    }
+
+    public void SwitchOnActionValues()
+    {
+        if (!mdpLoaded) return;
+        
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
+        {
+            _stateSpaceVisualStates[state.StateIndex].TogglOnActionObjects();
+        }
+    }
+    
+    public void SwitchOffActionValues()
+    {
+        if (!mdpLoaded) return;
+        
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
+        {
+            _stateSpaceVisualStates[state.StateIndex].TogglOffActionObjects();
         }
     }
 
@@ -1447,25 +1469,4 @@ public class MdpManager : MonoBehaviour
             GridAction.Up => Mdp.Width,
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
-
-    // public List<MarkovTransition> CalculateTransitions(string transitionProbabilityRules)
-    // {
-    //     List<MarkovTransition> transitions = new List<MarkovTransition>();
-    //     
-    //     switch (transitionProbabilityRules)
-    //     {
-    //                     
-    //     }
-    //
-    //     return transitions;
-    // }
-}
-// 0.0, 0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99, 0.999
-
-public class Value
-{
-    public float TheValue { get; set; }
-
-    public void AdjustValue(float val) => TheValue += val;
-    
 }
