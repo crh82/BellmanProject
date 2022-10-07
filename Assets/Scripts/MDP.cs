@@ -154,7 +154,15 @@ public class MDP
             
             case MdpRules.Deterministic:
             default:
-                transitions = FullTransitionsEffects(state, probabilityDistribution);
+                var deterministicEffect = new MarkovTransition
+                {
+                    State               = state.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 1f,
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(state, action)
+                };
+                deterministicEffect.Reward = RewardFunction(deterministicEffect.SuccessorStateIndex);
+                transitions = new List<MarkovTransition> {deterministicEffect};
                 break;
         }
     
@@ -171,7 +179,7 @@ public class MDP
     /// </summary>
     /// <param name="mdp">
     /// <c>MDP</c> object 
-    /// </param>
+    /// </param>d
     /// <param name="state">
     /// <c>int</c> representing the state index, rather than the state itself
     /// </param>
@@ -271,71 +279,113 @@ public class MDP
         switch (action)
         {
             case GridAction.Left:
-            case GridAction.Right:
-                var newTransition = new MarkovTransition
+                
+                var leftTransition = new MarkovTransition
                 {
                     State               = mState.StateIndex,
                     ActionTaken         = action,
                     Probability         = 0.5f,
                     SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
                 };
-                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
-                transitions.Add(newTransition);
+
+                leftTransition.Reward = RewardFunction(leftTransition.SuccessorStateIndex);
+                
+                transitions.Add(leftTransition);
                
-                newTransition = new MarkovTransition
+                var downEffectFromLeft = new MarkovTransition
                 {
                     State               = mState.StateIndex,
                     ActionTaken         = action,
                     Probability         = 0.5f,
                     SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, Down)
                 };
-                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
-                transitions.Add(newTransition);
+
+                downEffectFromLeft.Reward = RewardFunction(downEffectFromLeft.SuccessorStateIndex);
+                
+                transitions.Add(downEffectFromLeft);
+                
+                break;
+            
+            case GridAction.Right:
+                
+                var rightTransition = new MarkovTransition
+                {
+                    State               = mState.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 0.5f,
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
+                };
+
+                rightTransition.Reward = RewardFunction(rightTransition.SuccessorStateIndex);
+                
+                transitions.Add(rightTransition);
+               
+                var downEffectFromRight = new MarkovTransition
+                {
+                    State               = mState.StateIndex,
+                    ActionTaken         = action,
+                    Probability         = 0.5f,
+                    SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, Down)
+                };
+
+                downEffectFromRight.Reward = RewardFunction(downEffectFromRight.SuccessorStateIndex);
+                
+                transitions.Add(downEffectFromRight);
+                
                 break;
             
             case GridAction.Down:
-                newTransition = new MarkovTransition
+                var intendedDown = new MarkovTransition
                 {
                     State               = mState.StateIndex,
                     ActionTaken         = action,
                     Probability         = 1f,
                     SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
                 };
-                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
-                transitions.Add(newTransition);
+                intendedDown.Reward = RewardFunction(intendedDown.SuccessorStateIndex);
+                transitions.Add(intendedDown);
                 break;
             
             case GridAction.Up:
-                newTransition = new MarkovTransition
+                
+                var intendedUp = new MarkovTransition
                 {
                     State               = mState.StateIndex,
                     ActionTaken         = action,
                     Probability         = 0.5f,
                     SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, action)
                 };
-                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
-                transitions.Add(newTransition);
+
+                intendedUp.Reward = RewardFunction(intendedUp.SuccessorStateIndex);
                 
-                newTransition = new MarkovTransition
+                transitions.Add(intendedUp);
+                
+                var stayInPlace = new MarkovTransition
                 {
                     State               = mState.StateIndex,
                     ActionTaken         = action,
-                    Probability         = 33.33333f,
+                    Probability         = 0.33333f,
                     SuccessorStateIndex = mState.StateIndex
                 };
-                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
-                transitions.Add(newTransition);
+
+                stayInPlace.Reward = RewardFunction(stayInPlace.SuccessorStateIndex);
                 
-                newTransition = new MarkovTransition
+                transitions.Add(stayInPlace);
+                
+                var slipBackwards = new MarkovTransition
                 {
                     State               = mState.StateIndex,
                     ActionTaken         = action,
                     Probability         = 0.16667f,
                     SuccessorStateIndex = GenerateSuccessorStateFromAction(mState, Down)
                 };
-                newTransition.Reward    = States[newTransition.SuccessorStateIndex].Reward;
-                transitions.Add(newTransition);
+
+                slipBackwards.Reward = RewardFunction(slipBackwards.SuccessorStateIndex);
+                
+                transitions.Add(slipBackwards);
+                
                 break;
+            
             default:
                 throw new ArgumentOutOfRangeException(nameof(action), action, null);
         }
