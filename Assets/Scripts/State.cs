@@ -247,6 +247,28 @@ public class State : MonoBehaviour
     public void ToggleStateValue()            => stateMesh.SetActive(!stateMesh.activeSelf);
 
     public void ToggleStateValueText()        => hoverCanvas.gameObject.SetActive(!hoverCanvas.gameObject.activeSelf);
+    
+    // Switch ON
+    public void ToggleOnActionSprites()          => actionSpritesContainer.SetActive(true);
+
+    public void ToggleOnPreviousActionSprites()  => previousActionSpritesContainer.SetActive(true);
+
+    public void TogglOnActionObjects()           => actionMeshesContainer.SetActive(true);
+
+    public void ToggleOnStateValue()             => stateMesh.SetActive(true);
+
+    public void ToggleOnStateValueText()         => hoverCanvas.gameObject.SetActive(true);
+    
+    // Switch OFF
+    public void ToggleOffActionSprites()         => actionSpritesContainer.SetActive(false);
+
+    public void ToggleOffPreviousActionSprites() => previousActionSpritesContainer.SetActive(false);
+
+    public void TogglOffActionObjects()          => actionMeshesContainer.SetActive(false);
+
+    public void ToggleOffStateValue()            => stateMesh.SetActive(false);
+
+    public void ToggleOffStateValueText()        => hoverCanvas.gameObject.SetActive(false);
 
     // ┌────────────────┐
     // │ Action Sprites │
