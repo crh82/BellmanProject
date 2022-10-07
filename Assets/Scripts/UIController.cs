@@ -40,7 +40,8 @@ public class UIController : MonoBehaviour
    private bool              _mouseHoverHelpOn;
 
    public TextMeshProUGUI    toolTipsOnText;
-   
+
+   public TEXDraw            equationText;
 
    // ╔════════════════════╗
    // ║ LEFT CONTROL PANEL ║
@@ -84,6 +85,25 @@ public class UIController : MonoBehaviour
       0.9f , 0.95f  , 0.99f
    };
    
+   // ┌──────────────────────────────┐
+   // │ Environment Dynamics Related │
+   // └──────────────────────────────┘
+   public int                currentlyDisplayedEnvironmentDynamicsImageIndex = 0;
+
+   public Image              currentlyDisplayedEnvironmentDynamicsImage;
+
+   public string             environmentDynamicsPrefix = "SW";
+
+   public HorizontalSelector environmentDynamicsSelector;
+
+   private const string      SlipperyWalk     = "SW";
+   private const string      RussellAndNorvig = "RN";
+   private const string      FrozenLake       = "FL";
+   private const string      RandomWalk       = "RW";
+   private const string      Deterministic    = "D";
+   private const string      NorthernWind     = "NW";
+   
+   
    // ╔═════════════════════╗
    // ║ RIGHT CONTROL PANEL ║
    // ╚═════════════════════╝
@@ -124,7 +144,15 @@ public class UIController : MonoBehaviour
    public GameObject         progressBar;
    
    public ProgressBar        progressPercentageBar;
-   
+
+   private const string      _policyEvaluationUpdate = @"\normalsize \V^{\pi}(s) \leftarrow $ \sum_{s^\prime} p(s^\prime \bar  s,\w \pi(s))\big[ \w R(s,\w \pi(s),\w s^\prime \w ) + \large\gamma \w \normalsize \V^{\w \pi}( s^\prime \w )\w \big]";
+   private const string      _policyImprovementUpdate = @"\normalsize \pi^{\prime}(s) \leftarrow \text{arg}\max_{a} $ \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w \pi}( s^\prime \w )\w \big]";
+   private const string      _policyIterationUpdate = @"\begin{center}\normalsize \V^{\pi}(s) $ \leftarrow  \sum_{s^\prime} p(s^\prime \bar  s,\w \pi(s))\big[ \w R(s,\w \pi(s),\w s^\prime \w ) + \large\gamma \w \normalsize \V^{\w \pi}( s^\prime \w )\w \big] \\ \normalsize $ \\ \pi^{\prime}(s) $ \leftarrow \text{arg}\max_{a} \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w \pi}( s^\prime \w )\w \big] \end{center}";
+   private const string      _valueIterationUpdate = @"\normalsize \V^{*}(s) \leftarrow \max_{a} $ \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{*}( s^\prime \w )\w \big]";
+   private const int         _policyEvaluationIndex = 0;
+   private const int         _policyImprovementIndex = 1;
+   private const int         _policyIterationIndex = 2;
+   private const int         _valueIterationIndex = 3;
    
    // ╔══════════════════════════╗
    // ║ STATE INFORMATION WINDOW ║
@@ -231,38 +259,47 @@ public class UIController : MonoBehaviour
          case 1:
             mdpString = "Assets/Resources/TestMDPs/GrastiensWorld.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 2:
             mdpString = "Assets/Resources/TestMDPs/FrozenLake4x4Test.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 3:
             mdpString = "Assets/Resources/TestMDPs/LittleTestWorldTest.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 4:
             mdpString = "Assets/Resources/TestMDPs/RussellNorvigGridworldTest.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 5:
             mdpString = "Assets/Resources/TestMDPs/MonsterWorld.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 6:
             mdpString = "Assets/Resources/TestMDPs/WidowMaker.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 7:
             mdpString = "Assets/Resources/TestMDPs/BigRandomWalk.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 8:
             mdpString = "Assets/Resources/TestMDPs/BloodMoon.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 9:
-            mdpString = "Assets/Resources/TestMDPs/TestFromGridEditor.json";
+            mdpString = "Assets/Resources/TestMDPs/CustomGridWorld.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          default:
             break;
@@ -291,11 +328,79 @@ public class UIController : MonoBehaviour
          await UpdateNumberOfIterationsAsync(0);
       }
    }
+   
+   // ┌──────────────────────┐
+   // │ Environment Dynamics │
+   // └──────────────────────┘
+
+   public void SetEnvironmentDynamicsVisuals(string prefix)
+   {
+      environmentDynamicsPrefix = prefix;
+      LoadDynamicsSpriteFromResources();
+   }
+   public void CycleEnvironmentDynamicsImage()
+   {
+      if (currentlyDisplayedEnvironmentDynamicsImageIndex < 3) currentlyDisplayedEnvironmentDynamicsImageIndex++;
+      else currentlyDisplayedEnvironmentDynamicsImageIndex = 0;
+
+      LoadDynamicsSpriteFromResources();
+   }
+
+   private void LoadDynamicsSpriteFromResources()
+   {
+      string filePath = "Images/EnvironmentDynamics/" +
+                        $"{environmentDynamicsPrefix}/" +
+                        $"{environmentDynamicsPrefix}" +
+                        $"{currentlyDisplayedEnvironmentDynamicsImageIndex}";
+
+      currentlyDisplayedEnvironmentDynamicsImage.sprite = Resources.Load<Sprite>(filePath);
+   }
+   
+   private string GetRulesString(MdpRules dynamics)
+   {
+      switch (dynamics)
+      {
+         case MdpRules.SlipperyWalk:
+            return "SW";
+         case MdpRules.RussellAndNorvig:
+            return "RN";
+         case MdpRules.RandomWalk:
+            return "RW";
+         case MdpRules.FrozenLake:
+            return "FL";
+         case MdpRules.GrastiensWindFromTheNorth:
+            return "NW";
+         case MdpRules.DrunkBonanza:
+         case MdpRules.Deterministic:
+            return "D";
+         default:
+            throw new ArgumentOutOfRangeException(nameof(dynamics), dynamics, null);
+      }
+   }
 
    // ┌──────────────────────┐
    // │ Central Area Related │
    // └──────────────────────┘
    public void SetAlgorithmTitleText(string algorithmTitle) => algorithmTitleText.text = algorithmTitle;
+
+   public void SetLatexUpdateEquation(int algorithm)
+   {
+      switch (algorithm)
+      {
+         case _policyEvaluationIndex:
+            equationText.text = _policyEvaluationUpdate;
+            break;
+         case _policyImprovementIndex:
+            equationText.text = _policyImprovementUpdate;
+            break;
+         case _policyIterationIndex:
+            equationText.text = _policyIterationUpdate;
+            break;
+         case _valueIterationIndex:
+            equationText.text = _valueIterationUpdate;
+            break;
+      }
+   }
 
    // ┌────────────────┐
    // │ Policy Related │

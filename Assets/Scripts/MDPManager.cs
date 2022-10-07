@@ -203,6 +203,9 @@ public class MdpManager : MonoBehaviour
         mdpLoaded = true;
         
         uiController.SetRunFeaturesActive();
+        uiController.uiMdpSelector.index = 9;
+        uiController.uiMdpSelector.UpdateUI();
+        uiController.SetEnvironmentDynamicsVisuals(GetRulesString(GetCurrentMDPDynamics()));
         
         // GameManager instances of MDPs, value functions, and policies get reset to null after transitioning scenes
         // Also sets the send flag false.
@@ -994,7 +997,30 @@ public class MdpManager : MonoBehaviour
     // ┌──────────────────────────────────────┐
     // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
     // └──────────────────────────────────────┘
-
+    
+    
+    private string GetRulesString(MdpRules dynamics)
+    {
+        switch (dynamics)
+        {
+            case MdpRules.SlipperyWalk:
+                return "SW";
+            case MdpRules.RussellAndNorvig:
+                return "RN";
+            case MdpRules.RandomWalk:
+                return "RW";
+            case MdpRules.FrozenLake:
+                return "FL";
+            case MdpRules.GrastiensWindFromTheNorth:
+                return "NW";
+            case MdpRules.DrunkBonanza:
+            case MdpRules.Deterministic:
+                return "D";
+            default:
+                throw new ArgumentOutOfRangeException(nameof(dynamics), dynamics, null);
+        }
+    }
+    
     // ────────
     //  Rabbit 
     // ────────
@@ -1378,6 +1404,7 @@ public class MdpManager : MonoBehaviour
         return policyPi;
     }
 
+    public MdpRules GetCurrentMDPDynamics() => Mdp.MdpRules;
 
     // ╔══════════════════════╗
     // ║ Not Currently In Use ║
