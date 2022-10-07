@@ -145,14 +145,15 @@ public class UIController : MonoBehaviour
    
    public ProgressBar        progressPercentageBar;
 
-   private const string      _policyEvaluationUpdate = @"\normalsize \V^{\pi}(s) \leftarrow $ \sum_{s^\prime} p(s^\prime \bar  s,\w \pi(s))\big[ \w R(s,\w \pi(s),\w s^\prime \w ) + \large\gamma \w \normalsize \V^{\w \pi}( s^\prime \w )\w \big]";
-   private const string      _policyImprovementUpdate = @"\normalsize \pi^{\prime}(s) \leftarrow \text{arg}\max_{a} $ \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w \pi}( s^\prime \w )\w \big]";
-   private const string      _policyIterationUpdate = @"\begin{center}\normalsize \V^{\pi}(s) $ \leftarrow  \sum_{s^\prime} p(s^\prime \bar  s,\w \pi(s))\big[ \w R(s,\w \pi(s),\w s^\prime \w ) + \large\gamma \w \normalsize \V^{\w \pi}( s^\prime \w )\w \big] \\ \normalsize $ \\ \pi^{\prime}(s) $ \leftarrow \text{arg}\max_{a} \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w \pi}( s^\prime \w )\w \big] \end{center}";
-   private const string      _valueIterationUpdate = @"\normalsize \V^{*}(s) \leftarrow \max_{a} $ \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{*}( s^\prime \w )\w \big]";
-   private const int         _policyEvaluationIndex = 0;
-   private const int         _policyImprovementIndex = 1;
-   private const int         _policyIterationIndex = 2;
-   private const int         _valueIterationIndex = 3;
+   private const string      PolicyEvaluationUpdate = @"\normalsize \V^{\pi}(s) \leftarrow $ \sum_{s^\prime} p(s^\prime \bar  s,\w \pi(s))\big[ \w R(s,\w \pi(s),\w s^\prime \w ) + \large\gamma \w \normalsize \V^{\w \pi}( s^\prime \w )\w \big]";
+   private const string      PolicyImprovementUpdate = @"\normalsize \pi^{\prime}(s) \leftarrow \text{arg}\max_{a} $ \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w \pi}( s^\prime \w )\w \big]";
+   private const string      PolicyIterationUpdate = @"\begin{center}\normalsize \V^{\pi}(s) $ \leftarrow  \sum_{s^\prime} p(s^\prime \bar  s,\w \pi(s))\big[ \w R(s,\w \pi(s),\w s^\prime \w ) + \large\gamma \w \normalsize \V^{\w \pi}( s^\prime \w )\w \big] \\ \normalsize $ \\ \pi^{\prime}(s) $ \leftarrow \text{arg}\max_{a} \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w \pi}( s^\prime \w )\w \big] \end{center}";
+   private const string      ValueIterationUpdate = @"\normalsize \V^{*}(s) \leftarrow \max_{a} $ \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w *}( s^\prime \w )\w \big]";
+
+   private const int         PolicyEvaluationIndex  = 0;
+   private const int         PolicyImprovementIndex = 1;
+   private const int         PolicyIterationIndex   = 2;
+   private const int         ValueIterationIndex    = 3;
    
    // ╔══════════════════════════╗
    // ║ STATE INFORMATION WINDOW ║
@@ -222,17 +223,29 @@ public class UIController : MonoBehaviour
    {
       if (Input.GetKeyDown(KeyCode.Escape)) _mdpManager.SetMainLoopBoolConditionFalse();
         
-      if (Input.GetKeyDown(KeyCode.Alpha1)) _mdpManager.Toggle("GridSquare");
+      // if (Input.GetKeyDown(KeyCode.Alpha1)) _mdpManager.Toggle("GridSquare");
+      //  
+      // if (Input.GetKeyDown(KeyCode.Alpha2)) _mdpManager.Toggle("StateValue");
+      //   
+      // if (Input.GetKeyDown(KeyCode.Alpha3)) _mdpManager.Toggle("StateValueText");
+      //   
+      // if (Input.GetKeyDown(KeyCode.Alpha4)) _mdpManager.Toggle("ActionObjects");
+      //   
+      // if (Input.GetKeyDown(KeyCode.Alpha5)) _mdpManager.Toggle("ActionSprites");
+      //
+      // if (Input.GetKeyDown(KeyCode.Alpha6)) _mdpManager.Toggle("PreviousActionSprites");
+      
+      if (Input.GetKeyDown(KeyCode.G)) _mdpManager.Toggle("GridSquare");
        
-      if (Input.GetKeyDown(KeyCode.Alpha2)) _mdpManager.Toggle("StateValue");
+      if (Input.GetKeyDown(KeyCode.V)) _mdpManager.Toggle("StateValue");
         
-      if (Input.GetKeyDown(KeyCode.Alpha3)) _mdpManager.Toggle("StateValueText");
+      if (Input.GetKeyDown(KeyCode.T)) _mdpManager.Toggle("StateValueText");
         
-      if (Input.GetKeyDown(KeyCode.Alpha4)) _mdpManager.Toggle("ActionObjects");
+      if (Input.GetKeyDown(KeyCode.B)) _mdpManager.Toggle("ActionObjects");
         
-      if (Input.GetKeyDown(KeyCode.Alpha5)) _mdpManager.Toggle("ActionSprites");
+      if (Input.GetKeyDown(KeyCode.P)) _mdpManager.Toggle("ActionSprites");
 
-      if (Input.GetKeyDown(KeyCode.Alpha6)) _mdpManager.Toggle("PreviousActionSprites");
+      if (Input.GetKeyDown(KeyCode.Semicolon)) _mdpManager.Toggle("PreviousActionSprites");
       
    }
 
@@ -305,7 +318,10 @@ public class UIController : MonoBehaviour
             break;
       }
       
-     InitializeSettingsPanel();
+      if (algorithmSelector.index == PolicyEvaluationIndex) SwitchActionValueObjectsOff();
+      else SwitchActionValueObjectsOn();
+      
+      InitializeSettingsPanel();
    }
 
    /// <summary>
@@ -387,17 +403,17 @@ public class UIController : MonoBehaviour
    {
       switch (algorithm)
       {
-         case _policyEvaluationIndex:
-            equationText.text = _policyEvaluationUpdate;
+         case PolicyEvaluationIndex:
+            equationText.text = PolicyEvaluationUpdate;
             break;
-         case _policyImprovementIndex:
-            equationText.text = _policyImprovementUpdate;
+         case PolicyImprovementIndex:
+            equationText.text = PolicyImprovementUpdate;
             break;
-         case _policyIterationIndex:
-            equationText.text = _policyIterationUpdate;
+         case PolicyIterationIndex:
+            equationText.text = PolicyIterationUpdate;
             break;
-         case _valueIterationIndex:
-            equationText.text = _valueIterationUpdate;
+         case ValueIterationIndex:
+            equationText.text = ValueIterationUpdate;
             break;
       }
    }
@@ -457,7 +473,16 @@ public class UIController : MonoBehaviour
    // ┌───────────────────────────┐
    // │ Algorithm Control Methods │
    // └───────────────────────────┘
-   
+
+   public void SwitchActionValueObjectsOff()
+   {
+      _mdpManager.SwitchOffActionValues();
+   }
+
+   public void SwitchActionValueObjectsOn()
+   {
+      _mdpManager.SwitchOnActionValues();
+   }
 
    /// <summary>Controls the execution of policy evaluation by state space sweep, individual state, or individual transition.</summary>
    public void SendLevelInformationToMdp()
@@ -849,6 +874,13 @@ public class UIController : MonoBehaviour
       float currentReward = _mdpManager.GetStateFromCurrentMdp(_currentStateToEdit).Reward;
       rewardEditor.text = $"{currentReward}";
    }
+
+   public bool PolicyEvaluationMode() => algorithmSelector.index == PolicyEvaluationIndex;
+   public bool PolicyImprovementMode() => algorithmSelector.index == PolicyImprovementIndex;
+
+   public bool PolicyIterationMode() => algorithmSelector.index == PolicyIterationIndex;
+
+   public bool ValueIterationMode() => algorithmSelector.index == ValueIterationIndex;
 
    // ┌──────────────────┐
    // │ Settings Methods │
