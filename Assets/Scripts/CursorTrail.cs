@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -39,7 +40,7 @@ public class CursorTrail : MonoBehaviour
             MoveTrailToCursor(Input.mousePosition);
         }
         
-        trailRenderer.time = Input.GetKeyDown(KeyCode.BackQuote) ? 0f : 5f;
+        trailRenderer.time = Input.GetKeyDown(KeyCode.BackQuote) ? 0f : Single.PositiveInfinity;
         
     }
 
