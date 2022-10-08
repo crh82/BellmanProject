@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 /// <summary>
-/// 
+/// A dataclass representing a state.
 /// </summary>
 [Serializable]
 public class MarkovState

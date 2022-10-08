@@ -16,6 +16,8 @@ public class GridSquareData : MonoBehaviour
     }
 
     public void ToggleVisibility() => dataCanvas.gameObject.SetActive(!dataCanvas.gameObject.activeSelf);
-    // public void ToggleCanvasVisibilityOn()  => dataCanvas.enabled = true;
-    // public void ToggleCanvasVisibilityOff() => dataCanvas.enabled = false;
+    
+    public void ToggleOn() => dataCanvas.gameObject.SetActive(true);
+    
+    public void ToggleOff() => dataCanvas.gameObject.SetActive(false);
 }

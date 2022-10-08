@@ -38,20 +38,8 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        
-        // Todo Get the screen annotation mode working. 
-        // if (annotateMode && Input.GetMouseButton(1))
-        // {
-        //     Debug.Log(mainCamera.ScreenToViewportPoint(Input.mousePosition));
-        //     mainCamera.ViewportToScreenPoint(Input.mousePosition);
-        //     // trail.transform.position = Vector3.Lerp(trail.transform.position, mainCamera.ScreenToWorldPoint(Input.mousePosition), 10);
-        //     trail.transform.position = mainCamera.ScreenToViewportPoint(Input.mousePosition);
-        //     // trail.transform.position = mainCamera.ViewportToScreenPoint(Input.mousePosition);
-        //     //     trail.transform.position = mainCamera.ViewportToWorldPoint(Input.mousePosition);
-        // }
-        
-        
         HandleMouseInput();
+     
         HandleMovement();
         
         transform.position = Vector3.Lerp(transform.position, rigPosition, Time.deltaTime * interpolationSpeed);
@@ -60,10 +48,7 @@ public class CameraController : MonoBehaviour
     private void HandleMouseInput()
     {
         zoomInput = Input.mouseScrollDelta.y;
-
-       
         
-        // vInput = zoomInput;
         // (CZ) Controls camera zoom on target location (at this stage, the origin)
         if (zoomInput != 0)
         {

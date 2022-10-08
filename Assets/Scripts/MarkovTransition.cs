@@ -1,6 +1,10 @@
 using System;
 using UnityEngine;
 
+/// <summary>
+/// Dataclass representing the necessary information having for having taken an action in a state and transitioned to
+/// some successor state.
+/// </summary>
 [Serializable]
 public class MarkovTransition
 {

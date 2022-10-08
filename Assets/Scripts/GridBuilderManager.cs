@@ -9,29 +9,30 @@ public class GridBuilderManager : MonoBehaviour
 {
    // public static GridBuilderManager instance;
 
-    public Grid gridPrefab;
+    public  Grid        gridPrefab;
 
-    public GameObject stateSpacePrefab;
+    public  GameObject  stateSpacePrefab;
+    
+    public  GameObject  stateSpace;
+    
+    public  Tilemap     tilemap;
+    
+    public  Grid        currentGrid;
+    
+    public  bool        gridLoaded;
+    
+    public  Camera      mainCamera;
+    
+    public  Transform   target;
+    
+    public  LevelEditor levelEditor;
+    
+    public  Vector2Int  dimensions;
+    
+    public  MDP         sceneMdp;
+    
+    private bool        _canPlaceTiles = true;
 
-    public GameObject stateSpace;
-
-    public Tilemap tilemap;
-
-    public Grid currentGrid;
-
-    public bool gridLoaded;
-
-    public Camera mainCamera;
-
-    public Transform target;
-
-    public LevelEditor levelEditor;
-
-    public Vector2Int dimensions;
-
-    public MDP        sceneMdp;
-
-    private bool _canPlaceTiles = true;
 
     private void Awake()
     {
@@ -47,33 +48,42 @@ public class GridBuilderManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.M) && Input.GetKey(KeyCode.LeftShift))
-        {
-            TransitionToMarkovDecisionProcessScene();
-        }
-
-        if (Input.GetKey(KeyCode.B) && !gridLoaded)
-        {
-            BuildGrid();
-            
-        }
+        // if (Input.GetKey(KeyCode.M) && Input.GetKey(KeyCode.LeftShift))
+        // {
+        //     TransitionToMarkovDecisionProcessScene();
+        // }
+        //
+        // if (Input.GetKey(KeyCode.B) && !gridLoaded)
+        // {
+        //     BuildGrid();
+        //     
+        // }
 
     }
 
-    private void SaveGridWorldAsMdp()
-    {
-        MDP test = levelEditor.GenerateMdpFromTileMaps("ChrisPathDecision");
+    private void SaveGridWorldAsMdp(MDP mdpToSave) => MdpAdmin.SaveMdpToFile(mdpToSave, "Assets/Resources/TestMDPs");
 
-        MdpAdmin.SaveMdpToFile(test, "Assets/Resources/TestMDPs");
-    }
-
+    /// <summary>
+    /// The TransitionToMarkovDecisionProcessScene function sets the currentMdp variable to a new MDP object,
+    /// and then sets sendMdp to true. This will cause GameManager.SwitchScene() to be called with the
+    /// MdpSolver scene.
+    /// </summary>
     public void TransitionToMarkovDecisionProcessScene()
     {
-        GameManager.instance.currentMdp = levelEditor.GenerateMdpFromTileMaps("ChrisPathDecision");
+        MDP customGridWorld = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
+        SaveGridWorldAsMdp(customGridWorld);
+        GameManager.instance.currentMdp = customGridWorld;
         GameManager.instance.sendMdp    = true;
-        GameManager.instance.SwitchScene(BellmanScenes.DynamicProgramming);
+        GameManager.instance.SwitchScene(BellmanScenes.MdpSolver);
     }
 
+    /// <summary>
+    /// The BuildGrid function is used to create a grid of tiles for the level editor. It takes in an optional MDP,
+    /// which is used to determine the dimensions of the grid. If no MDP is passed in, it sets the dimensions according
+    /// to the user inputted dimensions in the UI.
+    /// </summary>
+    ///
+    /// <param name="buildMdp"> The mdp to build</param>
     public void BuildGrid(MDP buildMdp = null)
     {
         if (stateSpace != null) Destroy(stateSpace.gameObject);
@@ -124,6 +134,12 @@ public class GridBuilderManager : MonoBehaviour
        
     }
 
+    /// <summary>
+    /// The FillBackground function fills the background of a tilemap with a given tile.
+    /// </summary>
+    ///
+    /// <param name="editableTileMap"> The tilemap to be edited</param>
+    /// <param name="TileBase"> The tile to be used as the starting point for the flood fill</param>
     void FillBackground(Tilemap editableTileMap, TileBase tile)
     {
         // editableTileMap.FloodFill(Vector3Int.zero, tile);
@@ -141,6 +157,17 @@ public class GridBuilderManager : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// The CreateTilemapLayer function creates a new Tilemap layer with the specified dimensions and fills it with
+    /// tiles of the specified type.
+    /// </summary>
+    ///
+    /// <param name="map"> The tilemap to be filled</param>
+    /// <param name="TileBase"> The tile you want to use as a base for the map</param>
+    /// <param name="int"> The number of tiles to place</param>
+    /// <param name="int"> The number of tiles to be created</param>
+    ///
+    /// <returns> A tilemap object.</returns>
     private Tilemap CreateTilemapLayer(Tilemap map, TileBase baseTile, int x, int y)
     {
         map.transform.position = Vector3.zero;

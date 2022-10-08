@@ -33,7 +33,15 @@ public class UIController : MonoBehaviour
    
    private MdpManager        _mdpManager;
    
-   private readonly int[]  _algorithmDelayValues = {1, 10, 100, 300, 500, 1000};
+   private readonly int[]    _algorithmDelayValues = {1, 10, 100, 300, 500, 1000};
+
+   public TooltipManager     mouseHoverHelper;
+
+   private bool              _mouseHoverHelpOn;
+
+   public TextMeshProUGUI    toolTipsOnText;
+
+   public TEXDraw            equationText;
 
    // ╔════════════════════╗
    // ║ LEFT CONTROL PANEL ║
@@ -77,6 +85,25 @@ public class UIController : MonoBehaviour
       0.9f , 0.95f  , 0.99f
    };
    
+   // ┌──────────────────────────────┐
+   // │ Environment Dynamics Related │
+   // └──────────────────────────────┘
+   public int                currentlyDisplayedEnvironmentDynamicsImageIndex = 0;
+
+   public Image              currentlyDisplayedEnvironmentDynamicsImage;
+
+   public string             environmentDynamicsPrefix = "SW";
+
+   public HorizontalSelector environmentDynamicsSelector;
+
+   private const string      SlipperyWalk     = "SW";
+   private const string      RussellAndNorvig = "RN";
+   private const string      FrozenLake       = "FL";
+   private const string      RandomWalk       = "RW";
+   private const string      Deterministic    = "D";
+   private const string      NorthernWind     = "NW";
+   
+   
    // ╔═════════════════════╗
    // ║ RIGHT CONTROL PANEL ║
    // ╚═════════════════════╝
@@ -117,7 +144,16 @@ public class UIController : MonoBehaviour
    public GameObject         progressBar;
    
    public ProgressBar        progressPercentageBar;
-   
+
+   private const string      PolicyEvaluationUpdate = @"\normalsize \V^{\pi}(s) \leftarrow $ \sum_{s^\prime} p(s^\prime \bar  s,\w \pi(s))\big[ \w R(s,\w \pi(s),\w s^\prime \w ) + \large\gamma \w \normalsize \V^{\w \pi}( s^\prime \w )\w \big]";
+   private const string      PolicyImprovementUpdate = @"\normalsize \pi^{\prime}(s) \leftarrow \text{arg}\max_{a} $ \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w \pi}( s^\prime \w )\w \big]";
+   private const string      PolicyIterationUpdate = @"\begin{center}\normalsize \V^{\pi}(s) $ \leftarrow  \sum_{s^\prime} p(s^\prime \bar  s,\w \pi(s))\big[ \w R(s,\w \pi(s),\w s^\prime \w ) + \large\gamma \w \normalsize \V^{\w \pi}( s^\prime \w )\w \big] \\ \normalsize $ \\ \pi^{\prime}(s) $ \leftarrow \text{arg}\max_{a} \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w \pi}( s^\prime \w )\w \big] \end{center}";
+   private const string      ValueIterationUpdate = @"\normalsize \V^{*}(s) \leftarrow \max_{a} $ \sum_{s^\prime} p(s^\prime \bar  s,\w a)\big[ \w R(s,\w a,\w s^\prime \w ) + \large\gamma \w \normalsize V^{\w *}( s^\prime \w )\w \big]";
+
+   private const int         PolicyEvaluationIndex  = 0;
+   private const int         PolicyImprovementIndex = 1;
+   private const int         PolicyIterationIndex   = 2;
+   private const int         ValueIterationIndex    = 3;
    
    // ╔══════════════════════════╗
    // ║ STATE INFORMATION WINDOW ║
@@ -176,42 +212,40 @@ public class UIController : MonoBehaviour
             _cancellationTokenSource = new CancellationTokenSource();
                            _focusCam = cornerCameraRig.GetComponent<CornerCameraController>();
                 mainCameraController = mainCameraRig.GetComponent<CameraController>();
+                //    _mouseHoverHelpOn = false;
+                // mouseHoverHelper.gameObject.SetActive(false);
+                // toolTipsOnText.gameObject.SetActive(false);
+
+                GameManager.instance.currentScene = (int) BellmanScenes.MdpSolver;
    }
 
    private void Update()
    {
-      // if (Input.GetKeyDown(KeyCode.Escape))
-      // {
-      //    _mdpManager.SetMainLoopBoolConditionFalse();
-      //    // Debug.Log("Escape key was pressed");
-      // }
-      //
-      // if (Input.GetKeyDown(KeyCode.Alpha1))
-      // {
-      //    ToggleActionsVisuals("ActionObjects");
-      // }
-      // if (Input.GetKeyDown(KeyCode.Alpha2))
-      // {
-      //    ToggleActionsVisuals("ActionSprites");
-      // }
-      // if (Input.GetKeyDown(KeyCode.Alpha3))
-      // {
-      //    ToggleActionsVisuals("PreviousActionSprites");
-      // }
-      
       if (Input.GetKeyDown(KeyCode.Escape)) _mdpManager.SetMainLoopBoolConditionFalse();
         
-      if (Input.GetKeyDown(KeyCode.Alpha1)) _mdpManager.Toggle("GridSquare");
+      // if (Input.GetKeyDown(KeyCode.Alpha1)) _mdpManager.Toggle("GridSquare");
+      //  
+      // if (Input.GetKeyDown(KeyCode.Alpha2)) _mdpManager.Toggle("StateValue");
+      //   
+      // if (Input.GetKeyDown(KeyCode.Alpha3)) _mdpManager.Toggle("StateValueText");
+      //   
+      // if (Input.GetKeyDown(KeyCode.Alpha4)) _mdpManager.Toggle("ActionObjects");
+      //   
+      // if (Input.GetKeyDown(KeyCode.Alpha5)) _mdpManager.Toggle("ActionSprites");
+      //
+      // if (Input.GetKeyDown(KeyCode.Alpha6)) _mdpManager.Toggle("PreviousActionSprites");
+      
+      if (Input.GetKeyDown(KeyCode.G)) _mdpManager.Toggle("GridSquare");
        
-      if (Input.GetKeyDown(KeyCode.Alpha2)) _mdpManager.Toggle("StateValue");
+      if (Input.GetKeyDown(KeyCode.V)) _mdpManager.Toggle("StateValue");
         
-      if (Input.GetKeyDown(KeyCode.Alpha3)) _mdpManager.Toggle("StateValueText");
+      if (Input.GetKeyDown(KeyCode.T)) _mdpManager.Toggle("StateValueText");
         
-      if (Input.GetKeyDown(KeyCode.Alpha4)) _mdpManager.Toggle("ActionObjects");
+      if (Input.GetKeyDown(KeyCode.B)) _mdpManager.Toggle("ActionObjects");
         
-      if (Input.GetKeyDown(KeyCode.Alpha5)) _mdpManager.Toggle("ActionSprites");
+      if (Input.GetKeyDown(KeyCode.P)) _mdpManager.Toggle("ActionSprites");
 
-      if (Input.GetKeyDown(KeyCode.Alpha6)) _mdpManager.Toggle("PreviousActionSprites");
+      if (Input.GetKeyDown(KeyCode.Semicolon)) _mdpManager.Toggle("PreviousActionSprites");
       
    }
 
@@ -220,6 +254,9 @@ public class UIController : MonoBehaviour
       _cancellationTokenSource.Cancel();
    }
 
+   /// <summary>
+   /// The LoadMdpFromDropdown method loads a pre-saved MDP from the dropdown menu.
+   /// </summary>
    public void LoadMdpFromDropdown()
    {
 
@@ -235,46 +272,61 @@ public class UIController : MonoBehaviour
          case 1:
             mdpString = "Assets/Resources/TestMDPs/GrastiensWorld.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 2:
             mdpString = "Assets/Resources/TestMDPs/FrozenLake4x4Test.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 3:
             mdpString = "Assets/Resources/TestMDPs/LittleTestWorldTest.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 4:
             mdpString = "Assets/Resources/TestMDPs/RussellNorvigGridworldTest.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 5:
             mdpString = "Assets/Resources/TestMDPs/MonsterWorld.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 6:
             mdpString = "Assets/Resources/TestMDPs/WidowMaker.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 7:
             mdpString = "Assets/Resources/TestMDPs/BigRandomWalk.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 8:
             mdpString = "Assets/Resources/TestMDPs/BloodMoon.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 9:
-            mdpString = "Assets/Resources/TestMDPs/TestFromGridEditor.json";
+            mdpString = "Assets/Resources/TestMDPs/CustomGridWorld.json";
             _mdpManager.LoadMdpFromFilePath(mdpString);
+            SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          default:
             break;
       }
       
-     InitializeSettingsPanel();
+      if (algorithmSelector.index == PolicyEvaluationIndex) SwitchActionValueObjectsOff();
+      else SwitchActionValueObjectsOn();
+      
+      InitializeSettingsPanel();
    }
 
+   /// <summary>
+   /// The ResetGridWorldAsync method resets the GridWorld to its initial state.
+   /// </summary>
    private async void ResetGridWorldAsync()
    {
       var existingStateSpace = GameObject.FindGameObjectWithTag("State Space");
@@ -292,17 +344,89 @@ public class UIController : MonoBehaviour
          await UpdateNumberOfIterationsAsync(0);
       }
    }
+   
+   // ┌──────────────────────┐
+   // │ Environment Dynamics │
+   // └──────────────────────┘
+
+   public void SetEnvironmentDynamicsVisuals(string prefix)
+   {
+      environmentDynamicsPrefix = prefix;
+      LoadDynamicsSpriteFromResources();
+   }
+   public void CycleEnvironmentDynamicsImage()
+   {
+      if (currentlyDisplayedEnvironmentDynamicsImageIndex < 3) currentlyDisplayedEnvironmentDynamicsImageIndex++;
+      else currentlyDisplayedEnvironmentDynamicsImageIndex = 0;
+
+      LoadDynamicsSpriteFromResources();
+   }
+
+   private void LoadDynamicsSpriteFromResources()
+   {
+      string filePath = "Images/EnvironmentDynamics/" +
+                        $"{environmentDynamicsPrefix}/" +
+                        $"{environmentDynamicsPrefix}" +
+                        $"{currentlyDisplayedEnvironmentDynamicsImageIndex}";
+
+      currentlyDisplayedEnvironmentDynamicsImage.sprite = Resources.Load<Sprite>(filePath);
+   }
+   
+   private string GetRulesString(MdpRules dynamics)
+   {
+      switch (dynamics)
+      {
+         case MdpRules.SlipperyWalk:
+            return "SW";
+         case MdpRules.RussellAndNorvig:
+            return "RN";
+         case MdpRules.RandomWalk:
+            return "RW";
+         case MdpRules.FrozenLake:
+            return "FL";
+         case MdpRules.GrastiensWindFromTheNorth:
+            return "NW";
+         case MdpRules.DrunkBonanza:
+         case MdpRules.Deterministic:
+            return "D";
+         default:
+            throw new ArgumentOutOfRangeException(nameof(dynamics), dynamics, null);
+      }
+   }
 
    // ┌──────────────────────┐
    // │ Central Area Related │
    // └──────────────────────┘
    public void SetAlgorithmTitleText(string algorithmTitle) => algorithmTitleText.text = algorithmTitle;
 
+   public void SetLatexUpdateEquation(int algorithm)
+   {
+      switch (algorithm)
+      {
+         case PolicyEvaluationIndex:
+            equationText.text = PolicyEvaluationUpdate;
+            break;
+         case PolicyImprovementIndex:
+            equationText.text = PolicyImprovementUpdate;
+            break;
+         case PolicyIterationIndex:
+            equationText.text = PolicyIterationUpdate;
+            break;
+         case ValueIterationIndex:
+            equationText.text = ValueIterationUpdate;
+            break;
+      }
+   }
 
    // ┌────────────────┐
    // │ Policy Related │
    // └────────────────┘
    
+
+   /// <summary>
+   /// The BuildPolicyFromTestString method takes a string of actions and sets the current policy to that string. It
+   /// functions with a hidden text input field used for testing policies with the solver during development.
+   /// </summary>
    public void BuildPolicyFromTestString()
    {
       string textInput = GameObject.FindGameObjectWithTag("Policy Input").GetComponent<TMP_InputField>().text.Replace(" ", "");
@@ -349,14 +473,28 @@ public class UIController : MonoBehaviour
    // ┌───────────────────────────┐
    // │ Algorithm Control Methods │
    // └───────────────────────────┘
-   
 
-   // Controls the execution of policy evaluation by state space sweep, individual state, or individual transition.
+   public void SwitchActionValueObjectsOff()
+   {
+      _mdpManager.SwitchOffActionValues();
+   }
+
+   public void SwitchActionValueObjectsOn()
+   {
+      _mdpManager.SwitchOnActionValues();
+   }
+
+   /// <summary>Controls the execution of policy evaluation by state space sweep, individual state, or individual transition.</summary>
    public void SendLevelInformationToMdp()
    {
       _mdpManager.algorithmViewLevel = algorithmViewLevelSelector.index;
    }
    
+
+   /// <summary>
+   /// The UpdateAlgorithmExecutionSpeedValue method updates the algorithm execution speed value text to reflect the
+   /// current slider value.
+   /// </summary>
    public void UpdateAlgorithmExecutionSpeedValue()
    {
 
@@ -370,6 +508,9 @@ public class UIController : MonoBehaviour
       }
    }
 
+   
+
+   /// <summary> The RunAlgorithm method runs the user selected algorithm.</summary>
    public void RunAlgorithm()
    {
       if (!_mdpManager.mdpLoaded) return;
@@ -416,6 +557,7 @@ public class UIController : MonoBehaviour
    {
       _mdpManager.DisableRabbit();
       _mdpManager.SetMainLoopBoolConditionFalse();
+      
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
@@ -432,6 +574,7 @@ public class UIController : MonoBehaviour
    {
       _mdpManager.DisableRabbit();
       _mdpManager.SetMainLoopBoolConditionFalse();
+      
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
@@ -498,6 +641,9 @@ public class UIController : MonoBehaviour
       return Task.CompletedTask;
    }
 
+   // ┌──────────────────────────────────────────────────────────────┐
+   // │ Algorithms available for the RunAlgorithm() function to call │
+   // └──────────────────────────────────────────────────────────────┘
    private async void EvaluatePolicyNoDelay(CancellationToken cancellationToken)
    {
       try
@@ -715,10 +861,9 @@ public class UIController : MonoBehaviour
          rewardEditor.textComponent.color = Color.HSVToRGB(152, 98, 75);
    }
    
+   
    public void EditReward()
    {
-      // if (!Regex.IsMatch(rewardEditor.text, RegexRealNumber)) return;
-      
       float newReward = float.Parse(rewardEditor.text);
       _mdpManager.EditRewardOfState(_currentStateToEdit, newReward);
       SetStateInformationWindowText(_currentStateToEdit);
@@ -729,6 +874,13 @@ public class UIController : MonoBehaviour
       float currentReward = _mdpManager.GetStateFromCurrentMdp(_currentStateToEdit).Reward;
       rewardEditor.text = $"{currentReward}";
    }
+
+   public bool PolicyEvaluationMode() => algorithmSelector.index == PolicyEvaluationIndex;
+   public bool PolicyImprovementMode() => algorithmSelector.index == PolicyImprovementIndex;
+
+   public bool PolicyIterationMode() => algorithmSelector.index == PolicyIterationIndex;
+
+   public bool ValueIterationMode() => algorithmSelector.index == ValueIterationIndex;
 
    // ┌──────────────────┐
    // │ Settings Methods │
@@ -745,6 +897,13 @@ public class UIController : MonoBehaviour
       }
    }
 
+   /// <summary>
+   /// The ToggleFocusAndFollowObjectsInRightUIControlPanel function toggles the focus and follow mode for the
+   /// algorithms. This is the feature where a yellow orb and trail hovers over the current state being updated. It
+   /// changes functionality depending on the UI <b>FOCUS LEVEL</b> and <b>DELAY</b> the user has set in the UI. It also
+   /// toggles the visibility of all UI objects in focusAndFollowUIObjects.</summary>
+   ///
+   /// <param name="toggleState"> True if the orb should be enabled, false otherwise.</param>
    public void ToggleFocusAndFollowObjectsInRightUIControlPanel(bool toggleState)
    {
       _mdpManager.focusAndFollowMode = toggleState;
@@ -761,4 +920,16 @@ public class UIController : MonoBehaviour
    {
       GameManager.instance.ApplicationQuit();
    }
+   
+   public void ToggleMouseHoverHelp()
+   {
+      _mouseHoverHelpOn = !_mouseHoverHelpOn;
+
+      mouseHoverHelper.gameObject.SetActive(_mouseHoverHelpOn);
+      
+      toolTipsOnText.gameObject.SetActive(_mouseHoverHelpOn);
+      
+   }
+
+   public void NavigateToMainMenuScreen() => GameManager.instance.SwitchScene(BellmanScenes.Title);
 }

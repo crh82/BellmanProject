@@ -68,7 +68,7 @@ public class MdpManager : MonoBehaviour
     
     private const       BellmanScenes      Title              = BellmanScenes.Title;
     
-    private const       BellmanScenes      DynamicProgramming = BellmanScenes.DynamicProgramming;
+    private const       BellmanScenes      DynamicProgramming = BellmanScenes.MdpSolver;
    
     private const       BellmanScenes      MdpBuilder         = BellmanScenes.MdpBuilder;
 
@@ -177,20 +177,6 @@ public class MdpManager : MonoBehaviour
         GameManager.instance.SetMdpManager(this);
 
         if (GameManager.instance.sendMdp) LoadMdpFromGameManager();
-        
-        // MDP grastiens = MdpAdmin.GenerateMdp(
-        //     "BloodMoon", 
-        //     MdpRules.RussellAndNorvig,
-        //     new[] {50, 50},
-        //     new int[] {901,801,701},
-        //     new int[] {225,775},
-        //     new int[] {549,450,550,650,551},
-        //     0.001f,
-        //     -2f,
-        //     5f,
-        //     false);
-        // grastiens.States[900].Reward = 10f;
-        // MdpAdmin.SaveMdpToFile(grastiens, "Assets/Resources/TestMDPs");
     }
     
 
@@ -217,6 +203,12 @@ public class MdpManager : MonoBehaviour
         mdpLoaded = true;
         
         uiController.SetRunFeaturesActive();
+        uiController.uiMdpSelector.index = 9;
+        uiController.uiMdpSelector.UpdateUI();
+        uiController.SetEnvironmentDynamicsVisuals(GetRulesString(GetCurrentMDPDynamics()));
+        
+        if (uiController.PolicyEvaluationMode()) SwitchOffActionValues();
+        else SwitchOnActionValues();
         
         // GameManager instances of MDPs, value functions, and policies get reset to null after transitioning scenes
         // Also sets the send flag false.
@@ -323,7 +315,7 @@ public class MdpManager : MonoBehaviour
           
         // var obstacleScale        = new Vector3(stateXandZDimensions, 1f, stateXandZDimensions);
         // var   obstaclePosition   = new Vector3(_offsetToCenterVector.x + x, (obstacleScale.y / 2), _offsetToCenterVector.y + y);
-        var   obstacleScale      = new Vector3(1f, 1f, 1f);
+        var   obstacleScale      = new Vector3(1f, 0.2f, 1f);
         var   obstaclePosition   = new Vector3(_offsetToCenterVector.x + x, 0, _offsetToCenterVector.y + y);
         
         float terminalGoalScale  = mdp.States[id].Reward;
@@ -610,8 +602,10 @@ public class MdpManager : MonoBehaviour
     /// <remarks>
     /// Todo Add Russell and Norvig's implementation option.
     /// </remarks>
-    public async Task<StateValueFunction> PolicyEvaluationNoDelay(CancellationToken cancellationToken,
-        StateValueFunction stateValueFunction = null, Policy policy = null)
+    public async Task<StateValueFunction> PolicyEvaluationNoDelay(
+        CancellationToken cancellationToken,
+        StateValueFunction stateValueFunction = null, 
+        Policy policy = null)
     {
         // Turns off UI features that can crash the system if clicked during algorithm execution.
         uiController.DisableRunFeatures();
@@ -704,7 +698,9 @@ public class MdpManager : MonoBehaviour
     /// <param name="cancellationToken">Token cancels the asynchronous execution</param>
     /// <param name="stateValueFunction">Values of the states under the policy to be improved.</param>
     /// <returns>An improved policy</returns>
-    public async Task<Policy> PolicyImprovementControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
+    public async Task<Policy> PolicyImprovementControlledAsync(
+        CancellationToken cancellationToken, 
+        StateValueFunction stateValueFunction = null)
     {
         
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -791,7 +787,9 @@ public class MdpManager : MonoBehaviour
     /// <param name="stateValueFunction"></param>
     /// <param name="policy"></param>
     public async Task PolicyIterationControlledAsync(
-        CancellationToken cancellationToken, StateValueFunction stateValueFunction = null, Policy policy = null)
+        CancellationToken cancellationToken, 
+        StateValueFunction stateValueFunction = null, 
+        Policy policy = null)
     {
         ResetPolicyRecord();
         
@@ -811,7 +809,6 @@ public class MdpManager : MonoBehaviour
         {
             if (paused) await RunPauseLoop(cancellationToken);
             
-            // Todo add pseudocode thing
             var oldPolicy = newPolicy.Copy();
 
             if (focusAndFollowMode)
@@ -852,7 +849,12 @@ public class MdpManager : MonoBehaviour
     //  Value Iteration 
     // ─────────────────
     
-    public async Task ValueIterationControlledAsync(CancellationToken cancellationToken, StateValueFunction stateValueFunction = null)
+
+    
+
+    public async Task ValueIterationControlledAsync(
+        CancellationToken cancellationToken, 
+        StateValueFunction stateValueFunction = null)
     {
         uiController.DisableRunFeatures();
         
@@ -998,7 +1000,30 @@ public class MdpManager : MonoBehaviour
     // ┌──────────────────────────────────────┐
     // │ HELPER/SPECIFIC GET OR SET FUNCTIONS │
     // └──────────────────────────────────────┘
-
+    
+    
+    private string GetRulesString(MdpRules dynamics)
+    {
+        switch (dynamics)
+        {
+            case MdpRules.SlipperyWalk:
+                return "SW";
+            case MdpRules.RussellAndNorvig:
+                return "RN";
+            case MdpRules.RandomWalk:
+                return "RW";
+            case MdpRules.FrozenLake:
+                return "FL";
+            case MdpRules.GrastiensWindFromTheNorth:
+                return "NW";
+            case MdpRules.DrunkBonanza:
+            case MdpRules.Deterministic:
+                return "D";
+            default:
+                throw new ArgumentOutOfRangeException(nameof(dynamics), dynamics, null);
+        }
+    }
+    
     // ────────
     //  Rabbit 
     // ────────
@@ -1054,8 +1079,8 @@ public class MdpManager : MonoBehaviour
     
     
     // ─────────────────────── 
-    //  Progress of Algorithm  <- Deals with the data related to expressing: iterations, max difference, etc. Communicates with uiController.
-    // ─────────────────────── 
+    //  Progress of Algorithm  <- Deals with the data related to expressing: iterations, max difference, etc. 
+    // ───────────────────────    Communicates with uiController.
     public float ProgressOfAlgorithm
     {
         get => _progressOfAlgorithm;
@@ -1189,9 +1214,9 @@ public class MdpManager : MonoBehaviour
     }
 
     
-    // ────────────
-    //  Re-setters 
-    // ────────────
+    // ─────────────────
+    //  Reset functions 
+    // ─────────────────
     private void ResetPolicyRecord()
     {
         if (policiesHistory.Count > 0) policiesHistory = new List<Policy>();
@@ -1298,9 +1323,28 @@ public class MdpManager : MonoBehaviour
                     _stateSpaceVisualStates[state.StateIndex].TogglePreviousActionSprites();
                     break;
                 default:
-                    throw new ArgumentException(
-                        "Incorrect string passed. Check that the string is either AS, PAS, or SAO");
+                    throw new ArgumentException("Incorrect string passed.");
             }
+        }
+    }
+
+    public void SwitchOnActionValues()
+    {
+        if (!mdpLoaded) return;
+        
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
+        {
+            _stateSpaceVisualStates[state.StateIndex].TogglOnActionObjects();
+        }
+    }
+    
+    public void SwitchOffActionValues()
+    {
+        if (!mdpLoaded) return;
+        
+        foreach (var state in Mdp.States.Where(state => state.IsStandard()))
+        {
+            _stateSpaceVisualStates[state.StateIndex].TogglOffActionObjects();
         }
     }
 
@@ -1382,6 +1426,7 @@ public class MdpManager : MonoBehaviour
         return policyPi;
     }
 
+    public MdpRules GetCurrentMDPDynamics() => Mdp.MdpRules;
 
     // ╔══════════════════════╗
     // ║ Not Currently In Use ║
@@ -1424,25 +1469,4 @@ public class MdpManager : MonoBehaviour
             GridAction.Up => Mdp.Width,
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
         };
-
-    // public List<MarkovTransition> CalculateTransitions(string transitionProbabilityRules)
-    // {
-    //     List<MarkovTransition> transitions = new List<MarkovTransition>();
-    //     
-    //     switch (transitionProbabilityRules)
-    //     {
-    //                     
-    //     }
-    //
-    //     return transitions;
-    // }
-}
-// 0.0, 0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99, 0.999
-
-public class Value
-{
-    public float TheValue { get; set; }
-
-    public void AdjustValue(float val) => TheValue += val;
-    
 }
