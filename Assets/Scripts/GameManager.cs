@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,6 +9,8 @@ public class GameManager : MonoBehaviour
     
     // These are set to null unless a scene is sending one or of them between scenes.
     public MDP                 currentMdp;
+    public string              backupMDP;
+    public string              currentCustomMDP;
     public Policy              currentPolicy;
     public StateValueFunction  currentStateValueFunction;
     public ActionValueFunction currentActionValueFunction;
@@ -15,6 +18,8 @@ public class GameManager : MonoBehaviour
     public bool                sendPolicy;
     public bool                sendStateValueFunction;
     public bool                sendActionValueFunction;
+
+    private static string      _saveFileDirectory = "Resources/TestMDPs";
 
     private MdpManager         _mdpManager;
     
@@ -54,7 +59,43 @@ public class GameManager : MonoBehaviour
             instance.SwitchScene((BellmanScenes) currentScene);          
         }
     }
+    
+    public void SaveMdpToFile(MDP mdp, string filePath = null)
+    {
+        // string directory = "TestMDPs";
+        
+        string pathToDirectory = Path.Combine(Application.dataPath, _saveFileDirectory);
+        
+        string filePathToSave = Path.Combine(pathToDirectory, $"{mdp.Name}.json");
 
+        if (!Directory.Exists(pathToDirectory))
+            Directory.CreateDirectory(pathToDirectory);
+        if (!File.Exists(filePathToSave))
+            File.Create(filePathToSave).Dispose();
+        string jsonRepresentationOfMdp = JsonUtility.ToJson(mdp);
+        File.WriteAllText(filePathToSave, jsonRepresentationOfMdp);
+        
+        
+        pathToDirectory = Path.Combine(Application.persistentDataPath, _saveFileDirectory);
+        
+        string persistentPath = string.Copy(pathToDirectory);
+        string persistentFilePathToSave = Path.Combine(persistentPath, $"{mdp.Name}.json");
+        
+        if (!Directory.Exists(pathToDirectory))
+            Directory.CreateDirectory(pathToDirectory);
+        if (!File.Exists(persistentFilePathToSave))
+            File.Create(persistentFilePathToSave).Dispose();
+        File.WriteAllText(persistentFilePathToSave, jsonRepresentationOfMdp);
+        // string saveFilePath = Application.persistentDataPath + $"TestMDPs/{mdp.Name}.json";
+        // string saveFilePath = Application.dataPath + $"TestMDPs/{mdp.Name}.json";
+        // if (filePath != null)
+        // {
+        //     saveFilePath = $"{filePath}/{mdp.Name}.json";
+        // }
+        // string jsonRepresentationOfMdp = JsonUtility.ToJson(mdp);
+        // File.WriteAllText(saveFilePath, jsonRepresentationOfMdp);
+    }
+    
     public void ApplicationQuit() => Application.Quit();
 
     /// <summary>

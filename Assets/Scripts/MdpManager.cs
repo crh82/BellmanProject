@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Assertions;
 using Debug = UnityEngine.Debug;
 
 /// <summary>
@@ -134,6 +135,8 @@ public class MdpManager : MonoBehaviour
  
     public  bool                           mdpLoaded;
 
+    private string                         _mdpForReset;
+
     public List<Policy>                    policiesHistory = new List<Policy>();
 
     private float                          _progressOfAlgorithm;
@@ -178,9 +181,9 @@ public class MdpManager : MonoBehaviour
 
         if (GameManager.instance.sendMdp)
         {
-            LoadMdpFromGameManager();
             uiController.uiMdpSelector.index = 9;
             uiController.uiMdpSelector.UpdateUI();
+            LoadMdpFromGameManager();
         }
     }
     
@@ -204,6 +207,8 @@ public class MdpManager : MonoBehaviour
     private async void LoadMdpFromGameManager()
     {
         Mdp = await InstantiateMdpVisualisationAsync(GameManager.instance.currentMdp);
+
+        _mdpForReset = GameManager.instance.backupMDP;
         
         mdpLoaded = true;
         
@@ -218,6 +223,7 @@ public class MdpManager : MonoBehaviour
         // GameManager instances of MDPs, value functions, and policies get reset to null after transitioning scenes
         // Also sets the send flag false.
         GameManager.instance.currentMdp = null;
+        GameManager.instance.backupMDP = null;
         GameManager.instance.sendMdp    = false;
     }
     
@@ -227,12 +233,43 @@ public class MdpManager : MonoBehaviour
     /// <param name="filepath">String representation of the filepath</param>
     public async void LoadMdpFromFilePath(string filepath)
     {
-        string mdpJsonRepresentation = File.ReadAllText(filepath);
+        string path = Path.Combine(Application.dataPath, "Resources/TestMDPs");
+        string fullPath = Path.Combine(path, filepath);
+        // string mdpJsonRepresentation = File.ReadAllText(fullPath);
+        
+        // String mdpJsonRepresentation = Resources.Load<String>(filepath);
+        TextAsset mdpFromFile = Resources.Load<TextAsset>(filepath);
+        // string mdpFromFileString = mdpFromFile.text;
+        string mdpJsonRepresentation = mdpFromFile.text;
+        // string mdpJsonRepresentation = File.ReadAllText(filepath);
         
         Mdp = CreateFromJson(mdpJsonRepresentation);
+
+        _mdpForReset = mdpJsonRepresentation;
         
         Mdp = await InstantiateMdpVisualisationAsync(CreateFromJson(mdpJsonRepresentation));
+        
+        mdpLoaded = true;
+        
+        uiController.SetRunFeaturesActive();
+    }
 
+    public async void LoadNonPersistentCustomMDP()
+    {
+        
+        _mdpForReset = string.Copy(GameManager.instance.currentCustomMDP);
+        
+        Mdp = await InstantiateMdpVisualisationAsync(CreateFromJson(GameManager.instance.currentCustomMDP));
+        
+        mdpLoaded = true;
+    }
+
+    public async void ResetMDP()
+    {
+        Assert.IsNotNull(_mdpForReset);
+        
+        Mdp = await InstantiateMdpVisualisationAsync(CreateFromJson(_mdpForReset));
+        
         mdpLoaded = true;
         
         uiController.SetRunFeaturesActive();
@@ -1139,7 +1176,7 @@ public class MdpManager : MonoBehaviour
 
         var stateVisualRepresentation = _stateSpaceVisualStates[stateIndex];
         string stateName = StateNameFormatted(stateIndex);
-        var stateReward = $"R({stateName}) = {state.Reward}";
+        var stateReward = $"R(s, a, {stateName}) = {state.Reward}";
         var stateValue = $"V({stateName}) = {stateVisualRepresentation.stateValue}";
         var action = state.IsStandard() ? ActionInStateFormatted(stateIndex) : $"No action because state is {state.TypeOfState.ToString()}";
         // if (CurrentPolicy != null)
@@ -1161,7 +1198,7 @@ public class MdpManager : MonoBehaviour
         return stateInformation;
     }
 
-    public string StateNameFormatted(int stateIndex) => $"<b>S</b>{stateIndex}";
+    public string StateNameFormatted(int stateIndex) => $"<b>S<sub> {stateIndex}</sub></b>";
 
     public string ActionInStateFormatted(int stateIndex)
     {

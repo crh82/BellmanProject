@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
@@ -61,7 +62,15 @@ public class GridBuilderManager : MonoBehaviour
 
     }
 
-    private void SaveGridWorldAsMdp(MDP mdpToSave) => MdpAdmin.SaveMdpToFile(mdpToSave, "Assets/Resources/TestMDPs");
+    // private void SaveGridWorldAsMdp(MDP mdpToSave) => MdpAdmin.SaveMdpToFile(mdpToSave, "Assets/Resources/TestMDPs");
+    
+    private void SaveGridWorldAsMdp(MDP mdpToSave)
+    {
+        string filePath = Application.persistentDataPath + "TestMDPs"; 
+        // GameManager.instance.SaveMdpToFile(mdpToSave, "Assets/Resources/TestMDPs");
+        // GameManager.instance.SaveMdpToFile(mdpToSave, filePath);
+        GameManager.instance.SaveMdpToFile(mdpToSave);
+    }
 
     /// <summary>
     /// The TransitionToMarkovDecisionProcessScene function sets the currentMdp variable to a new MDP object,
@@ -69,10 +78,13 @@ public class GridBuilderManager : MonoBehaviour
     /// MdpSolver scene.
     /// </summary>
     public void TransitionToMarkovDecisionProcessScene()
-    {
+    {   
         MDP customGridWorld = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
+        // MDP backup = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
         SaveGridWorldAsMdp(customGridWorld);
         GameManager.instance.currentMdp = customGridWorld;
+        GameManager.instance.backupMDP = JsonUtility.ToJson(customGridWorld);
+        GameManager.instance.currentCustomMDP = JsonUtility.ToJson(customGridWorld);
         GameManager.instance.sendMdp    = true;
         GameManager.instance.SwitchScene(BellmanScenes.MdpSolver);
     }

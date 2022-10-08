@@ -194,6 +194,12 @@ public class LevelEditor : MonoBehaviour
         GenerateRewardTextOverTiles();
     }
 
+    /// <summary> The GenerateMdpFromTileMaps function takes a tile map and generates an MDP from it.
+    /// The function uses the tile map to generate states, actions, and transitions for the MDP.</summary>
+    ///
+    /// <param name="mdpName"><c>string</c> Name of the mdp to be generated</param>
+    /// 
+    /// <returns><c>MDP</c> An mdp object.</returns>
     public MDP GenerateMdpFromTileMaps(string mdpName)
     {
         
