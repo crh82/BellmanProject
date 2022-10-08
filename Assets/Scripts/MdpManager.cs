@@ -176,7 +176,12 @@ public class MdpManager : MonoBehaviour
 
         GameManager.instance.SetMdpManager(this);
 
-        if (GameManager.instance.sendMdp) LoadMdpFromGameManager();
+        if (GameManager.instance.sendMdp)
+        {
+            LoadMdpFromGameManager();
+            uiController.uiMdpSelector.index = 9;
+            uiController.uiMdpSelector.UpdateUI();
+        }
     }
     
 
@@ -810,24 +815,38 @@ public class MdpManager : MonoBehaviour
             if (paused) await RunPauseLoop(cancellationToken);
             
             var oldPolicy = newPolicy.Copy();
-
+            
+            SwitchOffActionValues();
+            
             if (focusAndFollowMode)
             {
                 valueOfPolicy = await PolicyEvaluationControlAsync(cancellationToken, valueOfPolicy, oldPolicy);
-                uiController.PauseAlgorithm();
-                await RunPauseLoop(cancellationToken);
+                // uiController.PauseAlgorithm();
+                // await RunPauseLoop(cancellationToken);
             }
             else
             {
                 valueOfPolicy = await PolicyEvaluationNoDelay(cancellationToken, valueOfPolicy, oldPolicy);
             }
+            
+            SwitchOnActionValues();
 
+            if (focusAndFollowMode && playSpeed < 100)
+            {
+                algorithmViewLevel = ByAction;
+                playSpeed = 50;
+            }
+            
+            await Task.Delay(playSpeed, cancellationToken);
+            
             newPolicy = await PolicyImprovementControlledAsync(cancellationToken, valueOfPolicy);
 
             if (focusAndFollowMode)
             {
-                uiController.PauseAlgorithm();
-                await RunPauseLoop(cancellationToken);
+                uiController.UpdateAlgorithmExecutionSpeedValue();
+                uiController.SendLevelInformationToMdp();
+                // uiController.PauseAlgorithm();
+                // await RunPauseLoop(cancellationToken);
             }
             
             if (oldPolicy.Equals(newPolicy)) break;

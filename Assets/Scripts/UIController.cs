@@ -23,7 +23,7 @@ public class UIController : MonoBehaviour
    // ╔════════════════════╗
    // ║ GENERAL OR UI WIDE ║
    // ╚════════════════════╝
-   public TMP_Dropdown       mdpMenu;
+   // public TMP_Dropdown       mdpMenu;
    
    public GameObject         mdpGameObject;
 
@@ -94,7 +94,7 @@ public class UIController : MonoBehaviour
 
    public string             environmentDynamicsPrefix = "SW";
 
-   public HorizontalSelector environmentDynamicsSelector;
+   // public HorizontalSelector environmentDynamicsSelector;
 
    private const string      SlipperyWalk     = "SW";
    private const string      RussellAndNorvig = "RN";
@@ -219,6 +219,15 @@ public class UIController : MonoBehaviour
                 GameManager.instance.currentScene = (int) BellmanScenes.MdpSolver;
    }
 
+   private void Start()
+   {
+      if (GameManager.instance.sendMdp)
+      {
+         uiMdpSelector.index = 9;
+         uiMdpSelector.UpdateUI();
+      }
+   }
+
    private void Update()
    {
       if (Input.GetKeyDown(KeyCode.Escape)) _mdpManager.SetMainLoopBoolConditionFalse();
@@ -259,6 +268,7 @@ public class UIController : MonoBehaviour
    /// </summary>
    public void LoadMdpFromDropdown()
    {
+      if (uiMdpSelector.index == 0) return;
 
       ResetGridWorldAsync();
 
@@ -448,6 +458,8 @@ public class UIController : MonoBehaviour
       newPolicy.PrintPolicyToDebugLog();
       
       currentPolicyString = newPolicy.PolicyToStringArray(_mdpManager.Mdp.States);
+      
+      Debug.Log($"{currentPolicyString}");
 
       _mdpManager.currentPolicy = newPolicy;
 
