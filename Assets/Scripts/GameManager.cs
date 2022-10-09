@@ -62,7 +62,6 @@ public class GameManager : MonoBehaviour
     
     public void SaveMdpToFile(MDP mdp, string filePath = null)
     {
-        // string directory = "TestMDPs";
         
         string pathToDirectory = Path.Combine(Application.dataPath, _saveFileDirectory);
         
@@ -86,14 +85,6 @@ public class GameManager : MonoBehaviour
         if (!File.Exists(persistentFilePathToSave))
             File.Create(persistentFilePathToSave).Dispose();
         File.WriteAllText(persistentFilePathToSave, jsonRepresentationOfMdp);
-        // string saveFilePath = Application.persistentDataPath + $"TestMDPs/{mdp.Name}.json";
-        // string saveFilePath = Application.dataPath + $"TestMDPs/{mdp.Name}.json";
-        // if (filePath != null)
-        // {
-        //     saveFilePath = $"{filePath}/{mdp.Name}.json";
-        // }
-        // string jsonRepresentationOfMdp = JsonUtility.ToJson(mdp);
-        // File.WriteAllText(saveFilePath, jsonRepresentationOfMdp);
     }
     
     public void ApplicationQuit() => Application.Quit();

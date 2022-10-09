@@ -233,15 +233,9 @@ public class MdpManager : MonoBehaviour
     /// <param name="filepath">String representation of the filepath</param>
     public async void LoadMdpFromFilePath(string filepath)
     {
-        string path = Path.Combine(Application.dataPath, "Resources/TestMDPs");
-        string fullPath = Path.Combine(path, filepath);
-        // string mdpJsonRepresentation = File.ReadAllText(fullPath);
-        
-        // String mdpJsonRepresentation = Resources.Load<String>(filepath);
         TextAsset mdpFromFile = Resources.Load<TextAsset>(filepath);
-        // string mdpFromFileString = mdpFromFile.text;
+        
         string mdpJsonRepresentation = mdpFromFile.text;
-        // string mdpJsonRepresentation = File.ReadAllText(filepath);
         
         Mdp = CreateFromJson(mdpJsonRepresentation);
 

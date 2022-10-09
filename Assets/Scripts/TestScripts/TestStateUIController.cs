@@ -29,5 +29,29 @@ namespace TestScripts
             // wind.gameObject.SetActive(true);
         }
         
+        public async void LoadMdpFromFilePath(string filepath)
+        {
+            // TODO Deal with saving and loading more effectively later.
+            // string path = Path.Combine(Application.dataPath, "Resources/TestMDPs");
+            // string fullPath = Path.Combine(path, filepath);
+            // // string mdpJsonRepresentation = File.ReadAllText(fullPath);
+            //
+            // // String mdpJsonRepresentation = Resources.Load<String>(filepath);
+            // TextAsset mdpFromFile = Resources.Load<TextAsset>(filepath);
+            // // string mdpFromFileString = mdpFromFile.text;
+            // string mdpJsonRepresentation = mdpFromFile.text;
+            // // string mdpJsonRepresentation = File.ReadAllText(filepath);
+            //
+            // Mdp = CreateFromJson(mdpJsonRepresentation);
+            //
+            // _mdpForReset = mdpJsonRepresentation;
+            //
+            // Mdp = await InstantiateMdpVisualisationAsync(CreateFromJson(mdpJsonRepresentation));
+            //
+            // mdpLoaded = true;
+            //
+            // uiController.SetRunFeaturesActive();
+        }
+        
     }
 }

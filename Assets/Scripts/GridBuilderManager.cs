@@ -80,7 +80,6 @@ public class GridBuilderManager : MonoBehaviour
     public void TransitionToMarkovDecisionProcessScene()
     {   
         MDP customGridWorld = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
-        // MDP backup = levelEditor.GenerateMdpFromTileMaps("CustomGridWorld");
         SaveGridWorldAsMdp(customGridWorld);
         GameManager.instance.currentMdp = customGridWorld;
         GameManager.instance.backupMDP = JsonUtility.ToJson(customGridWorld);

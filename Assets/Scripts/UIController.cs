@@ -281,56 +281,41 @@ public class UIController : MonoBehaviour
             break;
          case 1:
             mdpString = "TestMDPs/GrastiensWorld";
-            // mdpString = "GrastiensWorld";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 2:
-            // mdpString = "Assets/Resources/TestMDPs/FrozenLake4x4Test.json";
             mdpString = "TestMDPs/FrozenLake4x4Test";
-            // mdpString = "FrozenLake4x4Test";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 3:
-            // mdpString = "Assets/Resources/TestMDPs/LittleTestWorldTest.json";
             mdpString = "TestMDPs/LittleTestWorldTest";
-            // mdpString = "LittleTestWorldTest";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 4:
-            // mdpString = "Assets/Resources/TestMDPs/RussellNorvigGridworldTest.json";
             mdpString = "TestMDPs/RussellNorvigGridworldTest";
-            // mdpString = "RussellNorvigGridworldTest";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 5:
-            // mdpString = "Assets/Resources/TestMDPs/MonsterWorld.json";
             mdpString = "TestMDPs/MonsterWorld";
-            // mdpString = "MonsterWorld";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 6:
-            // mdpString = "Assets/Resources/TestMDPs/WidowMaker.json";
             mdpString = "TestMDPs/WidowMaker";
-            // mdpString = "WidowMaker";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 7:
-            // mdpString = "Assets/Resources/TestMDPs/BigRandomWalk.json";
             mdpString = "TestMDPs/BigRandomWalk";
-            // mdpString = "BigRandomWalk";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
          case 8:
-            // mdpString = "Assets/Resources/TestMDPs/BloodMoon.json";
             mdpString = "TestMDPs/BloodMoon";
-            // mdpString = "BloodMoon";
             _mdpManager.LoadMdpFromFilePath(mdpString);
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
             break;
@@ -342,15 +327,11 @@ public class UIController : MonoBehaviour
             }
             else
             {
-               // mdpString = "Assets/Resources/TestMDPs/CustomGridWorld.json";
                mdpString = "TestMDPs/CustomGridWorld";
-               // mdpString = "CustomGridWorld";
                _mdpManager.LoadMdpFromFilePath(mdpString);
             }
             
             SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
-            break;
-         default:
             break;
       }
       
@@ -369,6 +350,9 @@ public class UIController : MonoBehaviour
       _mdpManager.ResetMDP();
       
       SetEnvironmentDynamicsVisuals(GetRulesString(_mdpManager.GetCurrentMDPDynamics()));
+      
+      if (algorithmSelector.index == PolicyEvaluationIndex) SwitchActionValueObjectsOff();
+      else SwitchActionValueObjectsOn();
    }
 
    /// <summary>
