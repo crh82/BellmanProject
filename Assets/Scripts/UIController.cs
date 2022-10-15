@@ -43,9 +43,12 @@ public class UIController : MonoBehaviour
 
    public TEXDraw            equationText;
 
+   private bool              _userInterfaceVisible = true;
+
    // ╔════════════════════╗
    // ║ LEFT CONTROL PANEL ║
    // ╚════════════════════╝
+   public GameObject         leftControlPanel;
    
    public HorizontalSelector uiMdpSelector;
 
@@ -107,6 +110,7 @@ public class UIController : MonoBehaviour
    // ╔═════════════════════╗
    // ║ RIGHT CONTROL PANEL ║
    // ╚═════════════════════╝
+   public GameObject         rightControlPanel;
 
    public Slider             algorithmExecutionSpeedSlider;
 
@@ -132,6 +136,7 @@ public class UIController : MonoBehaviour
    // ╔════════════════════════════════════╗
    // ║ CENTER CONTROL PANEL & INFORMATION ║
    // ╚════════════════════════════════════╝
+   public GameObject         centerControlPanel;
    
    public TextMeshProUGUI    algorithmTitleText;
    
@@ -232,18 +237,12 @@ public class UIController : MonoBehaviour
    {
       if (Input.GetKeyDown(KeyCode.Escape)) _mdpManager.SetMainLoopBoolConditionFalse();
         
-      // if (Input.GetKeyDown(KeyCode.Alpha1)) _mdpManager.Toggle("GridSquare");
-      //  
-      // if (Input.GetKeyDown(KeyCode.Alpha2)) _mdpManager.Toggle("StateValue");
-      //   
-      // if (Input.GetKeyDown(KeyCode.Alpha3)) _mdpManager.Toggle("StateValueText");
-      //   
-      // if (Input.GetKeyDown(KeyCode.Alpha4)) _mdpManager.Toggle("ActionObjects");
-      //   
-      // if (Input.GetKeyDown(KeyCode.Alpha5)) _mdpManager.Toggle("ActionSprites");
-      //
-      // if (Input.GetKeyDown(KeyCode.Alpha6)) _mdpManager.Toggle("PreviousActionSprites");
-      
+      if (Input.GetKeyDown(KeyCode.Alpha1)) ToggleLeftUIPanelVisibility();
+       
+      if (Input.GetKeyDown(KeyCode.Alpha2)) ToggleCenterUIPanelVisibility();
+        
+      if (Input.GetKeyDown(KeyCode.Alpha3)) ToggleRightUIPanelVisibility();
+
       if (Input.GetKeyDown(KeyCode.G)) _mdpManager.Toggle("GridSquare");
        
       if (Input.GetKeyDown(KeyCode.V)) _mdpManager.Toggle("StateValue");
@@ -256,12 +255,45 @@ public class UIController : MonoBehaviour
 
       if (Input.GetKeyDown(KeyCode.Semicolon)) _mdpManager.Toggle("PreviousActionSprites");
       
+      if (Input.GetKeyDown(KeyCode.U)) ToggleUserInterfaceVisibility();
    }
 
    private void OnDisable()
    {
       _cancellationTokenSource.Cancel();
    }
+   
+   // ┌─────────────────────┐
+   // │ User Interface Wide │
+   // └─────────────────────┘
+   
+   /// <summary>
+   /// 
+   /// </summary>
+   public void ToggleUserInterfaceVisibility()
+   {
+      if (_userInterfaceVisible)
+      {
+         rightControlPanel.SetActive(false);
+         leftControlPanel.SetActive(false);
+         centerControlPanel.SetActive(false);
+         _userInterfaceVisible = false;
+      }
+      else
+      {
+         rightControlPanel.SetActive(true);
+         leftControlPanel.SetActive(true);
+         centerControlPanel.SetActive(true);
+         _userInterfaceVisible = true;
+      }
+      
+   }
+
+   public void ToggleLeftUIPanelVisibility() => leftControlPanel.SetActive(!leftControlPanel.activeSelf);
+
+   public void ToggleRightUIPanelVisibility() => rightControlPanel.SetActive(!rightControlPanel.activeSelf);
+
+   public void ToggleCenterUIPanelVisibility() => centerControlPanel.SetActive(!centerControlPanel.activeSelf);
 
    /// <summary>
    /// The LoadMdpFromDropdown method loads a pre-saved MDP from the dropdown menu.

@@ -8551,6 +8551,7 @@ MonoBehaviour:
     terminalStates: 
     goalStates: 
   backupMDP: 
+  currentCustomMDP: 
   sendMdp: 0
   sendPolicy: 0
   sendStateValueFunction: 0
@@ -11436,6 +11437,7 @@ MonoBehaviour:
   mouseHoverHelper: {fileID: 1878645452}
   toolTipsOnText: {fileID: 539157612}
   equationText: {fileID: 867758627}
+  leftControlPanel: {fileID: 1114572538}
   uiMdpSelector: {fileID: 679001860}
   resetMdpButton: {fileID: 1190813043}
   resetButtonContainer: {fileID: 2123090678}
@@ -11450,6 +11452,7 @@ MonoBehaviour:
   currentlyDisplayedEnvironmentDynamicsImageIndex: 0
   currentlyDisplayedEnvironmentDynamicsImage: {fileID: 826357282}
   environmentDynamicsPrefix: SW
+  rightControlPanel: {fileID: 1338170814}
   algorithmExecutionSpeedSlider: {fileID: 1683373583}
   algorithmExecutionSpeedValue: {fileID: 4271763522706818830}
   algorithmViewLevelSelector: {fileID: 881078568}
@@ -11465,6 +11468,7 @@ MonoBehaviour:
   runButton: {fileID: 719570629}
   runButtonContainer: {fileID: 655287350}
   settingsItemsDropdownPanel: {fileID: 1630127048501210}
+  centerControlPanel: {fileID: 1113158107}
   algorithmTitleText: {fileID: 1536150272}
   maxDelta: {fileID: 269713085}
   numberOfIterationsDisplay: {fileID: 1621115950}
