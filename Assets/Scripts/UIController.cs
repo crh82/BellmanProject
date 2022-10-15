@@ -217,10 +217,6 @@ public class UIController : MonoBehaviour
             _cancellationTokenSource = new CancellationTokenSource();
                            _focusCam = cornerCameraRig.GetComponent<CornerCameraController>();
                 mainCameraController = mainCameraRig.GetComponent<CameraController>();
-                //    _mouseHoverHelpOn = false;
-                // mouseHoverHelper.gameObject.SetActive(false);
-                // toolTipsOnText.gameObject.SetActive(false);
-
                 GameManager.instance.currentScene = (int) BellmanScenes.MdpSolver;
    }
 
@@ -256,6 +252,15 @@ public class UIController : MonoBehaviour
       if (Input.GetKeyDown(KeyCode.Semicolon)) _mdpManager.Toggle("PreviousActionSprites");
       
       if (Input.GetKeyDown(KeyCode.U)) ToggleUserInterfaceVisibility();
+      
+      if (Input.GetKeyDown(KeyCode.I)) mainCameraController.IncreaseCameraPanSpeed();
+      
+      if (Input.GetKeyDown(KeyCode.K)) mainCameraController.DecreaseCameraPanSpeed();
+      
+      if (Input.GetKeyDown(KeyCode.L)) mainCameraController.IncreaseCameraRotationSpeed();
+      
+      if (Input.GetKeyDown(KeyCode.J)) mainCameraController.DecreaseCameraRotationSpeed();
+      
    }
 
    private void OnDisable()
@@ -270,7 +275,7 @@ public class UIController : MonoBehaviour
    /// <summary>
    /// 
    /// </summary>
-   public void ToggleUserInterfaceVisibility()
+   private void ToggleUserInterfaceVisibility()
    {
       if (_userInterfaceVisible)
       {
@@ -289,11 +294,11 @@ public class UIController : MonoBehaviour
       
    }
 
-   public void ToggleLeftUIPanelVisibility() => leftControlPanel.SetActive(!leftControlPanel.activeSelf);
+   private void ToggleLeftUIPanelVisibility() => leftControlPanel.SetActive(!leftControlPanel.activeSelf);
 
-   public void ToggleRightUIPanelVisibility() => rightControlPanel.SetActive(!rightControlPanel.activeSelf);
+   private void ToggleRightUIPanelVisibility() => rightControlPanel.SetActive(!rightControlPanel.activeSelf);
 
-   public void ToggleCenterUIPanelVisibility() => centerControlPanel.SetActive(!centerControlPanel.activeSelf);
+   private void ToggleCenterUIPanelVisibility() => centerControlPanel.SetActive(!centerControlPanel.activeSelf);
 
    /// <summary>
    /// The LoadMdpFromDropdown method loads a pre-saved MDP from the dropdown menu.
