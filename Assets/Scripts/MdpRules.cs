@@ -11,8 +11,8 @@ public enum MdpRules
     RandomWalk                = 2,
     FrozenLake                = 3,
     GrastiensWindFromTheNorth = 4,
-    DrunkBonanza              = 5,
-    Deterministic             = 6
+    Deterministic             = 5,
+    DrunkBonanza              = 6
 }
 
 public static class RuleProbabilityDistributor

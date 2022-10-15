@@ -158,7 +158,7 @@ public class MDP
                 {
                     State               = state.StateIndex,
                     ActionTaken         = action,
-                    Probability         = 1f,
+                    Probability         = 1,
                     SuccessorStateIndex = GenerateSuccessorStateFromAction(state, action)
                 };
                 deterministicEffect.Reward = RewardFunction(deterministicEffect.SuccessorStateIndex);

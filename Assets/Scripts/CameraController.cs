@@ -29,10 +29,7 @@ public class CameraController : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        // trail = GameObject.FindWithTag("RedLine");
-        
         mdpManager = FindObjectOfType<MdpManager>();
-        // mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
     }
 
     // Update is called once per frame
@@ -64,6 +61,9 @@ public class CameraController : MonoBehaviour
         // (CZ end)
     }
 
+    /// <summary>
+    /// The HandleMovement function controls the camera's orbit and movement around the grid world environment.
+    /// </summary>
     private void HandleMovement()
     {
         // (O) Controls camera orbit
@@ -96,8 +96,35 @@ public class CameraController : MonoBehaviour
         
 
         if (Input.GetKey(KeyCode.Space)) rigPosition = globalTarget.position;
+    }
 
+    public void IncreaseCameraPanSpeed()
+    {
+        if (movementSpeed < 0.3) movementSpeed += 0.1f;
+        else movementSpeed = 0.3f;
         
+        Debug.Log($"Pan + now {movementSpeed}");
+    }
+
+    public void DecreaseCameraPanSpeed()
+    {
+        if (movementSpeed >= 0.2) movementSpeed -= 0.1f;
+        else movementSpeed = 0.1f;
+        Debug.Log($"Pan - now {movementSpeed}");
+    }
+
+    public void IncreaseCameraRotationSpeed()
+    {
+        if (rotationSpeed < 250) rotationSpeed += 50;
+        else rotationSpeed = 250;
+        Debug.Log($"Rot + now {rotationSpeed}");
+    }
+
+    public void DecreaseCameraRotationSpeed()
+    {
+        if (rotationSpeed > 50) rotationSpeed -= 50;
+        else rotationSpeed = 50;
+        Debug.Log($"Rot - now {rotationSpeed}");
     }
     
 }

@@ -157,26 +157,24 @@ public class GridBuilderUIController : MonoBehaviour
 
     public void SelectEnvironmentDynamics()
     {
-        switch ((MdpRules) environmentDynamicsSelector.index)
+        switch (environmentDynamicsSelector.index)
         {
-            case MdpRules.SlipperyWalk:
+            case 0:
                 SetDynamics(SlipperyWalk);
                 break;
-            case MdpRules.RussellAndNorvig:
+            case 1:
                 SetDynamics(RussellAndNorvig);
                 break;
-            case MdpRules.RandomWalk:
+            case 2:
                 SetDynamics(RandomWalk);
                 break;
-            case MdpRules.FrozenLake:
+            case 3:
                 SetDynamics(FrozenLake);
                 break;
-            case MdpRules.GrastiensWindFromTheNorth:
+            case 4:
                 SetDynamics(NorthernWind);
                 break;
-            case MdpRules.DrunkBonanza:
-                // For now I have Drunk Bonanza disabled
-            case MdpRules.Deterministic:
+            case 5:
                 SetDynamics(Deterministic);
                 break;
             default:
