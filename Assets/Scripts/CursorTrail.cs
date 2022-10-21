@@ -35,14 +35,11 @@ public class CursorTrail : MonoBehaviour
         }
         else
         {
-            trailRenderer.time = Single.PositiveInfinity;
-            trailRenderer.startWidth = startWidth;
-            trailRenderer.endWidth = endWidth;
             trailRenderer.emitting = false;
             MoveTrailToCursor(Input.mousePosition);
         }
 
-        if (Input.GetKeyDown(KeyCode.BackQuote)) trailRenderer.time = 0f;
+        if (Input.GetKeyDown(KeyCode.Backspace)) trailRenderer.time = 0f;
         // trailRenderer.time = Input.GetKeyDown(KeyCode.BackQuote) ? 0f : Single.PositiveInfinity;
         
         
