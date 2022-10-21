@@ -45,6 +45,8 @@ public class UIController : MonoBehaviour
 
    private bool              _userInterfaceVisible = true;
 
+   public GameObject         helpScreen;
+
    // ╔════════════════════╗
    // ║ LEFT CONTROL PANEL ║
    // ╚════════════════════╝
@@ -261,6 +263,8 @@ public class UIController : MonoBehaviour
       
       if (Input.GetKeyDown(KeyCode.J)) mainCameraController.DecreaseCameraRotationSpeed();
       
+      if (Input.GetKeyDown(KeyCode.H)) ToggleHelpScreen();
+      
    }
 
    private void OnDisable()
@@ -293,6 +297,8 @@ public class UIController : MonoBehaviour
       }
       
    }
+
+   private void ToggleHelpScreen() => helpScreen.SetActive(!helpScreen.activeSelf);
 
    private void ToggleLeftUIPanelVisibility() => leftControlPanel.SetActive(!leftControlPanel.activeSelf);
 
