@@ -28,7 +28,7 @@ public class CornerCameraController : MonoBehaviour
     private void Update()
     {
         // TD Visibility
-        if (Input.GetKeyDown(KeyCode.End))          ToggleTopDownVisibility();
+        if (Input.GetKeyDown(KeyCode.Backslash))    ToggleTopDownVisibility();
         
         // TD Camera Full Screen/MiniMap modes
         if (Input.GetKeyDown(KeyCode.LeftBracket))  SwitchTopDownToCornerMiniMap();
