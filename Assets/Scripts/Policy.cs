@@ -143,12 +143,14 @@ public class Policy
         }
         return copyOfPolicy;
     }
-
-    // TODO This is currently too strict to function as a check of policy equality—given that it effectively checks the equality of two dictionaries.
+    
+    /// <summary>
+    /// The Equals function compares two Policy objects for equality.
+    /// </summary>
+    /// <param name="policyPrime"> The policy to compare with this one.</param>
+    /// <returns> True if the two policies are identical.</returns>
     public bool Equals(Policy policyPrime)
     {
-        // PolicyToStringArray()
-        // return _policy.All(item => item.Value.Equals(policyPrime.GetAction(item.Key)));
 
         if (null == policyPrime)                           return _policy == null;
         if (null == _policy)                               return false;
@@ -163,7 +165,7 @@ public class Policy
         
         return true;
     }
-
+    
     public string StringRepresentationOfPolicy()
     {
         StringBuilder policyString = new StringBuilder();
