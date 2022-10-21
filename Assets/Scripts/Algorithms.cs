@@ -5,7 +5,12 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-// using Debug = System.Diagnostics.Debug;
+/// <summary>
+/// Originally this Algorithms class handled all algorithm related computation. However, during development that became
+/// unworkable given that to control the execution speed I needed to be able to have the inner works of the algorithms
+/// accessing the user interface and global variables. As a result, aside from the Bellman backups themselves, I transitioned
+/// the main algorithms to the MdpManager class. See <see cref="MdpManager"/>
+/// </summary>
 public class Algorithms : MonoBehaviour
 {
 
@@ -34,6 +39,9 @@ public class Algorithms : MonoBehaviour
     // │ Policy Evaluation │
     // └───────────────────┘
     
+    /// <summary>
+    /// Original implementation of policy evaluation used for early testing. Now migrated to the MdpManager.
+    /// </summary>
     public StateValueFunction PolicyEvaluation(
         MDP    mdp, 
         Policy policy, 
@@ -122,7 +130,9 @@ public class Algorithms : MonoBehaviour
     // ┌────────────────────┐
     // │ Policy Improvement │
     // └────────────────────┘
-    
+    /// <summary>
+    /// Original implementation of policy improvement used for early testing. Now migrated to the MdpManager.
+    /// </summary>
     public Policy PolicyImprovement(
         MDP                mdp, 
         StateValueFunction stateValueFunction, 
@@ -171,7 +181,9 @@ public class Algorithms : MonoBehaviour
     // ┌──────────────────┐
     // │ Policy Iteration │
     // └──────────────────┘
-    
+    /// <summary>
+    /// Original implementation of policy iteration used for early testing. Now migrated to the MdpManager.
+    /// </summary>
     public (StateValueFunction, Policy) PolicyIteration(
         MDP    mdp,
         Policy policy          = null, 
@@ -205,7 +217,9 @@ public class Algorithms : MonoBehaviour
     // ┌─────────────────┐
     // │ Value Iteration │
     // └─────────────────┘
-
+    /// <summary>
+    /// Original implementation of value iteration used for early testing. Now migrated to the MdpManager.
+    /// </summary>
     public (StateValueFunction, Policy) ValueIteration(
         MDP    mdp,
         float  gamma           = 1f, 
@@ -388,7 +402,10 @@ public class Algorithms : MonoBehaviour
     // ╔═════════════════════════╗
     // ║ Asynchronous Algorithms ║
     // ╚═════════════════════════╝
-    
+    /// <summary>
+    /// <c>Policy Evaluation</c> in <see cref="MdpManager"/> calls this to asynchronously update a every state in the
+    /// state space in a single sweep.
+    /// </summary>
     public Task<StateValueFunction> SingleStateSweepAsync(
         MDP                mdp, 
         Policy             policy, 
@@ -437,6 +454,19 @@ public class Algorithms : MonoBehaviour
         return Task.FromResult(stateValueFunctionV);
     }
     
+
+    /// <summary>
+    /// The SingleSweepValueIteration function performs a single sweep of value iteration on the given MDP,
+    /// using the given state and action value functions.  The function iterates over all states in the MDP,
+    /// performing a Bellman backup on each state to update its value.  The function returns when every standard
+    /// state has been updated.
+    /// </summary>
+    ///
+    /// <param name="mdp"> The mdp to solve.</param>
+    /// <param name="stateValueFunction">A state value function V(s)</param>
+    /// <param name="actionValueFunction">Action Value Function Q(s,a)</param>
+    /// <param name="gamma"> </param>
+    /// <returns> A task.</returns>
     public async Task SingleSweepValueIteration(
         MDP mdp, 
         StateValueFunction stateValueFunction,
@@ -452,12 +482,16 @@ public class Algorithms : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// The BellmanBackupMaxActionValue function calculates the maximum action value for a given state.
+    /// </summary>
     public async Task<float> BellmanBackupMaxActionValue(
-        MDP                 mdp, 
-        StateValueFunction  stateValueFunction,
+        MDP                 mdp,                 
+        StateValueFunction  stateValueFunction,  
         ActionValueFunction actionValueFunction, 
-        MarkovState         state, 
+        MarkovState         state,               
         float               gamma)
+
     {
         
         foreach (var action in state.ApplicableActions)
@@ -470,7 +504,10 @@ public class Algorithms : MonoBehaviour
 
         return actionValueFunction.MaxValue(state);
     }
-
+    
+    /// <summary>
+    ///  The BellmanBackUpValueOfStateAsync function computes the value of a state, given a policy and an MDP.
+    /// </summary>
     public Task<float> BellmanBackUpValueOfStateAsync(
         MDP                mdp, 
         Policy             policy, 
@@ -497,6 +534,11 @@ public class Algorithms : MonoBehaviour
         return Task.FromResult(valueOfState);
     }
     
+
+    /// <summary>
+    /// The CalculateActionValueAsync function calculates the value of a state-action pair. <see cref="MdpManager"/>
+    /// calls this during value iteration and policy improvement.
+    /// </summary>
     public Task<float> CalculateActionValueAsync(
         MDP                mdp,
         MarkovState        state,
@@ -539,22 +581,6 @@ public class Algorithms : MonoBehaviour
     public Task<float> IncrementValueAsync(float currentStateValue, float valueFromSuccessor)
     {
         return Task.FromResult(currentStateValue + valueFromSuccessor);
-    }
-
-    private void Awake()
-    {
-        // mdp = JsonUtility.FromJson<MDP>(File.ReadAllText("Assets/Resources/CanonicalMDPs/RussellNorvigGridworld.json"));
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
     
     // ╔══════════════════════════════════════╗
@@ -643,8 +669,6 @@ public class Algorithms : MonoBehaviour
         
         return previousStateValueFunctionV;
     }
-    
-    
     
     public static float MaxAbsoluteDifference(float[] prevValue, float[] value)
     {

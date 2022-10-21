@@ -586,7 +586,7 @@ public class MdpManager : MonoBehaviour
             stateValueFunctionV.Iterations++;
 
             
-            // Progress Update to UI, that is sends the iteration count and the max absolute difference to the UI for 
+            // Progress Update to UI, that is, sends the iteration count and the max absolute difference to the UI for 
             // displaying.
             maxDelta = stateValueFunctionV.MaxChangeInValueOfStates();
             
@@ -600,8 +600,6 @@ public class MdpManager : MonoBehaviour
         }
         
         currentStateValueFunction = stateValueFunctionV;
-
-        // _currentAlgorithmExecutionIterations = 0;
         
         uiController.SetRunFeaturesActive();
 
@@ -629,7 +627,8 @@ public class MdpManager : MonoBehaviour
     /// When the method takes in an optional V(s) it sets all the state values (data and visualised heights)
     /// </param>
     /// <param name="policy">
-    /// The optional policy here is set to the global <code>currentPolicy</code> field. This enables live editing of the policy during the execution of the algorithm.
+    /// The optional policy here is set to the global <code>currentPolicy</code> field. This enables live editing of the
+    /// policy during the execution of the algorithm.
     /// </param>
     /// <returns>
     /// StateValueFunction object. NOTE: It's not always necessary because it's running anytime and directly updating
@@ -901,7 +900,11 @@ public class MdpManager : MonoBehaviour
     
 
     
-
+    /// <summary>
+    /// Asynchronous Execution speed controlled version of value iteration.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="stateValueFunction"></param>
     public async Task ValueIterationControlledAsync(
         CancellationToken cancellationToken, 
         StateValueFunction stateValueFunction = null)

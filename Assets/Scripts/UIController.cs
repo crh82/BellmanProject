@@ -10,7 +10,11 @@ using Michsky.UI.ModernUIPack;
 using UnityEngine.UI;
 
 /// <summary>
-/// <para></para>
+/// <para>
+/// Controls most elements of the main solver user interface. Some elements of control are distributed down to
+/// their relevant classes. For instance, keyboard control of the cameras occurs in the camera classes
+/// <see cref="CameraController"/>
+/// </para>
 /// <para>
 /// <b>Author:</b> <i>Christopher Howell</i>
 /// </para>
