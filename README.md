@@ -8,14 +8,17 @@ of COMP8755 Individual Computing Project for the Master of Computing program at 
 Current working branch is the [Alpha Build v0.2](https://github.com/crh82/BellmanProject/tree/AlphaBuildv02).
 
 ### Instructions for running the software
-The software is built in Unity Engine and runs as a standalone application. Navigate to your relevant user interface...
-1. Navigate to directory
-2. Download the 
-
-#### Windows
-Navigate to **link to come**!
-
-#### MacOS
+The software is built in Unity Engine and runs as a standalone application. It does not need to be built.
+1. Navigate to the [OneDrive directory](https://anu365-my.sharepoint.com/:f:/g/personal/u6810978_anu_edu_au/EtVr8-Dew_hDkou9th8lGskBYH0H0HppADKREnGeMQGZeg?e=SmK61w)
+2. Download the directory corresponding to your chosen operating system.
+   - **MacOS**
+     - Download `BellmanProjectMacOS`
+   - **Linux**
+     - Download `BellmanProjectLinux`
+   - **Windows:**
+     - Download `BellmanProjectWindows`
+3. Run the executable 
+   - Linux
 Navigate to **link to come**!
 
 #### Linux
