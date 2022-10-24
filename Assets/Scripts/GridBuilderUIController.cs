@@ -21,13 +21,14 @@ public class GridBuilderUIController : MonoBehaviour
     public Button             newGridButton;
 
     public ModalWindowManager sendGridToSolver;
-
-
+    
     public TMP_InputField     rewardValueInputField;
 
     public TextMeshProUGUI    rewardValueDisplay;
 
     public TextMeshProUGUI    tileDescriptionText;
+
+    public GameObject         helpWindow;
     
     // ┌──────────────────────────────┐
     // │ Environment Dynamics Related │
@@ -59,6 +60,11 @@ public class GridBuilderUIController : MonoBehaviour
     private void Awake()
     {
         GameManager.instance.currentScene = (int) BellmanScenes.MdpBuilder;
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.H)) ToggleHelpWindow();
     }
 
 
@@ -260,6 +266,8 @@ public class GridBuilderUIController : MonoBehaviour
     public void SwitchToRewardLayer()     => levelEditor.SwitchToRewardEditorLayer();
 
     public void SwitchToGridEditorLayer() => levelEditor.SwitchToGridEditorLayer();
+    
+    public void ToggleHelpWindow()        => helpWindow.SetActive(!helpWindow.activeSelf);
 
     public void SetRewardValueForPainting()
     {
