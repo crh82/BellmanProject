@@ -68,9 +68,15 @@ The file is not damaged, it is an effect of Apple's quarantining of downloaded s
 If downloading the BellmanProjectMacOS.tar.gz has not worked. Either contact me at u6810978@anu.edu.au or you can download the directory `MacOS_Backup_Upload`. It will download as a `.zip` file. After unzipping the file, run the `BellmanProject_MacOS.app` application. You will likely encounter this error:
 
 <img width="264" alt="Screen Shot 2022-10-24 at 10 52 24 pm" src="https://user-images.githubusercontent.com/103348212/197520273-9ce0e387-2fbf-4be4-9824-e50451abc395.png">
- 
-Again, this is because of Apple's stringent quarantining of any software not downloaded from its AppStore, when the file is unzipped and you attempt to run the software you may get an unspecificed error. This is the quarantining. This is an ongoing issue that the [Unity development team are still trying to address](https://issuetracker.unity3d.com/issues/macos-builds-now-contain-a-quarantine-attribute?page=1#comments). They suggest running the commmand `xattr -r -d com.apple.quarantine path/to/game.app` from the terminal, however this did not work for me when I was testing it. To bypass the issue, in the terminal, I needed to run the command `chmod -R 777 <Path to BellmanProjectMacOS Directory>/BellmanProject_MacOS.app`. The second time I tested it, it then threw the Damaged file error, so I ran the `xattr -r -d ` command on the file and it worked.
+
+Again, this is because of Apple's stringent quarantining of any software not downloaded from its AppStore, when the file is unzipped and you attempt to run the software you may get an unspecificed error. This is the quarantining. 
+
+This is an ongoing issue that the [Unity development team are still trying to address](https://issuetracker.unity3d.com/issues/macos-builds-now-contain-a-quarantine-attribute?page=1#comments). 
+
+They suggest running the commmand `xattr -r -d com.apple.quarantine path/to/game.app` from the terminal, however this did not work for me when I was testing it. To bypass the issue, in the terminal, I needed to run the command `chmod -R 777 <Path to BellmanProjectMacOS Directory>/BellmanProject_MacOS.app`. The second time I tested it, it then threw the Damaged file error, so I ran the `xattr -r -d ` command on the file and it worked.
+
 ---
+
 ## Instructions for navigating the software's main solver
 *Note that this image is availabe within the software in the both the Main Menu Help Screen by clicking the `Help` button and within the MDP solver by pressing `H`*
 
