@@ -23,6 +23,7 @@ The software was developed using the Unity Game Engine and runs as a standalone 
 2. Download the directory corresponding to your chosen operating system.
    - **MacOS**
      - Download the *file* `BellmanProjectMacOS.tar.gz`
+     - See "Note for MacOS" below before runnging as there are issues with Apple's quarantining of non-AppStore applications.
    - **Linux**
      - Download the *directory* `BellmanProjectLinux`
    - **Windows:**
@@ -30,7 +31,6 @@ The software was developed using the Unity Game Engine and runs as a standalone 
 3. Run the executable 
    - **MacOS**
      - `BellmanProject_MacOS.app`
-     - See "Note for MacOS" below as there are issues with Apple's quarantining of non-AppStore applications.
    - **Linux**
      - `BellmanProjectLinux.x86_64`
    - **Windows:**
@@ -47,8 +47,8 @@ The software was developed using the Unity Game Engine and runs as a standalone 
 2. Decompress the tar file.
 3. Run the executable 
    - **MacOS**
-     - `BellmanProject_MacOS.app`
      - **See "Note for MacOS" below as there are issues with Apple's quarantining of non-AppStore applications.**
+     - `BellmanProject_MacOS.app`
    - **Linux**
      - `BellmanProjectLinux.x86_64`
    - **Windows:**
