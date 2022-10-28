@@ -65,7 +65,7 @@ The file is not damaged, it is an effect of Apple's quarantining of downloaded s
 
 `xattr -r -d com.apple.quarantine <Path to BellmanProjectMacOS Directory>/BellmanProject_MacOS.app`
 
-If downloading the BellmanProjectMacOS.tar.gz has not worked. Either contact me at u6810978@anu.edu.au or you can download the directory `MacOS_Backup_Upload`. It will download as a `.zip` file. After unzipping the file, run the `BellmanProject_MacOS.app` application. You will likely encounter this error:
+If downloading the BellmanProjectMacOS.tar.gz has not worked. Either raise an [issue](https://github.com/crh82/BellmanProject/issues) to let me know or, if you are an ANU student, faculty, or staff member, you can download the directory `MacOS_Backup_Upload` from the OneDrive. It will download as a `.zip` file. After unzipping the file, run the `BellmanProject_MacOS.app` application. You will likely encounter this error:
 
 <img width="264" alt="Screen Shot 2022-10-24 at 10 52 24 pm" src="https://user-images.githubusercontent.com/103348212/197520273-9ce0e387-2fbf-4be4-9824-e50451abc395.png">
 
